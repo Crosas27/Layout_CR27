@@ -15,6 +15,12 @@ padding:8px;
 border-radius:6px;
 }
 
+input, select {
+width:100%;
+max-width:200px;
+box-sizing:border-box;
+}
+
 .panel-full{
 fill:#455a64;
 }
