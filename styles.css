@@ -9,6 +9,13 @@ background:#111;
 border:1px solid #444;
 }
 
+.controls{
+display:flex;
+flex-wrap:wrap;
+gap:12px;
+align-items:center;
+}
+
 input, select {
 font-size:16px;
 padding:8px;
