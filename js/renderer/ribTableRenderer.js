@@ -2,35 +2,34 @@ import { formatToField } from "../utils/formatter.js"
 
 export function renderRibTable(model){
 
-const container=document.getElementById("ribTable")
+const el=document.getElementById("ribTable")
 
 let html=""
 
-html+=`<strong>Total Panels:</strong> ${model.panels.length}<br>`
 html+=`<strong>Wall Length:</strong> ${formatToField(model.wallLength)}<br><br>`
 
-html+="<strong>Rib Layout</strong><br>"
+html+="<strong>Panels</strong><br>"
 
-model.ribs.forEach((rib,i)=>{
+model.panels.forEach((p,i)=>{
 
-html+=`• Rib ${i+1} — ${formatToField(rib.position)}<br>`
+const width=p.end-p.start
 
-})
+if(p.type==="opening"){
 
-if(model.wallType==="gable"){
+html+=`Panel ${i+1} — Opening<br>`
 
-html+="<br><strong>Gable Panel Cuts</strong><br>"
+}else if(p.type==="cut"){
 
-model.gableCuts.forEach(panel=>{
+html+=`Panel ${i+1} — Cut ${formatToField(width)}<br>`
 
-html+=`• Panel ${panel.panel} — 
-${formatToField(panel.leftHeight)} → 
-${formatToField(panel.rightHeight)}<br>`
+}else{
 
-})
+html+=`Panel ${i+1} — Full<br>`
 
 }
 
-container.innerHTML=html
+})
+
+el.innerHTML=html
 
 }
