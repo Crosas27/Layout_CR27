@@ -2,41 +2,81 @@
 <html>
 
 <head>
-<link rel="stylesheet" href="styles.css">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="styles.css">
+<title>Panel Layout Tool</title>
 </head>
 
 <body>
 
-<h2>Panel Layout Tool</h2>
+<div class="app">
 
-<div class="controls">
+<h1>Panel Layout Tool</h1>
 
-<label>Wall Length</label>
-<input id="wallLength" placeholder="488">
+<div class="card">
 
-<label>Panel Coverage</label>
-<input id="panelCoverage" value="36">
+<h2>Building</h2>
 
-<label>Rib Spacing</label>
-<input id="ribSpacing" value="12">
-
-<label>Start Offset</label>
-<input id="startOffset" placeholder="5"
-  
-
+<label>Wall Type</label>
 <select id="wallType">
 <option value="side">Sidewall</option>
 <option value="gable">Gable</option>
 </select>
+
+<label>Wall Length (inches)</label>
+<input id="wallLength" value="144">
+
+<label>Eave Height (gable only)</label>
+<input id="eaveHeight" value="120">
+
+<label>Roof Pitch</label>
+<input id="roofPitch" value="4">
+
 </div>
+
+
+<div class="card">
+
+<h2>Panels</h2>
+
+<label>Panel Coverage (in)</label>
+<input id="panelCoverage" value="36">
+
+<label>Rib Spacing (in)</label>
+<input id="ribSpacing" value="12">
+
+<label>Start Offset (in)</label>
+<input id="startOffset" value="5">
+
+</div>
+
+
+<button id="generateBtn">
+Generate Layout
+</button>
+
+
+<div class="card">
+
+<h2>Layout Visualization</h2>
 
 <svg id="wallSvg"></svg>
 
+</div>
+
+
+<div class="card">
+
+<h2>Results</h2>
+
 <div id="ribTable"></div>
+
+</div>
+
+
+</div>
 
 <script type="module" src="app.js"></script>
 
 </body>
-
 </html>
