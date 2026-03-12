@@ -9,6 +9,12 @@ background:#111;
 border:1px solid #444;
 }
 
+input, select {
+font-size:16px;
+padding:8px;
+border-radius:6px;
+}
+
 .panel-full{
 fill:#455a64;
 }
