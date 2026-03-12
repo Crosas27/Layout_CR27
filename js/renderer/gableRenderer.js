@@ -3,7 +3,6 @@ import { formatToField } from "../utils/formatter.js"
 import {
   setupSvg,
   getDrawArea,
-  calculateScale,
   drawGrid,
   drawLine,
   drawText
