@@ -1,124 +1,56 @@
 import { formatToField } from "../utils/formatter.js"
-
 import {
 setupSvg,
 getDrawArea,
-drawGrid,
 drawRect,
 drawLine,
-drawText,
-drawDimension
+drawText
 } from "../utils/svgUtils.js"
 
 export function renderSvg(model){
 
-const svg = document.getElementById("wallSvg")
+const svg=document.getElementById("wallSvg")
 if(!svg) return
 
-const width = svg.clientWidth || 900
-const height = 300
+const width=svg.clientWidth||900
+const height=320
 
 setupSvg(svg,width,height)
 
-drawGrid(svg,width,height)
+const {margin,drawWidth}=getDrawArea(width,height)
 
-const {margin,drawWidth} = getDrawArea(width,height)
+const scale=drawWidth/model.wallLength
 
-const {wallLength,ribs,panels} = model
+const wallTop=120
+const wallHeight=100
 
-/* prevent divide-by-zero */
+model.panels.forEach(panel=>{
 
-if(!wallLength) return
+const x=margin+panel.start*scale
+const w=(panel.end-panel.start)*scale
 
-const scale = drawWidth / wallLength
+let cls="panel-full"
 
-const wallTop = 100
-const wallHeight = 80
+if(panel.type==="cut") cls="panel-cut"
+if(panel.type==="opening") cls="panel-opening"
 
-/* -------------------- */
-/* PANELS */
-/* -------------------- */
-
-panels.forEach((panel,i)=>{
-
-drawRect(
-svg,
-margin + panel.start * scale,
-wallTop,
-(panel.end - panel.start) * scale,
-wallHeight,
-i % 2 ? "panel-fill-b" : "panel-fill-a"
-)
+drawRect(svg,x,wallTop,w,wallHeight,cls)
 
 })
 
-/* -------------------- */
-/* WALL OUTLINE */
-/* -------------------- */
+model.ribs.forEach(rib=>{
 
-drawRect(
-svg,
-margin,
-wallTop,
-wallLength * scale,
-wallHeight,
-"wall-outline"
-)
+const x=margin+rib.position*scale
 
-/* -------------------- */
-/* RIBS */
-/* -------------------- */
-
-ribs.forEach((rib)=>{
-
-const x = margin + rib.position * scale
-
-drawLine(svg,x,wallTop,x,wallTop + wallHeight,"rib-line")
-
-/* label every 3 feet */
-
-if(rib.position % 36 === 0){
+drawLine(svg,x,wallTop,x,wallTop+wallHeight,"rib-line")
 
 drawText(
 svg,
 x,
-wallTop + wallHeight + 18,
+wallTop+wallHeight+18,
 formatToField(rib.position)
 )
 
-}
-
 })
-
-/* -------------------- */
-/* PANEL DIMENSIONS */
-/* -------------------- */
-
-panels.forEach((panel)=>{
-
-const start = margin + panel.start * scale
-const end = margin + panel.end * scale
-
-drawDimension(
-svg,
-start,
-end,
-60,
-formatToField(panel.end - panel.start)
-)
-
-})
-
-/* -------------------- */
-/* TOTAL DIMENSION */
-/* -------------------- */
-
-drawDimension(
-svg,
-margin,
-margin + wallLength * scale,
-260,
-formatToField(wallLength)
-)
 
 }
