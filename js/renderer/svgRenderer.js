@@ -19,7 +19,7 @@ setupSvg(svg,width,height)
 
 const {margin,drawWidth}=getDrawArea(width,height)
 
-const scale=drawWidth/model.wallLength
+const scale=model.wallLength ? drawWidth/model.wallLength : 1
 
 const wallTop=120
 const wallHeight=100
