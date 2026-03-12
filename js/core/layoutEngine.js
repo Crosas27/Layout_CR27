@@ -1,176 +1,128 @@
-export function generateLayout(config) {
+export function generateLayout(config){
 
-  const wallLength = Number(config.wallLength) || 0
-  const eaveHeight = Number(config.eaveHeight) || 0
-  const roofPitch = Number(config.roofPitch) || 0
-  const ribSpacing = Number(config.ribSpacing) || 0
-  const startOffset = Number(config.startOffset) || 0
-  const panelCoverage = Number(config.panelCoverage) || 0
+const wallLength=Number(config.wallLength)||0
+const panelCoverage=Number(config.panelCoverage)||0
+const openings=config.openings||[]
 
-  const ribs = calculateRibs(wallLength, ribSpacing, startOffset)
-  const panels = calculatePanels(wallLength, panelCoverage)
+const ribs=calculateRibs(
+wallLength,
+Number(config.ribSpacing)||0,
+Number(config.startOffset)||0
+)
 
-  const peakHeight = calculatePeakHeight(
-    wallLength,
-    eaveHeight,
-    roofPitch
-  )
+const basePanels=calculatePanels(wallLength,panelCoverage)
 
-  const gableCuts = calculateGableCuts(
-    wallLength,
-    eaveHeight,
-    roofPitch,
-    panelCoverage
-  )
+const panels=splitPanels(basePanels,openings)
 
-  return {
-    wallLength,
-    eaveHeight,
-    roofPitch,
-    ribSpacing,
-    startOffset,
-    panelCoverage,
-    wallType: config.wallType || "side",
-
-    peakHeight,
-    ribs,
-    panels,
-    gableCuts
-  }
+return{
+...config,
+wallLength,
+panels,
+ribs,
+openings
+}
 
 }
 
+function calculateRibs(length,spacing,start){
 
-/* -------------------------------- */
-/* PEAK HEIGHT                      */
-/* -------------------------------- */
+const ribs=[]
 
-function calculatePeakHeight(width, eaveHeight, pitch) {
+let pos=start
 
-  if (!width || !pitch) return eaveHeight
+while(pos<=length){
 
-  const halfSpan = width / 2
-  const rise = (pitch / 12) * halfSpan
+ribs.push({position:pos})
 
-  return eaveHeight + rise
+pos+=spacing
 
 }
 
-
-/* -------------------------------- */
-/* RIB LAYOUT                       */
-/* -------------------------------- */
-
-function calculateRibs(wallLength, ribSpacing, startOffset) {
-
-  const ribs = []
-
-  if (!ribSpacing) return ribs
-
-  let position = startOffset
-
-  while (position <= wallLength) {
-
-    ribs.push({
-      position
-    })
-
-    position += ribSpacing
-
-  }
-
-  return ribs
+return ribs
 
 }
 
+function calculatePanels(length,coverage){
 
-/* -------------------------------- */
-/* PANEL POSITIONS                  */
-/* -------------------------------- */
+const panels=[]
 
-function calculatePanels(wallLength, panelCoverage) {
+let pos=0
+let i=1
 
-  const panels = []
+while(pos<length){
 
-  if (!panelCoverage) return panels
+panels.push({
+panel:i,
+start:pos,
+end:Math.min(pos+coverage,length),
+type:"full"
+})
 
-  let position = 0
-
-  while (position < wallLength) {
-
-    panels.push({
-      start: position,
-      end: Math.min(position + panelCoverage, wallLength)
-    })
-
-    position += panelCoverage
-
-  }
-
-  return panels
+pos+=coverage
+i++
 
 }
 
-
-/* -------------------------------- */
-/* GABLE PANEL CUTS                 */
-/* -------------------------------- */
-
-function calculateGableCuts(width, eaveHeight, pitch, panelCoverage) {
-
-  const cuts = []
-
-  if (!panelCoverage || !width) return cuts
-
-  let start = 0
-  let index = 1
-
-  while (start < width) {
-
-    const end = Math.min(start + panelCoverage, width)
-
-    const leftHeight = getRoofHeight(start, width, eaveHeight, pitch)
-    const rightHeight = getRoofHeight(end, width, eaveHeight, pitch)
-
-    cuts.push({
-      panel: index,
-      start,
-      end,
-      leftHeight,
-      rightHeight
-    })
-
-    start += panelCoverage
-    index++
-
-  }
-
-  return cuts
+return panels
 
 }
 
+function splitPanels(panels,openings){
 
-/* -------------------------------- */
-/* ROOF HEIGHT AT POSITION          */
-/* -------------------------------- */
+let result=[]
 
-function getRoofHeight(x, width, eaveHeight, pitch) {
+panels.forEach(panel=>{
 
-  const half = width / 2
-  const slope = pitch / 12
+let segments=[panel]
 
-  let rise
+openings.forEach(opening=>{
 
-  if (x <= half) {
+segments=segments.flatMap(seg=>{
 
-    rise = x * slope
+const overlap=
+seg.start<opening.end &&
+seg.end>opening.start
 
-  } else {
+if(!overlap) return [seg]
 
-    rise = (width - x) * slope
+let parts=[]
 
-  }
+if(seg.start<opening.start){
 
-  return eaveHeight + rise
+parts.push({
+start:seg.start,
+end:opening.start,
+type:"cut"
+})
+
+}
+
+parts.push({
+start:opening.start,
+end:opening.end,
+type:"opening"
+})
+
+if(seg.end>opening.end){
+
+parts.push({
+start:opening.end,
+end:seg.end,
+type:"cut"
+})
+
+}
+
+return parts
+
+})
+
+})
+
+result.push(...segments)
+
+})
+
+return result
 
 }
