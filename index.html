@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>PBR Panel Layout</title>
+
+<link rel="stylesheet" href="styles.css">
+
+</head>
+
+<body>
+
+<header class="header">
+Panel°♠°Layout
+</header>
+
+
+<div class="container">
+
+
+<!-- INPUT PANEL -->
+
+<div class="card">
+
+<label>Wall Type</label>
+<select id="wallType">
+<option value="sidewall">Sidewall</option>
+<option value="gable">Gable</option>
+</select>
+
+<label>Wall Length (inches)</label>
+<input id="wallLength" type="number" placeholder="144">
+
+<label>Panel Coverage (in)</label>
+<input id="panelCoverage" type="number" placeholder="36">
+
+<label>Rib Spacing (in)</label>
+<input id="ribSpacing" type="number" placeholder="12">
+
+<label>Start Offset (in)</label>
+<input id="offset" type="number" placeholder="5">
+
+<label>Eave Height (gable only)</label>
+<input id="eaveHeight" type="number" placeholder="120">
+
+<label>Roof Pitch</label>
+<input id="roofPitch" type="number" placeholder="4">
+
+<button id="renderBtn">
+Generate Layout
+</button>
+
+</div>
+
+
+<!-- DRAWING -->
+
+<div class="card drawing-card">
+
+<svg id="wallSvg"></svg>
+
+</div>
+
+
+<!-- RESULTS -->
+
+<div class="card">
+
+<div id="results">
+
+<strong>Results</strong>
+
+<div id="ribTable"></div>
+
+</div>
+
+</div>
+
+
+</div>
+
+<script type="module" src="./app.js"></script>
+
+</body>
+</html>
