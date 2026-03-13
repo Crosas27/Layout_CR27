@@ -32,9 +32,7 @@ const wallLeft = margin
 const wallRight = margin + model.wallLength * scale
 
 
-/* ---------------------------- */
-/* WALL OUTLINE */
-/* ---------------------------- */
+/* WALL */
 
 drawRect(
 svg,
@@ -46,31 +44,14 @@ wallHeight,
 )
 
 
-
-/* ---------------------------- */
 /* PANELS */
-/* ---------------------------- */
 
 model.panels.forEach((panel,i)=>{
 
 const x = wallLeft + panel.start * scale
 const w = (panel.end - panel.start) * scale
 
-let cls = "panel-full"
-
-if(panel.type === "cut") cls = "panel-cut"
-if(panel.type === "opening") cls = "panel-opening"
-
-drawRect(
-svg,
-x,
-wallTop,
-w,
-wallHeight,
-cls
-)
-
-/* Panel Number */
+drawRect(svg,x,wallTop,w,wallHeight,"panel-full")
 
 drawText(
 svg,
@@ -83,10 +64,7 @@ wallTop + wallHeight/2,
 })
 
 
-
-/* ---------------------------- */
 /* PANEL SEAMS */
-/* ---------------------------- */
 
 model.panels.forEach(panel=>{
 
@@ -104,10 +82,7 @@ wallTop + wallHeight,
 })
 
 
-
-/* ---------------------------- */
 /* RIB LINES */
-/* ---------------------------- */
 
 model.ribs.forEach(rib=>{
 
@@ -125,16 +100,12 @@ wallTop + wallHeight,
 })
 
 
-
-/* ---------------------------- */
-/* RIB LABELS */
-/* Adaptive spacing */
-/* ---------------------------- */
+/* RIB LABELS (adaptive) */
 
 let ribStep = 36
 
 if(model.wallLength > 600) ribStep = 72
-if(model.wallLength > 900) ribStep = 96
+if(model.wallLength > 900) ribStep = 120
 
 model.ribs.forEach(rib=>{
 
@@ -145,7 +116,7 @@ const x = wallLeft + rib.position * scale
 drawText(
 svg,
 x,
-wallTop + wallHeight + 24,
+wallTop + wallHeight + 22,
 formatToField(rib.position),
 "rib-label"
 )
@@ -153,67 +124,64 @@ formatToField(rib.position),
 })
 
 
+/* TOP DIMENSION LINE */
 
-/* ---------------------------- */
-/* PANEL DIMENSIONS */
-/* Adaptive label spacing */
-/* ---------------------------- */
+const dimY = wallTop - 40
 
-const totalPanels = model.panels.length
+drawLine(svg,wallLeft,dimY,wallRight,dimY,"dimension-line")
+
+
+/* PANEL TICKS */
+
+model.panels.forEach(panel=>{
+
+const x = wallLeft + panel.start * scale
+
+drawLine(svg,x,dimY-6,x,dimY+6,"dimension-line")
+
+})
+
+drawLine(svg,wallRight,dimY-6,wallRight,dimY+6,"dimension-line")
+
+
+/* PANEL WIDTH LABELS */
+
+const panelCount = model.panels.length
 
 let labelStep = 1
 
-if(totalPanels > 10) labelStep = 2
-if(totalPanels > 20) labelStep = 3
-if(totalPanels > 35) labelStep = 4
+if(panelCount > 10) labelStep = 2
+if(panelCount > 20) labelStep = 3
+if(panelCount > 35) labelStep = 4
 
 model.panels.forEach((panel,i)=>{
+
+if(i % labelStep !== 0) return
 
 const start = wallLeft + panel.start * scale
 const end = wallLeft + panel.end * scale
 
-drawLine(
-svg,
-start,
-wallTop - 40,
-end,
-wallTop - 40,
-"dimension-line"
-)
-
-if(i % labelStep === 0){
-
 drawText(
 svg,
 (start + end)/2,
-wallTop - 46,
+dimY - 10,
 formatToField(panel.end - panel.start),
 "dimension-text"
 )
 
-}
-
 })
 
 
+/* TOTAL WALL DIMENSION */
 
-/* ---------------------------- */
-/* TOTAL WALL LENGTH */
-/* ---------------------------- */
+const bottomY = wallTop + wallHeight + 60
 
-drawLine(
-svg,
-wallLeft,
-wallTop + wallHeight + 60,
-wallRight,
-wallTop + wallHeight + 60,
-"dimension-line"
-)
+drawLine(svg,wallLeft,bottomY,wallRight,bottomY,"dimension-line")
 
 drawText(
 svg,
-width/2,
-wallTop + wallHeight + 54,
+(width/2),
+bottomY - 6,
 formatToField(model.wallLength),
 "dimension-text"
 )
