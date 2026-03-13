@@ -46,11 +46,12 @@ wallHeight,
 )
 
 
+
 /* ---------------------------- */
 /* PANELS */
 /* ---------------------------- */
 
-model.panels.forEach(panel=>{
+model.panels.forEach((panel,i)=>{
 
 const x = wallLeft + panel.start * scale
 const w = (panel.end - panel.start) * scale
@@ -69,7 +70,18 @@ wallHeight,
 cls
 )
 
+/* Panel Number */
+
+drawText(
+svg,
+x + w/2,
+wallTop + wallHeight/2,
+`${i+1}`,
+"panel-number"
+)
+
 })
+
 
 
 /* ---------------------------- */
@@ -92,6 +104,7 @@ wallTop + wallHeight,
 })
 
 
+
 /* ---------------------------- */
 /* RIB LINES */
 /* ---------------------------- */
@@ -112,14 +125,20 @@ wallTop + wallHeight,
 })
 
 
+
 /* ---------------------------- */
 /* RIB LABELS */
-/* Only label every 36" */
+/* Adaptive spacing */
 /* ---------------------------- */
+
+let ribStep = 36
+
+if(model.wallLength > 600) ribStep = 72
+if(model.wallLength > 900) ribStep = 96
 
 model.ribs.forEach(rib=>{
 
-if(rib.position % 36 !== 0) return
+if(rib.position % ribStep !== 0) return
 
 const x = wallLeft + rib.position * scale
 
@@ -134,11 +153,21 @@ formatToField(rib.position),
 })
 
 
+
 /* ---------------------------- */
-/* PANEL DIMENSIONS (TOP) */
+/* PANEL DIMENSIONS */
+/* Adaptive label spacing */
 /* ---------------------------- */
 
-model.panels.forEach(panel=>{
+const totalPanels = model.panels.length
+
+let labelStep = 1
+
+if(totalPanels > 10) labelStep = 2
+if(totalPanels > 20) labelStep = 3
+if(totalPanels > 35) labelStep = 4
+
+model.panels.forEach((panel,i)=>{
 
 const start = wallLeft + panel.start * scale
 const end = wallLeft + panel.end * scale
@@ -152,19 +181,24 @@ wallTop - 40,
 "dimension-line"
 )
 
+if(i % labelStep === 0){
+
 drawText(
 svg,
-(start + end) / 2,
+(start + end)/2,
 wallTop - 46,
 formatToField(panel.end - panel.start),
 "dimension-text"
 )
 
+}
+
 })
 
 
+
 /* ---------------------------- */
-/* TOTAL WALL DIMENSION */
+/* TOTAL WALL LENGTH */
 /* ---------------------------- */
 
 drawLine(
@@ -178,7 +212,7 @@ wallTop + wallHeight + 60,
 
 drawText(
 svg,
-(width/2),
+width/2,
 wallTop + wallHeight + 54,
 formatToField(model.wallLength),
 "dimension-text"
