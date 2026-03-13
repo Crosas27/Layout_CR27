@@ -12,9 +12,6 @@ const ribs = model.ribs || []
 
 const panelCount = panels.length
 
-let lastPanel = panels[panelCount-1]
-let lastPanelWidth = lastPanel ? (lastPanel.end - lastPanel.start) : 0
-
 const html = `
 
 <h3>Wall Summary</h3>
@@ -22,35 +19,37 @@ const html = `
 <p><b>Wall Length:</b> ${formatToField(model.wallLength)}</p>
 <p><b>Panel Coverage:</b> ${formatToField(model.panelCoverage)}</p>
 <p><b>Total Panels:</b> ${panelCount}</p>
-<p><b>Last Panel Width:</b> ${formatToField(lastPanelWidth)}</p>
 
 
 <h3>Panel Layout</h3>
 
 <ul>
+
 ${panels.map((p,i)=>{
 
-let width = p.end - p.start
 let label = "Full"
 
-if(width !== model.panelCoverage){
+if((p.end - p.start) !== model.panelCoverage){
 label = "Cut"
 }
 
-return `<li>Panel ${i+1} — ${label} (${formatToField(width)})</li>`
+return `<li>Panel ${i+1} — ${label} (${formatToField(p.end)})</li>`
 
 }).join("")}
+
 </ul>
 
 
 <h3>Rib Layout</h3>
 
 <ul>
+
 ${ribs.map((r,i)=>{
 
 return `<li>Rib ${i+1} — ${formatToField(r.position)}</li>`
 
 }).join("")}
+
 </ul>
 
 `
