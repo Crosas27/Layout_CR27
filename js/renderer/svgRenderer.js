@@ -1,4 +1,5 @@
 import { formatToField } from "../utils/formatter.js"
+
 import {
 setupSvg,
 getDrawArea,
@@ -14,7 +15,7 @@ const svg = document.getElementById("wallSvg")
 if(!svg) return
 
 const width = svg.clientWidth || 900
-const height = 340
+const height = 360
 
 setupSvg(svg,width,height)
 
@@ -24,8 +25,9 @@ if(!model.wallLength) return
 
 const scale = drawWidth / model.wallLength
 
-const wallTop = 120
-const wallHeight = 110
+const wallTop = 140
+const wallHeight = 100
+
 const wallLeft = margin
 const wallRight = margin + model.wallLength * scale
 
@@ -107,35 +109,24 @@ wallTop + wallHeight,
 "rib-line"
 )
 
-/* only label every 36" */
-
-if(rib.position % 36 === 0){
-
-drawText(
-svg,
-x,
-wallTop + wallHeight + 20,
-formatToField(rib.position),
-"rib-label"
-)
-
-}
-
 })
 
 
 /* ---------------------------- */
 /* RIB LABELS */
+/* Only label every 36" */
 /* ---------------------------- */
 
 model.ribs.forEach(rib=>{
+
+if(rib.position % 36 !== 0) return
 
 const x = wallLeft + rib.position * scale
 
 drawText(
 svg,
 x,
-wallTop + wallHeight + 22,
+wallTop + wallHeight + 24,
 formatToField(rib.position),
 "rib-label"
 )
@@ -144,15 +135,53 @@ formatToField(rib.position),
 
 
 /* ---------------------------- */
-/* WALL LENGTH LABEL */
+/* PANEL DIMENSIONS (TOP) */
 /* ---------------------------- */
+
+model.panels.forEach(panel=>{
+
+const start = wallLeft + panel.start * scale
+const end = wallLeft + panel.end * scale
+
+drawLine(
+svg,
+start,
+wallTop - 40,
+end,
+wallTop - 40,
+"dimension-line"
+)
 
 drawText(
 svg,
-width/2,
-wallTop - 20,
+(start + end) / 2,
+wallTop - 46,
+formatToField(panel.end - panel.start),
+"dimension-text"
+)
+
+})
+
+
+/* ---------------------------- */
+/* TOTAL WALL DIMENSION */
+/* ---------------------------- */
+
+drawLine(
+svg,
+wallLeft,
+wallTop + wallHeight + 60,
+wallRight,
+wallTop + wallHeight + 60,
+"dimension-line"
+)
+
+drawText(
+svg,
+(width/2),
+wallTop + wallHeight + 54,
 formatToField(model.wallLength),
-"wall-label"
+"dimension-text"
 )
 
 }
