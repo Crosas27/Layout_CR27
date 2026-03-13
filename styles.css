@@ -83,40 +83,70 @@ button:active{
 transform:scale(.98);
 }
 
-/* PANELS */
+/* WALL */
 
-.panel-full{
-fill:#2d3748;
-stroke:#60a5fa;
+.wall-outline{
+fill:#0b0f18;
+stroke:#3b82f6;
 stroke-width:2;
 }
 
+
+/* PANELS */
+
+.panel-full{
+fill:#1f2937;
+stroke:#475569;
+stroke-width:1;
+}
+
 .panel-cut{
-fill:#3f3f46;
+fill:#2d2d2d;
 stroke:#f59e0b;
 stroke-width:2;
 }
 
 .panel-opening{
-fill:#1f2937;
+fill:#111827;
 stroke:#ef4444;
 stroke-width:2;
 }
 
-/* RIBS */
+
+/* PANEL SEAMS */
+
+.panel-seam{
+stroke:#64748b;
+stroke-width:1;
+}
+
+
+/* RIB LINES */
 
 .rib-line{
 stroke:#22c55e;
-stroke-width:2;
+stroke-width:1.5;
 stroke-dasharray:4 4;
 }
+
 
 /* TEXT */
 
 svg text{
-fill:#9ca3af;
+fill:#cbd5f5;
 font-size:12px;
 font-family:monospace;
+text-anchor:middle;
+}
+
+.wall-label{
+font-size:14px;
+fill:#93c5fd;
+}
+
+.rib-label{
+font-size:11px;
+fill:#9ca3af;
 }
 
 svg{
