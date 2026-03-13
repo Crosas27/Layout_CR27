@@ -6,9 +6,11 @@ margin:0;
 }
 
 .app{
-max-width:420px;
-margin:auto;
-padding:16px;
+width:100%;
+max-width:480px;
+margin:0 auto;
+padding:20px;
+box-sizing:border-box;
 }
 
 h1{
