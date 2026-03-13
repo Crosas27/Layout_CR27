@@ -107,6 +107,20 @@ wallTop + wallHeight,
 "rib-line"
 )
 
+/* only label every 36" */
+
+if(rib.position % 36 === 0){
+
+drawText(
+svg,
+x,
+wallTop + wallHeight + 20,
+formatToField(rib.position),
+"rib-label"
+)
+
+}
+
 })
 
 
