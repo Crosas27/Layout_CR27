@@ -117,7 +117,7 @@ stroke-width:2;
 
 .panel-seam{
 stroke:#64748b;
-stroke-width:1;
+stroke-width:2;
 }
 
 
@@ -125,7 +125,7 @@ stroke-width:1;
 
 .rib-line{
 stroke:#22c55e;
-stroke-width:1.5;
+stroke-width:1;
 stroke-dasharray:4 4;
 }
 
@@ -140,7 +140,7 @@ text-anchor:middle;
 }
 
 .wall-label{
-font-size:14px;
+font-size:11px;
 fill:#93c5fd;
 }
 
