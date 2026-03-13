@@ -2,34 +2,59 @@ import { formatToField } from "../utils/formatter.js"
 
 export function renderRibTable(model){
 
-const el=document.getElementById("ribTable")
+const container = document.getElementById("ribTable")
+if(!container) return
 
-let html=""
+container.innerHTML=""
 
-html+=`<strong>Wall Length:</strong> ${formatToField(model.wallLength)}<br><br>`
+const panels = model.panels || []
+const ribs = model.ribs || []
 
-html+="<strong>Panels</strong><br>"
+const panelCount = panels.length
 
-model.panels.forEach((p,i)=>{
+let lastPanel = panels[panelCount-1]
+let lastPanelWidth = lastPanel ? (lastPanel.end - lastPanel.start) : 0
 
-const width=p.end-p.start
+const html = `
 
-if(p.type==="opening"){
+<h3>Wall Summary</h3>
 
-html+=`Panel ${i+1} — Opening<br>`
+<p><b>Wall Length:</b> ${formatToField(model.wallLength)}</p>
+<p><b>Panel Coverage:</b> ${formatToField(model.panelCoverage)}</p>
+<p><b>Total Panels:</b> ${panelCount}</p>
+<p><b>Last Panel Width:</b> ${formatToField(lastPanelWidth)}</p>
 
-}else if(p.type==="cut"){
 
-html+=`Panel ${i+1} — Cut ${formatToField(width)}<br>`
+<h3>Panel Layout</h3>
 
-}else{
+<ul>
+${panels.map((p,i)=>{
 
-html+=`Panel ${i+1} — Full<br>`
+let width = p.end - p.start
+let label = "Full"
 
+if(width !== model.panelCoverage){
+label = "Cut"
 }
 
-})
+return `<li>Panel ${i+1} — ${label} (${formatToField(width)})</li>`
 
-el.innerHTML=html
+}).join("")}
+</ul>
+
+
+<h3>Rib Layout</h3>
+
+<ul>
+${ribs.map((r,i)=>{
+
+return `<li>Rib ${i+1} — ${formatToField(r.position)}</li>`
+
+}).join("")}
+</ul>
+
+`
+
+container.innerHTML = html
 
 }
