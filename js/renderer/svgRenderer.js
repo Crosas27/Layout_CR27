@@ -153,29 +153,30 @@ dimY + 8,
 
 })
 
-/* SEAM LABELS (WHAT YOU MARK ON SITE) */
+//* SEAM LABELS (CLEAN + READABLE) */
 
-let labelStep = 1
+const minPixelSpacing = 60 // minimum space between labels
+let lastLabelX = -Infinity
 
-if (seamPositions.length > 10) labelStep = 2
-if (seamPositions.length > 20) labelStep = 3
+seamPositions.forEach((pos) => {
 
-seamPositions.forEach((pos, i) => {
+  const x = wallLeft + pos * scale
 
-if (i % labelStep !== 0) return
+  if (x - lastLabelX < minPixelSpacing) return
 
-const x = wallLeft + pos * scale
+  drawText(
+    svg,
+    x,
+    dimY - 14,
+    formatToField(pos),
+    "dimension-text"
+  )
 
-drawText(
-svg,
-x,
-dimY - 12,
-formatToField(pos),
-"dimension-text"
-)
+  lastLabelX = x
 
 })
 
+  
 /* TOTAL WALL DIMENSION */
 
 const bottomY = wallTop + wallHeight + 60
