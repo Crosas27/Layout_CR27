@@ -131,46 +131,50 @@ const dimY = wallTop - 40
 drawLine(svg,wallLeft,dimY,wallRight,dimY,"dimension-line")
 
 
-/* PANEL TICKS */
+/* SEAM TICKS (FIELD MARKS) */
 
-model.panels.forEach(panel=>{
+const seamPositions = model.panels.map(p => p.start)
 
-const x = wallLeft + panel.start * scale
+// include final wall end
+seamPositions.push(model.wallLength)
 
-drawLine(svg,x,dimY-6,x,dimY+6,"dimension-line")
+seamPositions.forEach(pos => {
 
-})
+const x = wallLeft + pos * scale
 
-drawLine(svg,wallRight,dimY-6,wallRight,dimY+6,"dimension-line")
-
-
-/* PANEL WIDTH LABELS */
-
-const panelCount = model.panels.length
-
-let labelStep = 1
-
-if(panelCount > 10) labelStep = 2
-if(panelCount > 20) labelStep = 3
-if(panelCount > 35) labelStep = 4
-
-model.panels.forEach((panel,i)=>{
-
-if(i % labelStep !== 0) return
-
-const start = wallLeft + panel.start * scale
-const end = wallLeft + panel.end * scale
-
-drawText(
+drawLine(
 svg,
-(start + end)/2,
-dimY - 10,
-formatToField(panel.end - panel.start),
-"dimension-text"
+x,
+dimY - 8,
+x,
+dimY + 8,
+"seam-tick"
 )
 
 })
 
+/* SEAM LABELS (WHAT YOU MARK ON SITE) */
+
+let labelStep = 1
+
+if (seamPositions.length > 10) labelStep = 2
+if (seamPositions.length > 20) labelStep = 3
+
+seamPositions.forEach((pos, i) => {
+
+if (i % labelStep !== 0) return
+
+const x = wallLeft + pos * scale
+
+drawText(
+svg,
+x,
+dimY - 12,
+formatToField(pos),
+"dimension-text"
+)
+
+})
 
 /* TOTAL WALL DIMENSION */
 
