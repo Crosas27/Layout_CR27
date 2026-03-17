@@ -148,9 +148,6 @@ export function renderSvg(model){
 
   /* ---------------- SEAM LABELS ---------------- */
 
-const seamPositions = model.panels.map(p => p.start)
-seamPositions.push(model.wallLength)
-
 const minPixelSpacing = 60
 let lastLabelX = -Infinity
 let toggle = false
