@@ -49,7 +49,7 @@ wallHeight,
 model.panels.forEach((panel,i)=>{
 
 const x = wallLeft + panel.start * scale
-const w = (panel.end - panel.start) * scale
+const w = panel.width * scale
 
 drawRect(svg,x,wallTop,w,wallHeight,"panel-full")
 
