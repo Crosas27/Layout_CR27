@@ -1,3 +1,5 @@
+console.log("🔥 APP JS LOADED 🔥")
+
 import { generateLayout } from "./js/core/layoutEngine.js"
 import { renderSvg } from "./js/renderer/svgRenderer.js"
 import { renderGable } from "./js/renderer/gableRenderer.js"
