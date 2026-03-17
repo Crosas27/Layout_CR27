@@ -44,7 +44,10 @@ const button = document.getElementById("generateBtn")
 
 if(button){
 
-button.addEventListener("click", updateLayout)
+btn.addEventListener("click", () => {
+  console.log("CLICK WORKING")
+  handleRender()
+})
 
 }
 
