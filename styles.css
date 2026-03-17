@@ -83,65 +83,52 @@ button:active{
 transform:scale(.98);
 }
 
-/* WALL */
-
-.wall-outline{
-fill:#0b0f18;
-stroke:#3b82f6;
-stroke-width:2;
+.wall-outline {
+  stroke: #6b7280;
+  stroke-width: 2;
+  fill: none;
 }
 
-
-/* PANELS */
-
-.panel-full{
-fill:#1f2937;
-stroke:#475569;
-stroke-width:1;
+.panel-full {
+  fill: rgba(59, 130, 246, 0.15);
 }
 
-.panel-cut{
-fill:#2d2d2d;
-stroke:#f59e0b;
-stroke-width:2;
+.panel-cut {
+  fill: rgba(239, 68, 68, 0.25);
 }
 
-.panel-opening{
-fill:#111827;
-stroke:#ef4444;
-stroke-width:2;
+.panel-number {
+  fill: #e5e7eb;
+  font-size: 12px;
+  text-anchor: middle;
 }
 
-
-/* PANEL SEAMS */
-
-.panel-seam{
-stroke:#64748b;
-stroke-width:2;
+.panel-seam {
+  stroke: #00e0ff;
+  stroke-width: 2;
 }
 
-
-/* RIB LINES */
-
-.rib-line{
-stroke:#22c55e;
-stroke-width:1;
-stroke-dasharray:4 4;
+.rib-line {
+  stroke: #00ff88;
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+  opacity: 0.6;
 }
 
-
-/* TEXT */
-
-svg text{
-fill:#cbd5f5;
-font-size:12px;
-font-family:monospace;
-text-anchor:middle;
+.dimension-line {
+  stroke: #9ca3af;
+  stroke-width: 1;
 }
 
-.wall-label{
-font-size:11px;
-fill:#93c5fd;
+.seam-tick {
+  stroke: #00e0ff;
+  stroke-width: 2;
+}
+
+.dimension-text {
+  fill: #d1d5db;
+  font-size: 11px;
+  text-anchor: middle;
 }
 
 .rib-label{
