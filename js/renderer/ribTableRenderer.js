@@ -33,12 +33,11 @@ if((p.end - p.start) !== model.panelCoverage){
 label = "Cut"
 }
 
-return `<li>Panel ${i+1} — ${label} (${formatToField(p.end)})</li>`
+return `<li>Panel ${i+1} — ${label} (${formatToField(p.width)})</li>`
 
 }).join("")}
 
 </ul>
-
 
 <h3>Rib Layout</h3>
 
