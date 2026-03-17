@@ -6,49 +6,47 @@ import { renderRibTable } from "./js/renderer/ribTableRenderer.js"
 
 function updateLayout(){
 
-const config = {
+  console.log("RENDER START")
 
-wallType: document.getElementById("wallType").value,
+  const config = {
 
-wallLength: Number(document.getElementById("wallLength").value) || 0,
-panelCoverage: Number(document.getElementById("panelCoverage").value) || 0,
-ribSpacing: Number(document.getElementById("ribSpacing").value) || 0,
-startOffset: Number(document.getElementById("startOffset").value) || 0,
+    wallType: document.getElementById("wallType").value,
 
-eaveHeight: Number(document.getElementById("eaveHeight").value) || 0,
-roofPitch: Number(document.getElementById("roofPitch").value) || 0
+    wallLength: Number(document.getElementById("wallLength").value) || 0,
+    panelCoverage: Number(document.getElementById("panelCoverage").value) || 0,
+    ribSpacing: Number(document.getElementById("ribSpacing").value) || 0,
+    startOffset: Number(document.getElementById("startOffset").value) || 0,
 
+    eaveHeight: Number(document.getElementById("eaveHeight").value) || 0,
+    roofPitch: Number(document.getElementById("roofPitch").value) || 0
+
+  }
+
+  const model = generateLayout(config)
+
+  console.log("MODEL:", model)
+
+  if(config.wallType === "gable"){
+    renderGable(model)
+  } else {
+    renderSvg(model)
+  }
+
+  renderRibTable(model)
 }
 
-const model = generateLayout(config)
 
-if(config.wallType === "gable"){
+document.addEventListener("DOMContentLoaded", () => {
 
-renderGable(model)
+  console.log("APP LOADED")
 
-}else{
+  const button = document.getElementById("generateBtn")
 
-renderSvg(model)
+  if(!button){
+    console.log("BUTTON NOT FOUND")
+    return
+  }
 
-}
-
-renderRibTable(model)
-
-}
-
-
-
-document.addEventListener("DOMContentLoaded",()=>{
-
-const button = document.getElementById("generateBtn")
-
-if(button){
-
-btn.addEventListener("click", () => {
-  console.log("CLICK WORKING")
-  handleRender()
-})
-
-}
+  button.addEventListener("click", updateLayout)
 
 })
