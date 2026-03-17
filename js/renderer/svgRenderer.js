@@ -1,191 +1,198 @@
 import { formatToField } from "../utils/formatter.js"
 
 import {
-setupSvg,
-getDrawArea,
-drawRect,
-drawLine,
-drawText
+  setupSvg,
+  getDrawArea,
+  drawRect,
+  drawLine,
+  drawText
 } from "../utils/svgUtils.js"
 
 
 export function renderSvg(model){
 
-const svg = document.getElementById("wallSvg")
-if(!svg) return
+  const svg = document.getElementById("wallSvg")
+  if(!svg) return
 
-const width = svg.clientWidth || 900
-const height = 360
+  const width = svg.clientWidth || 900
+  const height = 360
 
-setupSvg(svg,width,height)
+  setupSvg(svg, width, height)
 
-const {margin,drawWidth} = getDrawArea(width,height)
+  const { margin, drawWidth } = getDrawArea(width, height)
 
-if(!model.wallLength) return
+  if(!model.wallLength) return
 
-const scale = drawWidth / model.wallLength
+  const scale = drawWidth / model.wallLength
 
-const wallTop = 140
-const wallHeight = 100
+  const wallTop = 140
+  const wallHeight = 100
 
-const wallLeft = margin
-const wallRight = margin + model.wallLength * scale
-
-
-/* WALL */
-
-drawRect(
-svg,
-wallLeft,
-wallTop,
-model.wallLength * scale,
-wallHeight,
-"wall-outline"
-)
+  const wallLeft = margin
+  const wallRight = margin + model.wallLength * scale
 
 
-/* PANELS */
+  /* ---------------- WALL ---------------- */
 
-model.panels.forEach((panel,i)=>{
-
-const x = wallLeft + panel.start * scale
-const w = panel.width * scale
-
-drawRect(svg,x,wallTop,w,wallHeight,"panel-full")
-
-drawText(
-svg,
-x + w/2,
-wallTop + wallHeight/2,
-`${i+1}`,
-"panel-number"
-)
-
-})
+  drawRect(
+    svg,
+    wallLeft,
+    wallTop,
+    model.wallLength * scale,
+    wallHeight,
+    "wall-outline"
+  )
 
 
-/* PANEL SEAMS */
+  /* ---------------- PANELS ---------------- */
 
-model.panels.forEach(panel=>{
+  model.panels.forEach((panel, i) => {
 
-const x = wallLeft + panel.start * scale
+    const x = wallLeft + panel.start * scale
+    const w = (panel.end - panel.start) * scale
 
-drawLine(
-svg,
-x,
-wallTop,
-x,
-wallTop + wallHeight,
-"panel-seam"
-)
+    const isCut =
+      (i === 0 || i === model.panels.length - 1) &&
+      (panel.end - panel.start !== model.panelCoverage)
 
-})
+    drawRect(
+      svg,
+      x,
+      wallTop,
+      w,
+      wallHeight,
+      isCut ? "panel-cut" : "panel-full"
+    )
 
+    drawText(
+      svg,
+      x + w / 2,
+      wallTop + wallHeight / 2,
+      `${i + 1}`,
+      "panel-number"
+    )
 
-/* RIB LINES */
-
-model.ribs.forEach(rib=>{
-
-const x = wallLeft + rib.position * scale
-
-drawLine(
-svg,
-x,
-wallTop,
-x,
-wallTop + wallHeight,
-"rib-line"
-)
-
-})
+  })
 
 
-/* RIB LABELS (adaptive) */
+  /* ---------------- SEAMS (DOMINANT) ---------------- */
 
-let ribStep = 36
+  model.panels.forEach(panel => {
 
-if(model.wallLength > 600) ribStep = 72
-if(model.wallLength > 900) ribStep = 120
+    const x = wallLeft + panel.start * scale
 
-model.ribs.forEach(rib=>{
+    drawLine(
+      svg,
+      x,
+      wallTop,
+      x,
+      wallTop + wallHeight,
+      "panel-seam"
+    )
 
-if(rib.position % ribStep !== 0) return
-
-const x = wallLeft + rib.position * scale
-
-drawText(
-svg,
-x,
-wallTop + wallHeight + 22,
-formatToField(rib.position),
-"rib-label"
-)
-
-})
+  })
 
 
-/* TOP DIMENSION LINE */
+  /* ---------------- RIB LINES (SECONDARY) ---------------- */
 
-const dimY = wallTop - 40
+  model.ribs.forEach(rib => {
 
-drawLine(svg,wallLeft,dimY,wallRight,dimY,"dimension-line")
+    const x = wallLeft + rib.position * scale
+
+    drawLine(
+      svg,
+      x,
+      wallTop,
+      x,
+      wallTop + wallHeight,
+      "rib-line"
+    )
+
+  })
 
 
-/* SEAM TICKS (FIELD MARKS) */
+  /* ---------------- DIMENSION LINE ---------------- */
 
-const seamPositions = model.panels.map(p => p.start)
+  const dimY = wallTop - 40
 
-// include final wall end
-seamPositions.push(model.wallLength)
+  drawLine(
+    svg,
+    wallLeft,
+    dimY,
+    wallRight,
+    dimY,
+    "dimension-line"
+  )
 
-seamPositions.forEach(pos => {
 
-const x = wallLeft + pos * scale
+  /* ---------------- SEAM TICKS (FIELD MARKS) ---------------- */
 
-drawLine(
-svg,
-x,
-dimY - 8,
-x,
-dimY + 8,
-"seam-tick"
-)
+  const seamPositions = model.panels.map(p => p.start)
+  seamPositions.push(model.wallLength)
 
-})
+  seamPositions.forEach(pos => {
 
-/let toggle = false
+    const x = wallLeft + pos * scale
 
-seamPositions.forEach((pos) => {
+    drawLine(
+      svg,
+      x,
+      dimY - 8,
+      x,
+      dimY + 8,
+      "seam-tick"
+    )
 
-  const x = wallLeft + pos * scale
+  })
 
-  if (x - lastLabelX < minPixelSpacing) return
+
+  /* ---------------- SEAM LABELS (SMART + CLEAN) ---------------- */
+
+  const minPixelSpacing = 60
+  let lastLabelX = -Infinity
+  let toggle = false
+
+  seamPositions.forEach(pos => {
+
+    const x = wallLeft + pos * scale
+
+    const isEdge = (pos === 0 || pos === model.wallLength)
+
+    if (!isEdge && x - lastLabelX < minPixelSpacing) return
+
+    drawText(
+      svg,
+      x,
+      toggle ? dimY - 14 : dimY - 26,
+      formatToField(pos),
+      "dimension-text"
+    )
+
+    toggle = !toggle
+    lastLabelX = x
+
+  })
+
+
+  /* ---------------- TOTAL WALL DIMENSION ---------------- */
+
+  const bottomY = wallTop + wallHeight + 60
+
+  drawLine(
+    svg,
+    wallLeft,
+    bottomY,
+    wallRight,
+    bottomY,
+    "dimension-line"
+  )
 
   drawText(
     svg,
-    x,
-    toggle ? dimY - 14 : dimY - 26,
-    formatToField(pos),
+    width / 2,
+    bottomY - 6,
+    formatToField(model.wallLength),
     "dimension-text"
   )
-
-  toggle = !toggle
-  lastLabelX = x
-
-})
-  
-/* TOTAL WALL DIMENSION */
-
-const bottomY = wallTop + wallHeight + 60
-
-drawLine(svg,wallLeft,bottomY,wallRight,bottomY,"dimension-line")
-
-drawText(
-svg,
-(width/2),
-bottomY - 6,
-formatToField(model.wallLength),
-"dimension-text"
-)
 
 }
