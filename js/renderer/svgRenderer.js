@@ -153,10 +153,7 @@ dimY + 8,
 
 })
 
-//* SEAM LABELS (CLEAN + READABLE) */
-
-const minPixelSpacing = 60 // minimum space between labels
-let lastLabelX = -Infinity
+/let toggle = false
 
 seamPositions.forEach((pos) => {
 
@@ -167,15 +164,15 @@ seamPositions.forEach((pos) => {
   drawText(
     svg,
     x,
-    dimY - 14,
+    toggle ? dimY - 14 : dimY - 26,
     formatToField(pos),
     "dimension-text"
   )
 
+  toggle = !toggle
   lastLabelX = x
 
 })
-
   
 /* TOTAL WALL DIMENSION */
 
