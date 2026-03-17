@@ -146,34 +146,35 @@ export function renderSvg(model){
   })
 
 
-  /* ---------------- SEAM LABELS (SMART + CLEAN) ---------------- */
+  /* ---------------- SEAM LABELS ---------------- */
 
-  const minPixelSpacing = 60
-  let lastLabelX = -Infinity
-  let toggle = false
+const seamPositions = model.panels.map(p => p.start)
+seamPositions.push(model.wallLength)
 
-  seamPositions.forEach(pos => {
+const minPixelSpacing = 60
+let lastLabelX = -Infinity
+let toggle = false
 
-    const x = wallLeft + pos * scale
+seamPositions.forEach(pos => {
 
-    const isEdge = (pos === 0 || pos === model.wallLength)
+  const x = wallLeft + pos * scale
 
-    if (!isEdge && x - lastLabelX < minPixelSpacing) return
+  const isEdge = (pos === 0 || pos === model.wallLength)
 
-    drawText(
-      svg,
-      x,
-      toggle ? dimY - 14 : dimY - 26,
-      formatToField(pos),
-      "dimension-text"
-    )
+  if (!isEdge && x - lastLabelX < minPixelSpacing) return
 
-    toggle = !toggle
-    lastLabelX = x
+  drawText(
+    svg,
+    x,
+    toggle ? dimY - 14 : dimY - 26,
+    formatToField(pos),
+    "dimension-text"
+  )
 
-  })
+  toggle = !toggle
+  lastLabelX = x
 
-
+})
   /* ---------------- TOTAL WALL DIMENSION ---------------- */
 
   const bottomY = wallTop + wallHeight + 60
