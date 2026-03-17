@@ -4,78 +4,83 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <link rel="stylesheet" href="styles.css">
-<title>Panel Layout Tool</title>
-</head>
 
-<body>
+<div class="container">
 
-<div class="app">
+  <h1>Panel Layout Tool</h1>
 
-<h1>Panel Layout Tool</h1>
+  <!-- BUILDING -->
+  <div class="card">
+    <h2>Building</h2>
 
-<div class="card">
+    <div class="grid">
 
-<h2>Building</h2>
+      <div class="field">
+        <label>Wall Type</label>
+        <select id="wallType">
+          <option value="sidewall">Sidewall</option>
+          <option value="gable">Gable</option>
+        </select>
+      </div>
 
-<label>Wall Type</label>
-<select id="wallType">
-<option value="side">Sidewall</option>
-<option value="gable">Gable</option>
-</select>
+      <div class="field">
+        <label>Wall Length</label>
+        <input id="wallLength" placeholder="16' 8&quot;" />
+      </div>
 
-<label>Wall Length (inches)</label>
-<input id="wallLength" placeholder="144">
+      <div class="field">
+        <label>Eave Height</label>
+        <input id="eaveHeight" placeholder="10'" />
+      </div>
 
-<label>Eave Height (gable only)</label>
-<input id="eaveHeight" placeholder="120">
+      <div class="field">
+        <label>Roof Pitch</label>
+        <input id="roofPitch" placeholder="4" />
+      </div>
 
-<label>Roof Pitch</label>
-<input id="roofPitch" placeholder="4">
+    </div>
+  </div>
+
+
+  <!-- PANELS -->
+  <div class="card">
+    <h2>Panels</h2>
+
+    <div class="grid">
+
+      <div class="field">
+        <label>Panel Coverage</label>
+        <input id="panelCoverage" value="36" />
+      </div>
+
+      <div class="field">
+        <label>Rib Spacing</label>
+        <input id="ribSpacing" value="12" />
+      </div>
+
+      <div class="field">
+        <label>Start Offset</label>
+        <input id="offset" value="0" />
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ACTION -->
+  <button id="renderBtn">Generate Layout</button>
+
+
+  <!-- OUTPUT -->
+  <div class="card">
+    <h2>Layout Visualization</h2>
+    <svg id="wallSvg"></svg>
+  </div>
+
+  <div class="card results" id="results"></div>
 
 </div>
-
-
-<div class="card">
-
-<h2>Panels</h2>
-
-<label>Panel Coverage (in)</label>
-<input id="panelCoverage" value="36">
-
-<label>Rib Spacing (in)</label>
-<input id="ribSpacing" value="12">
-
-<label>Start Offset (in)</label>
-<input id="startOffset" placeholder="5">
-
-</div>
-
-
-<button id="generateBtn">
-Generate Layout
-</button>
-
-
-<div class="card">
-
-<h2>Layout Visualization</h2>
-
-<svg id="wallSvg"></svg>
-
-</div>
-
-
-<div class="card">
-
-<h2>Results</h2>
-
-<div id="ribTable"></div>
-
-</div>
-
-
-</div>
-
+  
 <script type="module" src="app.js"></script>
 
 </body>
