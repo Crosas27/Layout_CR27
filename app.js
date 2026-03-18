@@ -35,16 +35,20 @@ function renderOpeningsList(){
     const div = document.createElement("div")
     div.className = "opening-item"
 
-    div.innerHTML = `
-      <span>${op.start}" → ${op.start + op.width}"</span>
-      <button data-index="${index}">X</button>
-    `
+    const label = document.createElement("span")
+    label.textContent = op.start + '" → ' + (op.start + op.width) + '"'
 
-    div.querySelector("button").onclick = () => {
+    const btn = document.createElement("button")
+    btn.textContent = "X"
+
+    btn.onclick = function(){
       openings.splice(index, 1)
       renderOpeningsList()
       updateLayout()
     }
+
+    div.appendChild(label)
+    div.appendChild(btn)
 
     list.appendChild(div)
 
