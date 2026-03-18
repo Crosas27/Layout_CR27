@@ -1,95 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-  <title>Panel Layout Tool</title>
+<title>Panel Layout Tool</title>
 
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
 
-  <link rel="stylesheet" href="./styles.css" />
 </head>
-
 <body>
 
-  <div class="app">
+<div class="app">
 
-    <h1>Panel Layout Tool</h1>
+  <h2>Panel Layout Tool</h2>
 
-    <!-- CONTROLS -->
-    <div class="controls">
-      
-      <label>
-  Mode
-  <select id="mode">
-    <option value="field">Field (Seams Only)</option>
-    <option value="full">Full Layout</option>
-  </select>
-</label>
+  <!-- MAIN INPUTS -->
+  <div class="card">
 
-<label>
-  Direction
-  <select id="direction">
-    <option value="LTR">Left → Right</option>
-    <option value="RTL">Right → Left</option>
-  </select>
-</label>
+    <label>Wall Length (inches)</label>
+    <input id="wallLength" type="number" placeholder="e.g. 480" />
 
-      <label>
-        Wall Type
-        <select id="wallType">
-          <option value="sidewall">Sidewall</option>
-          <option value="gable">Gable</option>
-        </select>
-      </label>
+    <label>Panel Coverage</label>
+    <input id="panelCoverage" type="number" value="36" />
 
-      <label>
-        Wall Length (in)
-        <input id="wallLength" type="number" value="200" />
-      </label>
+    <label>Rib Spacing</label>
+    <input id="ribSpacing" type="number" value="12" />
 
-      <label>
-        Panel Coverage (in)
-        <input id="panelCoverage" type="number" value="36" />
-      </label>
+    <label>Start Offset</label>
+    <input id="startOffset" type="number" value="0" />
 
-      <label>
-        Rib Spacing (in)
-        <input id="ribSpacing" type="number" value="12" />
-      </label>
-
-      <label>
-        Start Offset (in)
-        <input id="startOffset" type="number" value="0" />
-      </label>
-
-      <label>
-        Eave Height (in)
-        <input id="eaveHeight" type="number" value="120" />
-      </label>
-
-      <label>
-        Roof Pitch (x/12)
-        <input id="roofPitch" type="number" value="4" />
-      </label>
-
-      <button id="generateBtn">Generate Layout</button>
-
-    </div>
-
-    <!-- SVG OUTPUT -->
-    <div class="canvas">
-      <svg id="wallSvg"></svg>
-    </div>
-
-    <!-- RESULTS -->
-    <div id="ribTable"></div>
+    <button id="generateBtn">Generate</button>
 
   </div>
 
-  <script type="module" src="./app.js"></script>
+  <!-- OPENINGS -->
+  <div class="card">
+
+    <h3>Openings</h3>
+
+    <div id="openingsList"></div>
+
+    <div class="opening-form">
+
+      <input id="openingStart" type="number" placeholder="Start (in)" />
+      <input id="openingWidth" type="number" placeholder="Width (in)" />
+
+      <button id="addOpeningBtn">Add Opening</button>
+
+    </div>
+
+  </div>
+
+  <!-- SVG -->
+  <div class="card">
+    <svg id="wallSvg"></svg>
+  </div>
+
+</div>
+
+<script type="module" src="app.js"></script>
 
 </body>
 </html>
