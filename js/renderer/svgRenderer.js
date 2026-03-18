@@ -7,21 +7,19 @@ import {
   drawText
 } from "../utils/svgUtils.js"
 
-export function renderSvg(model, options = {}) {
-
-  const { mode = "field", direction = "LTR" } = options
+export function renderSvg(model){
 
   const svg = document.getElementById("wallSvg")
-  if (!svg) return
+  if(!svg) return
 
   const width = svg.clientWidth || 900
   const height = 320
 
-  setupSvg(svg, width, height)
+  setupSvg(svg,width,height)
 
-  const { margin, drawWidth } = getDrawArea(width, height)
+  const {margin,drawWidth} = getDrawArea(width,height)
 
-  if (!model.wallLength) return
+  if(!model.wallLength) return
 
   const scale = drawWidth / model.wallLength
 
@@ -31,50 +29,30 @@ export function renderSvg(model, options = {}) {
   const wallLeft = margin
   const wallRight = margin + model.wallLength * scale
 
-  /* ================= WALL ================= */
+
+  /* WALL */
 
   drawRect(svg, wallLeft, wallTop, model.wallLength * scale, wallHeight, "wall-outline")
 
-  /* ================= PANELS ================= */
 
-  const panels = direction === "RTL"
-    ? [...model.panels].reverse()
-    : model.panels
+  /* PANELS */
 
-  panels.forEach((panel, i) => {
+  model.panels.forEach(panel => {
 
     const x = wallLeft + panel.start * scale
     const w = (panel.end - panel.start) * scale
 
-    const isCut = (panel.end - panel.start) !== model.panelCoverage
-
-    drawRect(
-      svg,
-      x,
-      wallTop,
-      w,
-      wallHeight,
-      isCut ? "panel-cut" : "panel-full"
-    )
-
-    if (mode !== "field") {
-      drawText(
-        svg,
-        x + w / 2,
-        wallTop + wallHeight / 2,
-        `${i + 1}`,
-        "panel-number"
-      )
-    }
+    drawRect(svg, x, wallTop, w, wallHeight, "panel-full")
 
   })
 
-  /* ================= SEAMS ================= */
 
-  const seamPositions = model.panels.map(p => p.start)
-  seamPositions.push(model.wallLength)
+  /* SEAMS */
 
-  seamPositions.forEach(pos => {
+  const seams = model.panels.map(p => p.start)
+  seams.push(model.wallLength)
+
+  seams.forEach(pos => {
 
     const x = wallLeft + pos * scale
 
@@ -82,46 +60,29 @@ export function renderSvg(model, options = {}) {
 
   })
 
-  /* ================= RIBS ================= */
 
-  if (mode !== "field") {
+  /* RIBS */
 
-    model.ribs.forEach(rib => {
+  model.ribs.forEach(rib => {
 
-      const x = wallLeft + rib.position * scale
+    const x = wallLeft + rib.position * scale
 
-      drawLine(svg, x, wallTop, x, wallTop + wallHeight, "rib-line")
+    drawLine(svg, x, wallTop, x, wallTop + wallHeight, "rib-line")
 
-    })
+  })
 
-  }
 
-  /* ================= FIELD MARK LINE ================= */
+  /* FIELD MARK LINE */
 
   const markY = wallTop - 30
 
   drawLine(svg, wallLeft, markY, wallRight, markY, "dimension-line")
 
-  seamPositions.forEach(pos => {
+  seams.forEach(pos => {
 
     const x = wallLeft + pos * scale
 
     drawLine(svg, x, markY - 6, x, markY + 6, "seam-tick")
-
-  })
-
-  /* SMART LABELS */
-
-  let minSpacing = 55
-  let lastX = -Infinity
-
-  seamPositions.forEach(pos => {
-
-    const x = wallLeft + pos * scale
-
-    if (x - lastX < minSpacing) return
-
-    lastX = x
 
     drawText(
       svg,
@@ -133,14 +94,27 @@ export function renderSvg(model, options = {}) {
 
   })
 
-  /* ================= TOTAL ================= */
 
-  drawText(
-    svg,
-    width / 2,
-    wallTop + wallHeight + 40,
-    formatToField(model.wallLength),
-    "dimension-text"
-  )
+  /* OPENINGS */
+
+  if(model.openings){
+
+    model.openings.forEach(opening => {
+
+      const x = wallLeft + opening.start * scale
+      const w = opening.width * scale
+
+      drawRect(
+        svg,
+        x,
+        wallTop,
+        w,
+        wallHeight,
+        "opening-box"
+      )
+
+    })
+
+  }
 
 }
