@@ -10,7 +10,7 @@ svg.setAttribute("height",height)
 
 }
 
-export function getDrawArea(width,height,margin=60){
+export function getDrawArea(width,height,margin=40){
 
 return{
 margin,
