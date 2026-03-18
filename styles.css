@@ -1,153 +1,73 @@
-/* -------- BASE -------- */
-
 body {
   margin: 0;
-  background: #0b0f14;
-  font-family: 'Inter', sans-serif;
-  color: #e5e7eb;
+  font-family: system-ui;
+  background: #020617;
+  color: #e2e8f0;
 }
-
-
-/* -------- CONTAINER -------- */
 
 .app {
+  padding: 16px;
   max-width: 900px;
   margin: auto;
-  padding: 16px;
 }
 
-h1 {
-  text-align: center;
-  margin-bottom: 20px;
-  font-weight: 600;
+h2, h3 {
+  margin-bottom: 10px;
 }
 
-
-/* -------- CONTROLS GRID -------- */
-
-.controls {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+.card {
+  background: #020617;
+  border: 1px solid #334155;
+  padding: 14px;
   margin-bottom: 16px;
-}
-
-@media (max-width: 600px) {
-  .controls {
-    grid-template-columns: 1fr;
-  }
-}
-
-
-/* -------- INPUTS -------- */
-
-label {
-  display: flex;
-  flex-direction: column;
-  font-size: 12px;
-  color: #9ca3af;
-}
-
-input,
-select {
-  margin-top: 4px;
-  padding: 10px;
   border-radius: 8px;
-  border: none;
-  background: #1f2937;
-  color: #e5e7eb;
-  font-size: 16px;
 }
 
-
-/* -------- BUTTON -------- */
+input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  background: #020617;
+  border: 1px solid #334155;
+  color: #e2e8f0;
+  border-radius: 6px;
+}
 
 button {
-  grid-column: span 2;
-  padding: 14px;
-  font-size: 16px;
-  font-weight: 600;
-  border-radius: 10px;
+  width: 100%;
+  padding: 10px;
+  background: #0ea5e9;
   border: none;
-  background: #06b6d4;
-  color: #022c22;
-  cursor: pointer;
+  border-radius: 6px;
+  color: white;
+  font-weight: bold;
 }
 
 button:active {
   transform: scale(0.98);
 }
 
-@media (max-width: 600px) {
-  button {
-    grid-column: span 1;
-  }
+.opening-form {
+  display: flex;
+  gap: 6px;
 }
 
-
-/* -------- SVG AREA -------- */
-
-.canvas {
-  background: #0f172a;
-  border-radius: 10px;
-  padding: 12px;
-  margin-bottom: 16px;
+.opening-form input {
+  flex: 1;
 }
 
-#wallSvg {
-  width: 100%;
-  height: 240px;
+.opening-item {
+  background: #020617;
+  border: 1px solid #334155;
+  padding: 8px;
+  margin-bottom: 6px;
+  border-radius: 6px;
+  display: flex;
+  justify-content: space-between;
 }
 
-
-/* -------- SVG STYLES -------- */
-
-.panel-full {
-  fill: #1f2937;
-  stroke: #64748b;
-  stroke-width: 1;
-}
-
-.panel-seam {
-  stroke: #e5e7eb;
-  stroke-width: 1.5;
-}
-
-.rib-line {
-  stroke: #22c55e;
-  stroke-dasharray: 4 4;
-  stroke-width: 1;
-}
-
-.dimension-line {
-  stroke: #94a3b8;
-  stroke-width: 1;
-}
-
-.dimension-text {
-  fill: #e5e7eb;
-  font-size: 11px;
-  font-family: 'Roboto Mono', monospace;
-}
-
-.panel-number {
-  fill: #9ca3af;
-  font-size: 12px;
-  font-family: 'Roboto Mono', monospace;
-  text-anchor: middle;
-  dominant-baseline: middle;
-}
-
-.rib-label {
-  fill: #22c55e;
-  font-size: 10px;
-  font-family: 'Roboto Mono', monospace;
-}
-
-
-/* -------- RESULTS -------- */
-
-#ribTable {
-  font-size: 14px;
-  line-height: 1.5;
+.opening-box {
+  fill: rgba(239, 68, 68, 0.15);
+  stroke: #ef4444;
+  stroke-width: 2;
 }
