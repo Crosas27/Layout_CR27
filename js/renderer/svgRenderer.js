@@ -148,30 +148,30 @@ export function renderSvg(model){
 
   /* ---------------- SEAM LABELS ---------------- */
 
-const minPixelSpacing = 60
-let lastLabelX = -Infinity
-let toggle = false
+const seamPositions = model.panels.map(p => p.start)
+seamPositions.push(model.wallLength)
+
+let lastX = -Infinity
+const minSpacing = 50
 
 seamPositions.forEach(pos => {
 
   const x = wallLeft + pos * scale
 
-  const isEdge = (pos === 0 || pos === model.wallLength)
-
-  if (!isEdge && x - lastLabelX < minPixelSpacing) return
+  if (x - lastX < minSpacing) return
 
   drawText(
     svg,
     x,
-    toggle ? dimY - 14 : dimY - 26,
+    dimY - 12,
     formatToField(pos),
     "dimension-text"
   )
 
-  toggle = !toggle
-  lastLabelX = x
+  lastX = x
 
 })
+  
   /* ---------------- TOTAL WALL DIMENSION ---------------- */
 
   const bottomY = wallTop + wallHeight + 60
