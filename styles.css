@@ -103,7 +103,11 @@ button {
   border-radius: 8px;
 }
 
-
+.panel-full {
+  fill: #1f2937;
+  stroke: #64748b;
+  stroke-width: 1;
+}
 /* ---------------- RESULTS ---------------- */
 
 .results {
