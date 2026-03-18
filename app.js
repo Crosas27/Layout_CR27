@@ -40,15 +40,20 @@ function updateLayout(){
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  console.log("APP LOADED")
+  console.log("DOM READY")
 
   const button = document.getElementById("generateBtn")
 
-  if(!button){
-    console.log("BUTTON NOT FOUND")
+  console.log("BUTTON FOUND:", button)
+
+  if (!button) {
+    console.log("❌ BUTTON NOT FOUND")
     return
   }
 
-  button.addEventListener("click", updateLayout)
+  button.onclick = () => {
+    console.log("🔥 BUTTON CLICKED 🔥")
+    updateLayout()
+  }
 
 })
