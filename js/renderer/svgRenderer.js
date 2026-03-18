@@ -15,7 +15,7 @@ export function renderSvg(model){
   if(!svg) return
 
   const width = svg.clientWidth || 900
-  const height = 360
+  const height = 300
 
   setupSvg(svg, width, height)
 
