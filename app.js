@@ -52,8 +52,6 @@ function renderOpeningsList(){
 
     list.appendChild(div)
 
-  })
-
 }
 
 
