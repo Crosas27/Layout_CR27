@@ -28,6 +28,8 @@ function updateLayout(){
 function renderOpeningsList(){
 
   const list = document.getElementById("openingsList")
+  if (!list) return
+
   list.innerHTML = ""
 
   openings.forEach((op, index) => {
@@ -51,6 +53,8 @@ function renderOpeningsList(){
     div.appendChild(btn)
 
     list.appendChild(div)
+
+  }) // ✅ THIS WAS MISSING
 
 }
 
@@ -82,6 +86,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if(!btn){
     console.error("❌ Generate button missing")
+    return
+  }
+
+  if(!addBtn){
+    console.error("❌ Add Opening button missing")
     return
   }
 
