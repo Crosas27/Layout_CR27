@@ -33,7 +33,7 @@ function renderOpeningsList(){
     div.className = "opening-item"
 
     const label = document.createElement("span")
-    label.textContent = op.start + '" → ' + (op.start + op.width) + '"'
+    label.textContent = op.start + '" to ' + (op.start + op.width) + '"'
 
     const btn = document.createElement("button")
     btn.textContent = "X"
@@ -84,18 +84,18 @@ document.addEventListener("DOMContentLoaded", function(){
   const addBtn = document.getElementById("addOpeningBtn")
 
   if(!btn){
-    console.error("❌ Generate button missing")
+    console.error("Generate button missing")
     return
   }
 
   if(!addBtn){
-    console.error("❌ Add Opening button missing")
+    console.error("Add Opening button missing")
     return
   }
 
   btn.addEventListener("click", updateLayout)
   addBtn.addEventListener("click", addOpening)
 
-  console.log("✅ UI READY")
+  console.log("UI READY")
 
 })
