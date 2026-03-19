@@ -1,8 +1,8 @@
 console.log("APP STARTING")
 
 
-import { generateLayout } from "./js/core/layoutEngine.js"
-import { renderSvg } from "./js/renderer/svgRenderer.js"
+// import { generateLayout } from "./js/core/layoutEngine.js"
+// import { renderSvg } from "./js/renderer/svgRenderer.js"
 
 let openings = []
 
