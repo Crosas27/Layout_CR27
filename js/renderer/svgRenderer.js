@@ -98,7 +98,7 @@ export function renderSvg(model) {
       svg,
       x,
       markLineY - 10,
-      formatToField(pos),
+     `${Math.round(pos)}"`,
       "dimension-text"
     )
 
