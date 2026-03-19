@@ -66,28 +66,48 @@ button:active {
   justify-content: space-between;
 }
 
-.opening-box {
-  fill: rgba(239, 68, 68, 0.15);
-  stroke: #ef4444;
-  stroke-width: 2;
+#wallSvg {
+  width: 100%;
+  height: 280px;
+  display: block;
+  background: #081226;
+  border-radius: 8px;
 }
 
 .wall-outline {
+  fill: #0f172a;
+  stroke: #94a3b8;
+  stroke-width: 1.2;
+}
+
+.panel-full {
   fill: #1e293b;
   stroke: #64748b;
   stroke-width: 1;
 }
 
-.panel {
-  fill: rgba(59,130,246,0.08);
-  stroke: #94a3b8;
+.panel-cut {
+  fill: #020617;
+  stroke: #cbd5e1;
+  stroke-width: 1.2;
 }
 
-.panel-label {
-  fill: #94a3b8;
-  font-size: 12px;
-  text-anchor: middle;
-  dominant-baseline: middle;
+.opening-box {
+  fill: rgba(239, 68, 68, 0.14);
+  stroke: #ef4444;
+  stroke-width: 1.5;
+}
+
+.panel-seam {
+  stroke: #e2e8f0;
+  stroke-width: 1.6;
+}
+
+.rib-line {
+  stroke: #22c55e;
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+  opacity: 0.7;
 }
 
 .dimension-line {
@@ -96,12 +116,18 @@ button:active {
 }
 
 .tick {
-  stroke: #94a3b8;
-  stroke-width: 1;
+  stroke: #cbd5e1;
+  stroke-width: 1.2;
 }
 
 .dimension-text {
-  fill: #94a3b8;
+  fill: #e2e8f0;
   font-size: 11px;
-  text-anchor: middle;
+  font-family: monospace;
+}
+
+.panel-label {
+  fill: #e2e8f0;
+  font-size: 12px;
+  font-family: monospace;
 }
