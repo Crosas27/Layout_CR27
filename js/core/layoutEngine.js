@@ -115,4 +115,4 @@ function calculateOpeningCuts(panels, openings){
 
   return results
 
-}}
+}
