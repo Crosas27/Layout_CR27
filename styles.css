@@ -71,3 +71,37 @@ button:active {
   stroke: #ef4444;
   stroke-width: 2;
 }
+
+.wall-outline {
+  fill: #1e293b;
+  stroke: #64748b;
+  stroke-width: 1;
+}
+
+.panel {
+  fill: rgba(59,130,246,0.08);
+  stroke: #94a3b8;
+}
+
+.panel-label {
+  fill: #94a3b8;
+  font-size: 12px;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.dimension-line {
+  stroke: #64748b;
+  stroke-width: 1;
+}
+
+.tick {
+  stroke: #94a3b8;
+  stroke-width: 1;
+}
+
+.dimension-text {
+  fill: #94a3b8;
+  font-size: 11px;
+  text-anchor: middle;
+}
