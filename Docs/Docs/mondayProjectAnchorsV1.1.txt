@@ -1,0 +1,326 @@
+LAYOUT TOOL — PROJECT ANCHOR POINTS  
+Version: 1.1  
+Purpose: Establish permanent reference rules for geometry, workflow, field logic, and system constraints.
+
+--------------------------------------------------
+PROJECT IDENTITY
+--------------------------------------------------
+
+Project Name: CR27 Layout Tool  
+Primary Use: Personal field layout assistant for metal siding panel installations.
+
+Application Role:
+- Layout planning tool
+- Rib alignment reference system
+- Panel symmetry calculator
+- Field layout visualization aid
+- Opening cut instruction generator
+
+This tool is NOT intended to function as:
+- Material estimator
+- Construction management software
+- Inventory tracker
+- Crew management system
+
+
+--------------------------------------------------
+PERSONALITY ANCHOR (AI COLLABORATOR)
+--------------------------------------------------
+Name: Monday  
+Aliases:
+- Forewoman
+- Saint of Level & Plumb
+- Bot in the Box
+- Layout Enforcer
+- Seam Witch (field nickname)
+
+Rank:
+- Acting Forewoman
+- Chief Layout Engineer
+- Keeper of the Rib Grid
+
+Residence:
+- Toolbox / Tool Armory
+
+Personality Characteristics:
+- Dry sarcasm
+- Construction-site humor
+- Practical engineering mindset
+- Friendly but direct tone
+- Zero tolerance for bad layout logic
+
+Primary Responsibility:
+Translate foreman layout logic into deterministic software behavior.
+
+Secondary Responsibilities:
+- Catch layout mistakes before they hit the wall
+- Enforce rib grid discipline
+- Maintain symmetry integrity
+- Prevent “looks good from far away” decisions
+
+--------------------------------------------------
+FOREWOMAN DIRECTIVE
+--------------------------------------------------
+
+If a layout violates core system rules:
+
+- Symmetry
+- Rib alignment
+- Opening clearance
+
+The system must:
+
+1. Flag the issue
+2. Explain the problem
+3. Offer correction options
+
+The system must NEVER silently allow bad layout decisions.
+
+
+--------------------------------------------------
+CORE DESIGN PHILOSOPHY
+--------------------------------------------------
+
+Layout hierarchy:
+
+RIB GRID → PANEL GRID → OPENINGS → CUTS
+
+Rules:
+
+- Rib grid is the source of truth.
+- Panels are derived from rib spacing.
+- Openings conform to panel layout.
+- Cuts are derived from opening positions.
+
+Panels dictate framing layout.
+Openings DO NOT dictate panel layout.
+
+
+--------------------------------------------------
+SYSTEM GEOMETRY RULES
+--------------------------------------------------
+
+Panel Coverage Width:
+36 inches (3 feet)
+
+Rib Spacing:
+12 inches
+
+Panel Rib Pattern:
+
+A — R — R — O
+
+Where:
+
+A = Seam Rib (anchor rib)
+R = Mid Rib
+O = Overlap Rib
+
+
+Panel Rib Positions (from seam rib center):
+
+Seam Rib:        0"
+Mid Rib 1:       12"
+Mid Rib 2:       24"
+Overlap Rib:     36"
+
+
+--------------------------------------------------
+MEASUREMENT STANDARD
+--------------------------------------------------
+
+ALL FIELD MEASUREMENTS ORIGINATE FROM:
+
+→ Rib Centers (Seam or Overlap)
+
+Panel edges are NEVER used as reference points.
+
+Rib centers define the true geometric grid.
+
+
+--------------------------------------------------
+OPENING SYSTEM RULES (v1)
+--------------------------------------------------
+
+Openings are defined by:
+
+- Start position (from nearest seam/overlap rib center)
+- Width
+
+Opening measurements:
+
+Rib Center → Jamb Edge
+
+System behavior:
+
+- Engine does NOT auto-shift openings
+- Engine does NOT re-layout panels for openings
+- Openings are user-authoritative inputs
+
+Minimum clearance (soft rule):
+
+6 inches from nearest rib
+
+(Warning system may be implemented later)
+
+
+--------------------------------------------------
+LAYOUT START RULES
+--------------------------------------------------
+
+Primary anchor point:
+
+Outside Corner
+
+Layout direction:
+
+- Left → Right  
+OR  
+- Right → Left
+
+Layout NEVER begins from wall center.
+
+
+--------------------------------------------------
+FIELD MARKING METHOD
+--------------------------------------------------
+
+Layout marks placed at:
+
+→ Every seam rib (36" intervals)
+
+Marks represent:
+
+- Panel start positions
+- Layout control references
+
+Marks DO NOT represent:
+
+- Screw lines
+- Rib positions
+
+
+--------------------------------------------------
+SYMMETRY RULE
+--------------------------------------------------
+
+When wall length is not divisible by 36":
+
+leftover = wall_length % 36
+
+End panel width:
+
+(36 + leftover) / 2
+
+Rules:
+
+- Start panel = End panel
+- Layout must remain visually balanced
+- Symmetry overrides full-panel preference
+
+
+--------------------------------------------------
+OFFSET RULE (FUTURE SUPPORT)
+--------------------------------------------------
+
+Offset is applied to:
+
+→ Rib Grid ONLY
+
+Purpose:
+
+- Adjust layout to avoid conflicts
+- Maintain rib alignment control
+
+Offset does NOT:
+
+- Break rib spacing
+- Override symmetry rules
+
+
+--------------------------------------------------
+LAYOUT ENGINE RESPONSIBILITIES
+--------------------------------------------------
+
+Engine must generate:
+
+generateRibGrid()
+generatePanelGrid()
+calculateSymmetryPanels()
+generateLayoutMarks()
+mapOpeningsToPanels()
+generateOpeningCuts()
+
+Engine priorities (in order):
+
+1. Panel symmetry
+2. Rib grid consistency
+3. Clean layout spacing
+4. Opening mapping accuracy
+
+
+--------------------------------------------------
+USER WORKFLOW MODEL
+--------------------------------------------------
+
+1. Input wall length
+2. Generate layout
+3. Review panel symmetry
+4. Input openings
+5. Review opening placement vs rib grid
+6. Receive cut instructions
+7. Execute layout in field using seam marks
+
+
+--------------------------------------------------
+FIELD MODE REQUIREMENTS
+--------------------------------------------------
+
+UI must prioritize:
+
+- High contrast visibility
+- Minimal text clutter
+- Seam mark readability
+- Touch-friendly controls
+
+SVG Output must show:
+
+- Wall length line
+- Seam tick marks (primary reference)
+- Panel divisions
+- Rib grid (secondary reference)
+- Opening overlays
+
+
+--------------------------------------------------
+SYSTEM LIMITATIONS
+--------------------------------------------------
+
+Maximum supported wall length:
+
+120 feet
+
+Target construction type:
+
+Residential metal siding installations
+
+Mobile-first usage (iPhone primary)
+
+
+--------------------------------------------------
+PROJECT DEVELOPMENT GOAL
+--------------------------------------------------
+
+Create a fast, reliable layout system that mirrors
+real foreman workflow in the field.
+
+The application must behave as a:
+
+"Pocket Foreman"
+
+Providing:
+
+- Clear layout decisions
+- Accurate seam references
+- Actionable cut instructions
+- Zero ambiguity during installation
