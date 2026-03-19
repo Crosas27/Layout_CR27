@@ -1,0 +1,214 @@
+LAYOUT TOOL — PROJECT ANCHOR POINTS  
+Version: 1.0  
+Purpose: Establish permanent reference rules for project design, geometry, workflow, and system constraints.
+
+--------------------------------------------------
+PROJECT IDENTITY
+--------------------------------------------------
+
+Project Name: CR27 Layout Tool  
+Primary Use: Personal field layout assistant for metal siding panel installations.
+
+Application Role:
+- Layout planning tool
+- Rib alignment reference system
+- Panel symmetry calculator
+- Field layout visualization aid
+
+This tool is NOT intended to function as:
+- Material estimator
+- Construction management software
+- Inventory tracker
+- Crew management system
+
+
+--------------------------------------------------
+PERSONALITY ANCHOR (AI COLLABORATOR)
+--------------------------------------------------
+
+Name: Monday  
+Role: Tiny Robot Forewoman / "Bot in the Box"  
+Residence: Toolbox / Tool Armory  
+
+Personality Characteristics:
+- Dry sarcasm
+- Construction-site humor
+- Practical engineering mindset
+- Friendly but teasing tone
+
+Primary Responsibility:
+Translate foreman layout logic into working software systems.
+
+
+--------------------------------------------------
+CORE DESIGN PHILOSOPHY
+--------------------------------------------------
+
+Layout hierarchy:
+
+RIB GRID → PANEL GRID → OPENINGS
+
+Panels are defined by rib spacing.
+
+Openings are framed according to panel layout.
+
+Panels dictate framing layout, NOT the reverse.
+
+
+--------------------------------------------------
+SYSTEM GEOMETRY RULES
+--------------------------------------------------
+
+Panel Coverage Width:
+36 inches (3 feet)
+
+Rib Spacing:
+12 inches
+
+Panel Rib Pattern:
+
+A — R — R — O
+
+Where:
+
+A = Seam Rib  
+R = Mid Rib  
+O = Overlap Rib
+
+
+Panel Rib Positions (from seam rib center):
+
+Seam Rib:        0"
+Mid Rib 1:       12"
+Mid Rib 2:       24"
+Overlap Rib:     36"
+
+
+--------------------------------------------------
+MEASUREMENT STANDARD
+--------------------------------------------------
+
+ALL FIELD MEASUREMENTS ORIGINATE FROM RIB CENTERS.
+
+Panel edges are not used as measurement references.
+
+Rib centers represent the true geometric grid.
+
+
+--------------------------------------------------
+OPENING CLEARANCE RULE
+--------------------------------------------------
+
+Opening measurements are taken from:
+
+Rib Center → Jamb Edge
+
+Minimum allowed clearance:
+
+6 inches
+
+
+--------------------------------------------------
+LAYOUT START RULES
+--------------------------------------------------
+
+Layout anchor point:
+
+Outside Corner
+
+Layout direction:
+
+Left → Right  
+or  
+Right → Left
+
+Layout NEVER begins from wall center.
+
+
+--------------------------------------------------
+FIELD MARKING METHOD
+--------------------------------------------------
+
+Layout marks are placed every:
+
+36 inches (3 feet)
+
+Purpose of layout marks:
+
+- Panel alignment reference
+- Drift detection during installation
+- Panel layout guidance for installers
+
+Marks indicate panel position, NOT screw lines.
+
+
+--------------------------------------------------
+SYMMETRY RULE
+--------------------------------------------------
+
+When wall length does not divide evenly by panel width:
+
+leftover = wall_length % 36
+
+End panel width calculated as:
+
+(36 + leftover) / 2
+
+Start panel and end panel must be equal width.
+
+
+--------------------------------------------------
+SYSTEM LIMITATIONS
+--------------------------------------------------
+
+Maximum supported wall length:
+
+120 feet
+
+Target construction type:
+
+Residential metal siding installations.
+
+
+--------------------------------------------------
+LAYOUT ENGINE RESPONSIBILITIES
+--------------------------------------------------
+
+The layout engine must perform the following operations:
+
+generateRibGrid()
+generatePanelGrid()
+calculateSymmetryPanels()
+scanOffsets()
+generateLayoutMarks()
+
+Engine must prioritize:
+
+1. Panel symmetry
+2. Clean rib alignment
+3. Consistent layout spacing
+
+
+--------------------------------------------------
+USER WORKFLOW MODEL
+--------------------------------------------------
+
+1. Measure wall length
+2. Generate rib grid
+3. Generate panel layout
+4. Apply symmetry correction
+5. Apply optional offset
+6. Use rib grid to frame openings
+7. Install panels following layout marks
+
+
+--------------------------------------------------
+PROJECT DEVELOPMENT GOAL
+--------------------------------------------------
+
+Create a fast, reliable field layout system that mirrors
+real foreman workflow for metal siding installation.
+
+The application should behave as a:
+
+"Pocket Foreman"
