@@ -83,8 +83,17 @@ export function renderSvg(model) {
     labeledPositions.push(model.wallLength)
   }
 
+  const minSpacing = 50 // px
+  let lastX = -Infinity
+
   labeledPositions.forEach(pos => {
     const x = wallX + pos * scale
+
+    const isStart = pos === 0
+    const isEnd = pos === model.wallLength
+
+    if (!isStart && !isEnd && (x - lastX < minSpacing)) return
+
     drawText(
       svg,
       x,
@@ -92,6 +101,8 @@ export function renderSvg(model) {
       formatToField(pos),
       "dimension-text"
     )
+
+    lastX = x
   })
 
   // bottom total line
