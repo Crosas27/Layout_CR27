@@ -1,120 +1,120 @@
 import { formatToField } from "../utils/formatter.js"
 import {
   setupSvg,
-  getDrawArea,
-  drawRect,
   drawLine,
-  drawText
+  drawText,
+  drawRect
 } from "../utils/svgUtils.js"
 
 export function renderSvg(model){
 
   const svg = document.getElementById("wallSvg")
-  if(!svg) return
+  if(!svg || !model.wallLength) return
 
   const width = svg.clientWidth || 900
-  const height = 320
+  const height = 260
 
-  setupSvg(svg,width,height)
+  setupSvg(svg, width, height)
 
-  const {margin,drawWidth} = getDrawArea(width,height)
-
-  if(!model.wallLength) return
+  const padding = 40
+  const drawWidth = width - padding * 2
 
   const scale = drawWidth / model.wallLength
 
-  const wallTop = 140
-  const wallHeight = 80
+  const wallY = 100
+  const wallHeight = 60
 
-  const wallLeft = margin
-  const wallRight = margin + model.wallLength * scale
+  const left = padding
+  const right = padding + model.wallLength * scale
 
+  /* ---------------- WALL ---------------- */
 
-  /* WALL */
+  drawRect(
+    svg,
+    left,
+    wallY,
+    model.wallLength * scale,
+    wallHeight,
+    "wall-outline"
+  )
 
-  drawRect(svg, wallLeft, wallTop, model.wallLength * scale, wallHeight, "wall-outline")
+  /* ---------------- PANELS ---------------- */
 
+  model.panels.forEach((panel, i) => {
 
-  /* PANELS */
+    const x = left + panel.start * scale
+    const w = (panel.end - panel.start) * scale
+
+    drawRect(svg, x, wallY, w, wallHeight, "panel")
+
+    drawText(
+      svg,
+      x + w / 2,
+      wallY + wallHeight / 2,
+      `${i + 1}`,
+      "panel-label"
+    )
+
+  })
+
+  /* ---------------- SEAM TICKS (FIELD MARKS) ---------------- */
+
+  const markY = wallY - 25
+
+  drawLine(svg, left, markY, right, markY, "dimension-line")
 
   model.panels.forEach(panel => {
 
-    const x = wallLeft + panel.start * scale
-    const w = (panel.end - panel.start) * scale
+    const x = left + panel.start * scale
 
-    drawRect(svg, x, wallTop, w, wallHeight, "panel-full")
-
-  })
-
-
-  /* SEAMS */
-
-  const seams = model.panels.map(p => p.start)
-  seams.push(model.wallLength)
-
-  seams.forEach(pos => {
-
-    const x = wallLeft + pos * scale
-
-    drawLine(svg, x, wallTop, x, wallTop + wallHeight, "panel-seam")
+    drawLine(
+      svg,
+      x,
+      markY - 6,
+      x,
+      markY + 6,
+      "tick"
+    )
 
   })
 
+  drawLine(svg, right, markY - 6, right, markY + 6, "tick")
 
-  /* RIBS */
+  /* ---------------- LABELS (SMART SPACING) ---------------- */
 
-  model.ribs.forEach(rib => {
+  const spacing = 80 // px minimum spacing between labels
+  let lastX = -9999
 
-    const x = wallLeft + rib.position * scale
+  model.panels.forEach(panel => {
 
-    drawLine(svg, x, wallTop, x, wallTop + wallHeight, "rib-line")
+    const x = left + panel.start * scale
 
-  })
-
-
-  /* FIELD MARK LINE */
-
-  const markY = wallTop - 30
-
-  drawLine(svg, wallLeft, markY, wallRight, markY, "dimension-line")
-
-  seams.forEach(pos => {
-
-    const x = wallLeft + pos * scale
-
-    drawLine(svg, x, markY - 6, x, markY + 6, "seam-tick")
+    if (x - lastX < spacing) return
 
     drawText(
       svg,
       x,
       markY - 10,
-      formatToField(pos),
+      formatToField(panel.start),
       "dimension-text"
     )
 
+    lastX = x
+
   })
 
+  /* ---------------- TOTAL LENGTH ---------------- */
 
-  /* OPENINGS */
+  const bottomY = wallY + wallHeight + 40
 
-  if(model.openings){
+  drawLine(svg, left, bottomY, right, bottomY, "dimension-line")
 
-    model.openings.forEach(opening => {
-
-      const x = wallLeft + opening.start * scale
-      const w = opening.width * scale
-
-      drawRect(
-        svg,
-        x,
-        wallTop,
-        w,
-        wallHeight,
-        "opening-box"
-      )
-
-    })
-
-  }
+  drawText(
+    svg,
+    width / 2,
+    bottomY - 6,
+    formatToField(model.wallLength),
+    "dimension-text"
+  )
 
 }
