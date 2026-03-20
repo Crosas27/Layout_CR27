@@ -1,6 +1,6 @@
 body {
   margin: 0;
-  font-family: system-ui;
+  font-family: system-ui, sans-serif;
   background: #020617;
   color: #e2e8f0;
 }
@@ -11,11 +11,12 @@ body {
   margin: auto;
 }
 
-h2, h3 {
+h2, h3, h4 {
   margin-bottom: 10px;
 }
 
-.card {
+.card,
+.report-card {
   background: #020617;
   border: 1px solid #334155;
   padding: 14px;
@@ -31,6 +32,7 @@ input {
   border: 1px solid #334155;
   color: #e2e8f0;
   border-radius: 6px;
+  box-sizing: border-box;
 }
 
 button {
@@ -64,12 +66,20 @@ button:active {
   border-radius: 6px;
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  gap: 10px;
 }
 
-/////SVG-RELATED RULES/////
+.delete-btn {
+  width: auto;
+  min-width: 42px;
+  padding: 6px 10px;
+  background: #ef4444;
+}
+
 #wallSvg {
   width: 100%;
-  height: 280px;
+  height: 300px;
   display: block;
   background: #081226;
   border-radius: 8px;
@@ -89,8 +99,8 @@ button:active {
 
 .panel-cut {
   fill: #020617;
-  stroke: #cbd5e1;
-  stroke-width: 1.2;
+  stroke: #f87171;
+  stroke-width: 2;
 }
 
 .opening-box {
@@ -107,8 +117,8 @@ button:active {
 .rib-line {
   stroke: #22c55e;
   stroke-width: 1;
-  stroke-dasharray: 4 4;
-  opacity: 0.7;
+  stroke-dasharray: 2 6;
+  opacity: 0.3;
 }
 
 .dimension-line {
@@ -117,8 +127,8 @@ button:active {
 }
 
 .tick {
-  stroke: #cbd5e1;
-  stroke-width: 1.2;
+  stroke: #ffffff;
+  stroke-width: 2;
 }
 
 .dimension-text {
@@ -127,8 +137,41 @@ button:active {
   font-family: monospace;
 }
 
+.total-text {
+  font-size: 12px;
+}
+
 .panel-label {
-  fill: #e2e8f0;
+  fill: #cbd5e1;
   font-size: 12px;
   font-family: monospace;
+}
+
+#openingReport {
+  margin-top: 12px;
+}
+
+.opening-report-block {
+  border-top: 1px solid #334155;
+  padding-top: 12px;
+  margin-top: 12px;
+}
+
+.panel-cut-list ul,
+.warning-box ul {
+  margin: 6px 0 0 18px;
+  padding: 0;
+}
+
+.warning-box {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #7f1d1d;
+  background: rgba(127, 29, 29, 0.15);
+  border-radius: 6px;
+  color: #fecaca;
+}
+
+.good-status {
+  color: #86efac;
 }
