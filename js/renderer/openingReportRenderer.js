@@ -2,6 +2,15 @@ function inchesText(value) {
   return `${Math.round(value * 1000) / 1000}"`
 }
 
+function offsetText(value) {
+  const rounded = Math.round(value * 1000) / 1000
+
+  if (rounded === 0) return `0"`
+
+  if (rounded > 0) return `${rounded}" right of seam`
+  return `${Math.abs(rounded)}" left of seam`
+}
+
 export function renderOpeningReport(model) {
   const container = document.getElementById("openingReport")
   if (!container) return
@@ -31,23 +40,19 @@ export function renderOpeningReport(model) {
         <p><strong>Nearest left seam:</strong> ${inchesText(item.nearestLeftSeam)}</p>
         <p><strong>Nearest right seam:</strong> ${inchesText(item.nearestRightSeam)}</p>
 
-        <p><strong>Left jamb offset from nearest seam:</strong> ${inchesText(item.leftOffsetFromSeam)}</p>
-        <p><strong>Right jamb offset from nearest seam:</strong> ${inchesText(item.rightOffsetFromSeam)}</p>
+        <p><strong>Left jamb from nearest seam:</strong> ${offsetText(item.leftOffsetFromSeam)}</p>
+        <p><strong>Right jamb from nearest seam:</strong> ${offsetText(item.rightOffsetFromSeam)}</p>
     `
 
-    if (item.leftNearbyRibs.length > 0) {
-      html += `<p><strong>Left jamb nearby ribs:</strong> ${item.leftNearbyRibs.map(inchesText).join(", ")}</p>`
+    if (item.leftEdgeHits && item.leftEdgeHits.length > 0) {
+      html += `<p><strong>Left jamb edge hits:</strong> ${item.leftEdgeHits.map(inchesText).join(", ")}</p>`
     }
 
-    if (item.rightNearbyRibs.length > 0) {
-      html += `<p><strong>Right jamb nearby ribs:</strong> ${item.rightNearbyRibs.map(inchesText).join(", ")}</p>`
+    if (item.rightEdgeHits && item.rightEdgeHits.length > 0) {
+      html += `<p><strong>Right jamb edge hits:</strong> ${item.rightEdgeHits.map(inchesText).join(", ")}</p>`
     }
 
-    if (item.ribsInsideOpening.length > 0) {
-      html += `<p><strong>Ribs inside opening:</strong> ${item.ribsInsideOpening.map(inchesText).join(", ")}</p>`
-    }
-
-    if (item.intersectingPanels.length > 0) {
+    if (item.intersectingPanels && item.intersectingPanels.length > 0) {
       html += `<div class="panel-cut-list"><strong>Panels affected:</strong><ul>`
 
       item.intersectingPanels.forEach(cut => {
@@ -63,7 +68,7 @@ export function renderOpeningReport(model) {
       html += `</ul></div>`
     }
 
-    if (item.warnings.length > 0) {
+    if (item.warnings && item.warnings.length > 0) {
       html += `<div class="warning-box"><strong>Warnings:</strong><ul>`
       item.warnings.forEach(w => {
         html += `<li>${w}</li>`
