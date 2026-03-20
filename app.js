@@ -1,13 +1,10 @@
-console.log("APP STARTING")
-
-
 import { generateLayout } from "./js/core/layoutEngine.js"
 import { renderSvg } from "./js/renderer/svgRenderer.js"
+import { renderOpeningReport } from "./js/renderer/openingReportRenderer.js"
 
 let openings = []
 
-function updateLayout(){
-
+function updateLayout() {
   const config = {
     wallLength: Number(document.getElementById("wallLength").value) || 0,
     panelCoverage: Number(document.getElementById("panelCoverage").value) || 36,
@@ -17,21 +14,20 @@ function updateLayout(){
   }
 
   const model = generateLayout(config)
-  renderSvg(model)
-}
 
+  renderSvg(model)
+  renderOpeningReport(model)
+}
 
 /* ---------- OPENINGS UI ---------- */
 
-function renderOpeningsList(){
-
+function renderOpeningsList() {
   const list = document.getElementById("openingsList")
   if (!list) return
 
   list.innerHTML = ""
 
-  openings.forEach(function(op, index){
-
+  openings.forEach(function(op, index) {
     const div = document.createElement("div")
     div.className = "opening-item"
 
@@ -40,8 +36,9 @@ function renderOpeningsList(){
 
     const btn = document.createElement("button")
     btn.textContent = "X"
+    btn.className = "delete-btn"
 
-    btn.onclick = function(){
+    btn.onclick = function() {
       openings.splice(index, 1)
       renderOpeningsList()
       updateLayout()
@@ -49,16 +46,11 @@ function renderOpeningsList(){
 
     div.appendChild(label)
     div.appendChild(btn)
-
     list.appendChild(div)
-
   })
-
 }
 
-
-function addOpening(){
-
+function addOpening() {
   const startEl = document.getElementById("openingStart")
   const widthEl = document.getElementById("openingWidth")
 
@@ -67,7 +59,7 @@ function addOpening(){
   const start = Number(startEl.value)
   const width = Number(widthEl.value)
 
-  if(!start || !width) return
+  if (!start || !width) return
 
   openings.push({ start, width })
 
@@ -78,20 +70,18 @@ function addOpening(){
   updateLayout()
 }
 
-
 /* ---------- INIT ---------- */
 
-document.addEventListener("DOMContentLoaded", function(){
-
+document.addEventListener("DOMContentLoaded", function() {
   const btn = document.getElementById("generateBtn")
   const addBtn = document.getElementById("addOpeningBtn")
 
-  if(!btn){
+  if (!btn) {
     console.error("Generate button missing")
     return
   }
 
-  if(!addBtn){
+  if (!addBtn) {
     console.error("Add Opening button missing")
     return
   }
@@ -99,6 +89,5 @@ document.addEventListener("DOMContentLoaded", function(){
   btn.addEventListener("click", updateLayout)
   addBtn.addEventListener("click", addOpening)
 
-  console.log("UI READY")
-
+  updateLayout()
 })
