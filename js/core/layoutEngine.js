@@ -9,7 +9,7 @@ export function generateLayout(config) {
   const seams = panels.map(p => p.start).concat(wallLength)
   const ribs = calculateRibs(wallLength, ribSpacing, startOffset)
 
-  const openingAnalysis = analyzeOpenings(openings, seams, ribs, panelCoverage)
+  const openingAnalysis = analyzeOpenings(openings, seams, ribs)
 
   return {
     wallLength,
@@ -32,11 +32,13 @@ function calculatePanels(length, coverage) {
   let i = 1
 
   while (pos < length) {
+    const end = Math.min(pos + coverage, length)
+
     panels.push({
       panel: i,
       start: pos,
-      end: Math.min(pos + coverage, length),
-      width: Math.min(pos + coverage, length) - pos
+      end,
+      width: end - pos
     })
 
     pos += coverage
@@ -60,10 +62,10 @@ function calculateRibs(length, spacing, start) {
   return ribs
 }
 
-/* ---------------- OPENINGS V2 ---------------- */
+/* ---------------- OPENINGS ---------------- */
 
-function analyzeOpenings(openings, seams, ribs, panelCoverage) {
-  const minClearance = 6
+function analyzeOpenings(openings, seams, ribs) {
+  const edgeTolerance = 0.5
   const results = []
 
   openings.forEach((opening, index) => {
@@ -77,16 +79,12 @@ function analyzeOpenings(openings, seams, ribs, panelCoverage) {
     const leftOffsetFromSeam = start - nearestLeftSeam
     const rightOffsetFromSeam = end - nearestRightSeam
 
-    const leftNearbyRibs = ribs
-      .filter(r => Math.abs(r.position - start) <= minClearance)
+    const leftEdgeHits = ribs
+      .filter(r => Math.abs(r.position - start) <= edgeTolerance)
       .map(r => r.position)
 
-    const rightNearbyRibs = ribs
-      .filter(r => Math.abs(r.position - end) <= minClearance)
-      .map(r => r.position)
-
-    const ribsInsideOpening = ribs
-      .filter(r => r.position > start && r.position < end)
+    const rightEdgeHits = ribs
+      .filter(r => Math.abs(r.position - end) <= edgeTolerance)
       .map(r => r.position)
 
     const intersectingPanels = []
@@ -108,16 +106,12 @@ function analyzeOpenings(openings, seams, ribs, panelCoverage) {
 
     const warnings = []
 
-    if (leftNearbyRibs.length > 0) {
-      warnings.push("Left jamb is within 6 inches of a rib.")
+    if (leftEdgeHits.length > 0) {
+      warnings.push("Left jamb edge lands on a rib centerline (within 1/2 inch tolerance).")
     }
 
-    if (rightNearbyRibs.length > 0) {
-      warnings.push("Right jamb is within 6 inches of a rib.")
-    }
-
-    if (ribsInsideOpening.length > 0) {
-      warnings.push("One or more ribs fall inside the opening span.")
+    if (rightEdgeHits.length > 0) {
+      warnings.push("Right jamb edge lands on a rib centerline (within 1/2 inch tolerance).")
     }
 
     results.push({
@@ -129,9 +123,8 @@ function analyzeOpenings(openings, seams, ribs, panelCoverage) {
       nearestRightSeam,
       leftOffsetFromSeam,
       rightOffsetFromSeam,
-      leftNearbyRibs,
-      rightNearbyRibs,
-      ribsInsideOpening,
+      leftEdgeHits,
+      rightEdgeHits,
       intersectingPanels,
       warnings
     })
