@@ -1,4 +1,3 @@
-import { formatToField } from "../utils/formatter.js"
 import {
   setupSvg,
   drawRect,
@@ -11,7 +10,7 @@ export function renderSvg(model) {
   if (!svg || !model.wallLength) return
 
   const width = svg.clientWidth || 900
-  const height = 280
+  const height = 300
 
   setupSvg(svg, width, height)
 
@@ -20,15 +19,15 @@ export function renderSvg(model) {
   const scale = drawWidth / model.wallLength
 
   const wallX = paddingX
-  const wallY = 112
-  const wallHeight = 60
+  const wallY = 118
+  const wallHeight = 62
   const wallW = model.wallLength * scale
   const wallRight = wallX + wallW
 
-  const markLineY = 62
-  const totalLineY = wallY + wallHeight + 40
+  const markLineY = 64
+  const totalLineY = wallY + wallHeight + 42
 
-  // wall outline
+  // wall
   drawRect(svg, wallX, wallY, wallW, wallHeight, "wall-outline")
 
   // panels
@@ -65,16 +64,15 @@ export function renderSvg(model) {
     drawLine(svg, x, wallY, x, wallY + wallHeight, "rib-line")
   })
 
-  // top field mark line
+  // top mark line
   drawLine(svg, wallX, markLineY, wallRight, markLineY, "dimension-line")
 
-  // seam ticks
   seamPositions.forEach(pos => {
     const x = wallX + pos * scale
     drawLine(svg, x, markLineY - 6, x, markLineY + 6, "tick")
   })
 
-  // label every 36" panel mark + always show end
+  // label every 36" mark, but keep the right end clean
   const labeledPositions = []
   for (let pos = 0; pos <= model.wallLength; pos += model.panelCoverage) {
     labeledPositions.push(pos)
@@ -83,7 +81,7 @@ export function renderSvg(model) {
     labeledPositions.push(model.wallLength)
   }
 
-  const minSpacing = 50 // px
+  const minSpacing = 50
   let lastX = -Infinity
 
   labeledPositions.forEach(pos => {
@@ -91,14 +89,19 @@ export function renderSvg(model) {
 
     const isStart = pos === 0
     const isEnd = pos === model.wallLength
+    const distanceToEnd = wallRight - x
+    const tooCloseToEnd = !isEnd && distanceToEnd < minSpacing
 
-    if (!isStart && !isEnd && (x - lastX < minSpacing)) return
+    if (!isStart && !isEnd) {
+      if (x - lastX < minSpacing) return
+      if (tooCloseToEnd) return
+    }
 
     drawText(
       svg,
       x,
       markLineY - 10,
-     `${Math.round(pos)}"`,
+      `${Math.round(pos)}"`,
       "dimension-text"
     )
 
@@ -111,15 +114,16 @@ export function renderSvg(model) {
     svg,
     wallX + wallW / 2,
     totalLineY - 8,
-    formatToField(model.wallLength),
+    `${Math.round(model.wallLength)}"`,
     "dimension-text total-text"
   )
 
-  // openings overlay
+  // openings
   if (Array.isArray(model.openings)) {
     model.openings.forEach(opening => {
       const x = wallX + opening.start * scale
       const w = opening.width * scale
+
       drawRect(svg, x, wallY, w, wallHeight, "opening-box")
     })
   }
