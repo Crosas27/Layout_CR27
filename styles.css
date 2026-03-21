@@ -157,6 +157,7 @@ button:active {
 .dimension-text {
   fill: #e2e8f0;
   font-size: 10px;
+  opacity: 0.9
 }
 
 .total-text {
@@ -167,6 +168,10 @@ button:active {
   fill: #cbd5e1;
   font-size: 11px;
 }
+
+.ridge-label {
+  font-size: 11px;
+  fill: #f1f5f9
 
 /* ---------------- REPORTS ---------------- */
 
