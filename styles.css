@@ -68,6 +68,8 @@ button:active {
   justify-content: space-between;
   align-items: center;
   gap: 10px;
+  font-family: "Fira Code", monospace;
+  font-size: 13px;
 }
 
 .delete-btn {
@@ -104,9 +106,9 @@ button:active {
 }
 
 .opening-box {
-  fill: rgba(239, 68, 68, 0.14);
+  fill: rgba(239, 68, 68, 0.25);
   stroke: #ef4444;
-  stroke-width: 1.5;
+  stroke-width: 2;
 }
 
 .panel-seam {
@@ -131,10 +133,20 @@ button:active {
   stroke-width: 2;
 }
 
+.dimension-text,
+.total-text,
+.panel-label,
+#openingReport,
+.opening-report-block,
+.panel-cut-list,
+.warning-box,
+.good-status {
+  font-family: "Fira Code", monospace;
+}
+
 .dimension-text {
   fill: #e2e8f0;
   font-size: 11px;
-  font-family: monospace;
 }
 
 .total-text {
@@ -144,7 +156,6 @@ button:active {
 .panel-label {
   fill: #cbd5e1;
   font-size: 12px;
-  font-family: monospace;
 }
 
 #openingReport {
@@ -155,6 +166,7 @@ button:active {
   border-top: 1px solid #334155;
   padding-top: 12px;
   margin-top: 12px;
+  font-size: 13px;
 }
 
 .panel-cut-list ul,
