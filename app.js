@@ -1,6 +1,7 @@
 import { generateLayout } from "./js/core/layoutEngine.js"
 import { renderSvg } from "./js/renderer/svgRenderer.js"
 import { renderOpeningReport } from "./js/renderer/openingReportRenderer.js"
+import { renderSummary } from "./js/renderer/summaryRenderer.js"
 
 let openings = []
 
@@ -17,6 +18,7 @@ function updateLayout() {
 
   renderSvg(model)
   renderOpeningReport(model)
+  renderSummary(model)
 }
 
 /* ---------- OPENINGS UI ---------- */
