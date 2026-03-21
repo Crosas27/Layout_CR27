@@ -1,4 +1,16 @@
 export function generateLayout(config) {
+  const wallType = config.wallType || "sidewall"
+
+  if (wallType === "gable") {
+    return generateGableLayout(config)
+  }
+
+  return generateSidewallLayout(config)
+}
+
+/* ---------------- SIDEWALL ---------------- */
+
+function generateSidewallLayout(config) {
   const wallLength = Number(config.wallLength) || 0
   const panelCoverage = Number(config.panelCoverage) || 36
   const ribSpacing = Number(config.ribSpacing) || 12
@@ -13,6 +25,7 @@ export function generateLayout(config) {
   const openingAnalysis = analyzeOpenings(openings, seams, ribs)
 
   return {
+    wallType: "sidewall",
     wallLength,
     panelCoverage,
     ribSpacing,
@@ -26,7 +39,81 @@ export function generateLayout(config) {
   }
 }
 
-/* ---------------- PANELS ---------------- */
+/* ---------------- GABLE ---------------- */
+
+function generateGableLayout(config) {
+  const wallLength = Number(config.wallLength) || 0
+  const panelCoverage = Number(config.panelCoverage) || 36
+  const ribSpacing = Number(config.ribSpacing) || 12
+  const startOffset = Number(config.startOffset) || 0
+
+  const leftEaveHeight = Number(config.leftEaveHeight) || 0
+  const ridgeHeight = Number(config.ridgeHeight) || 0
+  const ridgePosition = Number(config.ridgePosition) || 0
+  const rightEaveHeight = Number(config.rightEaveHeight) || 0
+
+  const panels = calculatePanels(wallLength, panelCoverage)
+  const seams = panels.map(p => p.start).concat(wallLength)
+  const ribs = calculateRibs(wallLength, ribSpacing, startOffset)
+
+  const gableCuts = panels.map(panel => {
+    const leftHeight = getGableHeightAtX(
+      panel.start,
+      wallLength,
+      leftEaveHeight,
+      ridgeHeight,
+      ridgePosition,
+      rightEaveHeight
+    )
+
+    const rightHeight = getGableHeightAtX(
+      panel.end,
+      wallLength,
+      leftEaveHeight,
+      ridgeHeight,
+      ridgePosition,
+      rightEaveHeight
+    )
+
+    const ridgePanel =
+      panel.start < ridgePosition && panel.end > ridgePosition
+
+    return {
+      panel: panel.panel,
+      start: panel.start,
+      end: panel.end,
+      width: panel.width,
+      leftHeight,
+      rightHeight,
+      ridgePanel
+    }
+  })
+
+  const ridgePanelIndex = gableCuts.findIndex(p => p.ridgePanel)
+  const summary = generatePanelSummary(wallLength, panelCoverage, panels)
+
+  return {
+    wallType: "gable",
+    wallLength,
+    panelCoverage,
+    ribSpacing,
+    startOffset,
+    leftEaveHeight,
+    ridgeHeight,
+    ridgePosition,
+    rightEaveHeight,
+    panels,
+    seams,
+    ribs,
+    gableCuts,
+    ridgePanelIndex: ridgePanelIndex >= 0 ? ridgePanelIndex + 1 : null,
+    summary,
+    openings: [],
+    openingAnalysis: []
+  }
+}
+
+/* ---------------- COMMON ---------------- */
 
 function calculatePanels(length, coverage) {
   const panels = []
@@ -50,8 +137,6 @@ function calculatePanels(length, coverage) {
   return panels
 }
 
-/* ---------------- RIBS ---------------- */
-
 function calculateRibs(length, spacing, start) {
   const ribs = []
   let pos = start
@@ -63,8 +148,6 @@ function calculateRibs(length, spacing, start) {
 
   return ribs
 }
-
-/* ---------------- SUMMARY ---------------- */
 
 function generatePanelSummary(wallLength, coverage, panels) {
   const fullPanels = panels.filter(p => p.width === coverage).length
@@ -84,7 +167,7 @@ function generatePanelSummary(wallLength, coverage, panels) {
   }
 }
 
-/* ---------------- OPENINGS ---------------- */
+/* ---------------- SIDEWALL OPENINGS ---------------- */
 
 function analyzeOpenings(openings, seams, ribs) {
   const edgeTolerance = 0.5
@@ -170,4 +253,33 @@ function findNearestValue(target, values) {
   })
 
   return nearest
+}
+
+/* ---------------- GABLE HEIGHT ---------------- */
+
+function getGableHeightAtX(
+  x,
+  wallLength,
+  leftEaveHeight,
+  ridgeHeight,
+  ridgePosition,
+  rightEaveHeight
+) {
+  if (wallLength <= 0) return 0
+
+  if (x <= ridgePosition) {
+    const leftRun = ridgePosition
+    if (leftRun <= 0) return ridgeHeight
+
+    const rise = ridgeHeight - leftEaveHeight
+    return leftEaveHeight + (rise * (x / leftRun))
+  }
+
+  const rightRun = wallLength - ridgePosition
+  if (rightRun <= 0) return ridgeHeight
+
+  const drop = ridgeHeight - rightEaveHeight
+  const distanceFromRidge = x - ridgePosition
+
+  return ridgeHeight - (drop * (distanceFromRidge / rightRun))
 }
