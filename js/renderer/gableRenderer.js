@@ -11,14 +11,15 @@ export function renderGable(model) {
   if (!svg || !model.wallLength) return
 
   const width = svg.clientWidth || 900
-  const height = 360
+  const height = 460
 
   setupSvg(svg, width, height)
 
   const paddingX = 24
-  const paddingY = 24
+  const topPad = 70
+  const bottomPad = 60
   const drawWidth = width - paddingX * 2
-  const drawHeight = height - paddingY * 2
+  const drawHeight = height - topPad - bottomPad
 
   const maxHeight = Math.max(
     model.leftEaveHeight || 0,
@@ -29,11 +30,11 @@ export function renderGable(model) {
   if (!maxHeight) return
 
   const scaleX = drawWidth / model.wallLength
-  const scaleY = (drawHeight - 80) / maxHeight
+  const scaleY = drawHeight / maxHeight
   const scale = Math.min(scaleX, scaleY)
 
   const wallX = paddingX
-  const baseY = height - 40
+  const baseY = height - bottomPad
   const wallRight = wallX + model.wallLength * scale
 
   const leftEaveY = baseY - model.leftEaveHeight * scale
@@ -43,41 +44,8 @@ export function renderGable(model) {
 
   const markLineY = 44
 
-  // Base
-  drawLine(svg, wallX, baseY, wallRight, baseY, "dimension-line")
+  /* ---------------- TOP MARK LINE ---------------- */
 
-  // Outline
-  drawLine(svg, wallX, baseY, wallX, leftEaveY, "panel-seam")
-  drawLine(svg, wallX, leftEaveY, ridgeX, ridgeY, "panel-seam")
-  drawLine(svg, ridgeX, ridgeY, wallRight, rightEaveY, "panel-seam")
-  drawLine(svg, wallRight, rightEaveY, wallRight, baseY, "panel-seam")
-
-  // Panels
-  model.gableCuts.forEach(panel => {
-    const x = wallX + panel.start * scale
-    const w = panel.width * scale
-
-    const leftY = baseY - panel.leftHeight * scale
-    const rightY = baseY - panel.rightHeight * scale
-
-    drawLine(svg, x, baseY, x, leftY, "panel-seam")
-
-    // shaded panel body
-    drawRect(svg, x, Math.min(leftY, rightY), w, baseY - Math.min(leftY, rightY), panel.ridgePanel ? "panel-cut" : "panel-full")
-  })
-
-  // Final seam at wall end
-  drawLine(svg, wallRight, baseY, wallRight, rightEaveY, "panel-seam")
-
-  // Ribs
-  model.ribs.forEach(rib => {
-    const x = wallX + rib.position * scale
-    const topY = getTopYAtX(x, wallX, baseY, scale, model)
-
-    drawLine(svg, x, baseY, x, topY, "rib-line")
-  })
-
-  // Top field mark line
   drawLine(svg, wallX, markLineY, wallRight, markLineY, "dimension-line")
 
   model.seams.forEach(pos => {
@@ -93,7 +61,7 @@ export function renderGable(model) {
     labeledPositions.push(model.wallLength)
   }
 
-  const minSpacing = 50
+  const minSpacing = 56
   let lastX = -Infinity
 
   labeledPositions.forEach(pos => {
@@ -108,31 +76,107 @@ export function renderGable(model) {
       if (tooCloseToEnd) return
     }
 
-    drawText(svg, x, markLineY - 10, `${Math.round(pos)}"`, "dimension-text")
+    drawText(svg, x, markLineY - 12, `${Math.round(pos)}"`, "dimension-text")
     lastX = x
   })
 
-  // Height labels
+  /* ---------------- OUTLINE ---------------- */
+
+  drawLine(svg, wallX, baseY, wallRight, baseY, "dimension-line")
+
+  drawLine(svg, wallX, baseY, wallX, leftEaveY, "panel-seam")
+  drawLine(svg, wallX, leftEaveY, ridgeX, ridgeY, "panel-seam")
+  drawLine(svg, ridgeX, ridgeY, wallRight, rightEaveY, "panel-seam")
+  drawLine(svg, wallRight, rightEaveY, wallRight, baseY, "panel-seam")
+
+  /* ---------------- PANELS ---------------- */
+
+  model.gableCuts.forEach(panel => {
+    const x = wallX + panel.start * scale
+    const w = panel.width * scale
+
+    const leftY = baseY - panel.leftHeight * scale
+    const rightY = baseY - panel.rightHeight * scale
+    const topY = Math.min(leftY, rightY)
+
+    drawRect(
+      svg,
+      x,
+      topY,
+      w,
+      baseY - topY,
+      panel.ridgePanel ? "panel-cut" : "panel-full"
+    )
+
+    drawLine(svg, x, baseY, x, leftY, "panel-seam")
+
+    if (w >= 22) {
+      drawText(
+        svg,
+        x + w / 2,
+        baseY - 20,
+        String(panel.panel),
+        "panel-label"
+      )
+    }
+  })
+
+  drawLine(svg, wallRight, baseY, wallRight, rightEaveY, "panel-seam")
+
+  /* ---------------- RIBS ---------------- */
+
+  model.ribs.forEach(rib => {
+    const x = wallX + rib.position * scale
+    const topY = getTopYAtX(x, wallX, baseY, scale, model)
+
+    drawLine(svg, x, baseY, x, topY, "rib-line")
+  })
+
+  /* ---------------- RIDGE CALLOUT ---------------- */
+
+  drawLine(svg, ridgeX, ridgeY - 4, ridgeX, ridgeY - 24, "tick")
+  drawText(
+    svg,
+    ridgeX,
+    ridgeY - 36,
+    `RIDGE ${formatToField(model.ridgeHeight)}`,
+    "dimension-text"
+  )
+
+  /* ---------------- PANEL HEIGHT LABELS ---------------- */
+
   model.gableCuts.forEach((panel, index) => {
+    const shouldLabel = panel.ridgePanel || index % 2 === 0
+    if (!shouldLabel) return
+
     const midX = wallX + (panel.start + panel.width / 2) * scale
     const highPoint = Math.max(panel.leftHeight, panel.rightHeight)
-    const labelY = baseY - highPoint * scale - 12 - (index % 2 === 0 ? 0 : 12)
+    const topY = baseY - highPoint * scale
+
+    let labelOffset = 14
+    if (panel.ridgePanel) labelOffset = 30
+    else if (index % 4 === 0) labelOffset = 14
+    else labelOffset = 26
 
     drawText(
       svg,
       midX,
-      labelY,
+      topY - labelOffset,
       `${formatToField(panel.leftHeight)} → ${formatToField(panel.rightHeight)}`,
       "dimension-text"
     )
   })
 
-  // Ridge label
-  drawText(svg, ridgeX, ridgeY - 14, `Ridge ${formatToField(model.ridgeHeight)}`, "dimension-text")
+  /* ---------------- TOTAL WIDTH ---------------- */
 
-  // Total width line
-  drawLine(svg, wallX, baseY + 26, wallRight, baseY + 26, "dimension-line")
-  drawText(svg, wallX + (wallRight - wallX) / 2, baseY + 16, formatToField(model.wallLength), "dimension-text total-text")
+  drawLine(svg, wallX, baseY + 28, wallRight, baseY + 28, "dimension-line")
+  drawText(
+    svg,
+    wallX + (wallRight - wallX) / 2,
+    baseY + 16,
+    formatToField(model.wallLength),
+    "dimension-text total-text"
+  )
 }
 
 function getTopYAtX(xPx, wallX, baseY, scale, model) {
