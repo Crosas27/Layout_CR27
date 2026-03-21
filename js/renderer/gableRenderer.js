@@ -42,7 +42,7 @@ export function renderGable(model) {
   const ridgeY = baseY - model.ridgeHeight * scale
   const rightEaveY = baseY - model.rightEaveHeight * scale
 
-  const markLineY = 44
+  const markLineY = 56
 
   /* ---------------- TOP MARK LINE ---------------- */
 
@@ -138,9 +138,9 @@ export function renderGable(model) {
   drawText(
     svg,
     ridgeX,
-    ridgeY - 36,
+    ridgeY - 52,
     `RIDGE ${formatToField(model.ridgeHeight)}`,
-    "dimension-text"
+    "dimension-text ridge-label"
   )
 
   /* ---------------- PANEL HEIGHT LABELS ---------------- */
