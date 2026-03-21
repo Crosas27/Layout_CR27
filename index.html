@@ -1,81 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Panel Layout Tool</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel Layout Tool</title>
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <div class="app">
+    <h2>Panel Layout Tool</h2>
 
-<div class="app">
+    <div class="card">
+      <label for="wallType">Wall Type</label>
+      <select id="wallType">
+        <option value="sidewall">Sidewall</option>
+        <option value="gable">Gable Endwall</option>
+      </select>
 
-  <h2>Panel Layout Tool</h2>
+      <label for="wallLength">Wall Length (inches)</label>
+      <input id="wallLength" type="number" placeholder="e.g. 480" />
 
-  <div class="card">
-    <label>Wall Type</label>
-    <select id="wallType">
-      <option value="sidewall">Sidewall</option>
-      <option value="gable">Gable Endwall</option>
-    </select>
+      <label for="panelCoverage">Panel Coverage</label>
+      <input id="panelCoverage" type="number" value="36" />
 
-    <label>Wall Length (inches)</label>
-    <input id="wallLength" type="number" placeholder="e.g. 480" />
+      <label for="ribSpacing">Rib Spacing</label>
+      <input id="ribSpacing" type="number" value="12" />
 
-    <label>Panel Coverage</label>
-    <input id="panelCoverage" type="number" value="36" />
+      <label for="startOffset">Start Offset</label>
+      <input id="startOffset" type="number" value="0" />
 
-    <label>Rib Spacing</label>
-    <input id="ribSpacing" type="number" value="12" />
+      <div id="gableFields" style="display: none;">
+        <label for="leftEaveHeight">Left Eave Height (inches)</label>
+        <input id="leftEaveHeight" type="number" placeholder="e.g. 192" />
 
-    <label>Start Offset</label>
-    <input id="startOffset" type="number" value="0" />
+        <label for="ridgeHeight">Ridge Height (inches)</label>
+        <input id="ridgeHeight" type="number" placeholder="e.g. 222" />
 
-    <div id="gableFields" style="display:none;">
-      <label>Left Eave Height (inches)</label>
-      <input id="leftEaveHeight" type="number" placeholder="e.g. 192" />
+        <label for="ridgePosition">Ridge Position from Left (inches)</label>
+        <input id="ridgePosition" type="number" placeholder="e.g. 120" />
 
-      <label>Ridge Height (inches)</label>
-      <input id="ridgeHeight" type="number" placeholder="e.g. 222" />
+        <label for="rightEaveHeight">Right Eave Height (inches)</label>
+        <input id="rightEaveHeight" type="number" placeholder="e.g. 126" />
+      </div>
 
-      <label>Ridge Position from Left (inches)</label>
-      <input id="ridgePosition" type="number" placeholder="e.g. 120" />
-
-      <label>Right Eave Height (inches)</label>
-      <input id="rightEaveHeight" type="number" placeholder="e.g. 126" />
+      <button id="generateBtn">Generate</button>
     </div>
 
-    <button id="generateBtn">Generate</button>
-  </div>
+    <div class="card" id="openingsCard">
+      <h3>Openings</h3>
 
-  <div class="card" id="openingsCard">
-    <h3>Openings</h3>
+      <div id="openingsList"></div>
 
-    <div id="openingsList"></div>
+      <div class="opening-form">
+        <input id="openingStart" type="number" placeholder="Start (in)" />
+        <input id="openingWidth" type="number" placeholder="Width (in)" />
+      </div>
 
-    <div class="opening-form">
-      <input id="openingStart" type="number" placeholder="Start (in)" />
-      <input id="openingWidth" type="number" placeholder="Width (in)" />
+      <button id="addOpeningBtn">Add Opening</button>
     </div>
 
-    <button id="addOpeningBtn">Add Opening</button>
+    <div class="card">
+      <svg id="wallSvg"></svg>
+    </div>
+
+    <div class="card" id="panelSummary"></div>
+    <div class="card" id="openingReport"></div>
   </div>
 
-  <div class="card">
-    <svg id="wallSvg"></svg>
-  </div>
-
-  <div class="card" id="panelSummary"></div>
-  <div class="card" id="openingReport"></div>
-
-</div>
-
-<script type="module" src="app.js"></script>
-
+  <script type="module" src="app.js"></script>
 </body>
 </html>
