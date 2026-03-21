@@ -11,12 +11,13 @@ body {
   margin: auto;
 }
 
-h2, h3, h4 {
-  margin-bottom: 10px;
+h2,
+h3,
+h4 {
+  margin: 0 0 10px 0;
 }
 
-.card,
-.report-card {
+.card {
   background: #020617;
   border: 1px solid #334155;
   padding: 14px;
@@ -24,15 +25,23 @@ h2, h3, h4 {
   border-radius: 8px;
 }
 
-input {
+label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+input,
+select {
   width: 100%;
   padding: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   background: #020617;
   border: 1px solid #334155;
   color: #e2e8f0;
   border-radius: 6px;
   box-sizing: border-box;
+  font-family: inherit;
 }
 
 button {
@@ -43,6 +52,7 @@ button {
   border-radius: 6px;
   color: white;
   font-weight: bold;
+  cursor: pointer;
 }
 
 button:active {
@@ -51,18 +61,19 @@ button:active {
 
 .opening-form {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
 
 .opening-form input {
   flex: 1;
+  margin-bottom: 0;
 }
 
 .opening-item {
   background: #020617;
   border: 1px solid #334155;
   padding: 8px;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   border-radius: 6px;
   display: flex;
   justify-content: space-between;
@@ -77,15 +88,18 @@ button:active {
   min-width: 42px;
   padding: 6px 10px;
   background: #ef4444;
+  flex-shrink: 0;
 }
 
 #wallSvg {
   width: 100%;
-  height: 300px;
+  height: 460px;
   display: block;
   background: #081226;
   border-radius: 8px;
 }
+
+/* ---------------- SVG ---------------- */
 
 .wall-outline {
   fill: #0f172a;
@@ -97,10 +111,11 @@ button:active {
   fill: #1e293b;
   stroke: #64748b;
   stroke-width: 1;
+  opacity: 0.9;
 }
 
 .panel-cut {
-  fill: #020617;
+  fill: #111827;
   stroke: #f87171;
   stroke-width: 2;
 }
@@ -120,7 +135,7 @@ button:active {
   stroke: #22c55e;
   stroke-width: 1;
   stroke-dasharray: 2 6;
-  opacity: 0.3;
+  opacity: 0.22;
 }
 
 .dimension-line {
@@ -135,18 +150,13 @@ button:active {
 
 .dimension-text,
 .total-text,
-.panel-label,
-#openingReport,
-.opening-report-block,
-.panel-cut-list,
-.warning-box,
-.good-status {
+.panel-label {
   font-family: "Fira Code", monospace;
 }
 
 .dimension-text {
   fill: #e2e8f0;
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .total-text {
@@ -155,11 +165,27 @@ button:active {
 
 .panel-label {
   fill: #cbd5e1;
-  font-size: 12px;
+  font-size: 11px;
+}
+
+/* ---------------- REPORTS ---------------- */
+
+#panelSummary,
+#openingReport,
+.opening-report-block,
+.panel-cut-list,
+.warning-box,
+.good-status {
+  font-family: "Fira Code", monospace;
+}
+
+#panelSummary p,
+#openingReport p {
+  margin: 0 0 10px 0;
 }
 
 #openingReport {
-  margin-top: 12px;
+  margin-top: 0;
 }
 
 .opening-report-block {
@@ -175,6 +201,10 @@ button:active {
   padding: 0;
 }
 
+.panel-cut-list li {
+  margin-bottom: 4px;
+}
+
 .warning-box {
   margin-top: 10px;
   padding: 10px;
@@ -186,4 +216,5 @@ button:active {
 
 .good-status {
   color: #86efac;
+  font-weight: 600;
 }
