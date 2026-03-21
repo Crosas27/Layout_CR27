@@ -1,12 +1,16 @@
 import { generateLayout } from "./js/core/layoutEngine.js"
 import { renderSvg } from "./js/renderer/svgRenderer.js"
+import { renderGable } from "./js/renderer/gableRenderer.js"
 import { renderOpeningReport } from "./js/renderer/openingReportRenderer.js"
 import { renderSummary } from "./js/renderer/summaryRenderer.js"
 
 let openings = []
 
 function updateLayout() {
+  const wallType = document.getElementById("wallType").value
+
   const config = {
+    wallType,
     wallLength: Number(document.getElementById("wallLength").value) || 0,
     panelCoverage: Number(document.getElementById("panelCoverage").value) || 36,
     ribSpacing: Number(document.getElementById("ribSpacing").value) || 12,
@@ -14,14 +18,24 @@ function updateLayout() {
     openings
   }
 
+  if (wallType === "gable") {
+    config.leftEaveHeight = Number(document.getElementById("leftEaveHeight").value) || 0
+    config.ridgeHeight = Number(document.getElementById("ridgeHeight").value) || 0
+    config.ridgePosition = Number(document.getElementById("ridgePosition").value) || 0
+    config.rightEaveHeight = Number(document.getElementById("rightEaveHeight").value) || 0
+  }
+
   const model = generateLayout(config)
 
-  renderSvg(model)
+  if (wallType === "gable") {
+    renderGable(model)
+  } else {
+    renderSvg(model)
+  }
+
   renderOpeningReport(model)
   renderSummary(model)
 }
-
-/* ---------- OPENINGS UI ---------- */
 
 function renderOpeningsList() {
   const list = document.getElementById("openingsList")
@@ -72,11 +86,24 @@ function addOpening() {
   updateLayout()
 }
 
-/* ---------- INIT ---------- */
+function syncModeUI() {
+  const wallType = document.getElementById("wallType").value
+  const gableFields = document.getElementById("gableFields")
+  const openingsCard = document.getElementById("openingsCard")
+
+  if (wallType === "gable") {
+    if (gableFields) gableFields.style.display = "block"
+    if (openingsCard) openingsCard.style.display = "none"
+  } else {
+    if (gableFields) gableFields.style.display = "none"
+    if (openingsCard) openingsCard.style.display = "block"
+  }
+}
 
 document.addEventListener("DOMContentLoaded", function() {
   const btn = document.getElementById("generateBtn")
   const addBtn = document.getElementById("addOpeningBtn")
+  const wallType = document.getElementById("wallType")
 
   if (!btn) {
     console.error("Generate button missing")
@@ -88,8 +115,16 @@ document.addEventListener("DOMContentLoaded", function() {
     return
   }
 
+  if (wallType) {
+    wallType.addEventListener("change", function() {
+      syncModeUI()
+      updateLayout()
+    })
+  }
+
   btn.addEventListener("click", updateLayout)
   addBtn.addEventListener("click", addOpening)
 
+  syncModeUI()
   updateLayout()
 })
