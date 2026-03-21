@@ -19,15 +19,13 @@ export function renderOpeningReport(model) {
 
   if (analysis.length === 0) {
     container.innerHTML = `
-      <div class="report-card">
-        <h3>Openings Report</h3>
-        <p>No openings entered.</p>
-      </div>
+      <h3>Openings Report</h3>
+      <p>No openings entered.</p>
     `
     return
   }
 
-  let html = `<div class="report-card"><h3>Openings Report</h3>`
+  let html = `<h3>Openings Report</h3>`
 
   analysis.forEach(item => {
     html += `
@@ -80,8 +78,6 @@ export function renderOpeningReport(model) {
 
     html += `</div>`
   })
-
-  html += `</div>`
 
   container.innerHTML = html
 }
