@@ -1,119 +1,154 @@
 import { formatToField } from "../utils/formatter.js"
-
 import {
   setupSvg,
-  getDrawArea,
+  drawRect,
   drawLine,
   drawText
 } from "../utils/svgUtils.js"
 
-export function renderGable(model){
-
+export function renderGable(model) {
   const svg = document.getElementById("wallSvg")
-  if(!svg) return
+  if (!svg || !model.wallLength) return
 
   const width = svg.clientWidth || 900
   const height = 360
 
-  setupSvg(svg,width,height)
+  setupSvg(svg, width, height)
 
-  drawGrid(svg,width,height)
+  const paddingX = 24
+  const paddingY = 24
+  const drawWidth = width - paddingX * 2
+  const drawHeight = height - paddingY * 2
 
-  const { margin, drawWidth, drawHeight } = getDrawArea(width,height)
-
-  const {
-    wallLength,
-    eaveHeight,
-    peakHeight,
-    gableCuts
-  } = model
-
-  if(!wallLength || !peakHeight) return
-
-  /* SCALE */
-
-  const scale = calculateScale(
-    drawWidth,
-    drawHeight,
-    wallLength,
-    peakHeight
+  const maxHeight = Math.max(
+    model.leftEaveHeight || 0,
+    model.ridgeHeight || 0,
+    model.rightEaveHeight || 0
   )
 
-  /* COORDINATE SYSTEM */
+  if (!maxHeight) return
 
-  const wallLeft = margin
-  const wallRight = wallLeft + wallLength * scale
+  const scaleX = drawWidth / model.wallLength
+  const scaleY = (drawHeight - 80) / maxHeight
+  const scale = Math.min(scaleX, scaleY)
 
-  const baseY = margin + drawHeight
+  const wallX = paddingX
+  const baseY = height - 40
+  const wallRight = wallX + model.wallLength * scale
 
-  const eaveY = baseY - eaveHeight * scale
+  const leftEaveY = baseY - model.leftEaveHeight * scale
+  const ridgeX = wallX + model.ridgePosition * scale
+  const ridgeY = baseY - model.ridgeHeight * scale
+  const rightEaveY = baseY - model.rightEaveHeight * scale
 
-  const peakX = wallLeft + (wallLength * scale) / 2
-  const peakY = baseY - peakHeight * scale
+  const markLineY = 44
 
-  /* WALL BASE */
+  // Base
+  drawLine(svg, wallX, baseY, wallRight, baseY, "dimension-line")
 
-  drawLine(svg,wallLeft,baseY,wallRight,baseY,"wall-line")
+  // Outline
+  drawLine(svg, wallX, baseY, wallX, leftEaveY, "panel-seam")
+  drawLine(svg, wallX, leftEaveY, ridgeX, ridgeY, "panel-seam")
+  drawLine(svg, ridgeX, ridgeY, wallRight, rightEaveY, "panel-seam")
+  drawLine(svg, wallRight, rightEaveY, wallRight, baseY, "panel-seam")
 
-  /* WALL SIDES */
+  // Panels
+  model.gableCuts.forEach(panel => {
+    const x = wallX + panel.start * scale
+    const w = panel.width * scale
 
-  drawLine(svg,wallLeft,baseY,wallLeft,eaveY,"wall-line")
-  drawLine(svg,wallRight,baseY,wallRight,eaveY,"wall-line")
+    const leftY = baseY - panel.leftHeight * scale
+    const rightY = baseY - panel.rightHeight * scale
 
-  /* ROOF */
+    drawLine(svg, x, baseY, x, leftY, "panel-seam")
 
-  drawLine(svg,wallLeft,eaveY,peakX,peakY,"roof-line")
-  drawLine(svg,wallRight,eaveY,peakX,peakY,"roof-line")
-
-  /* PANEL SEAMS */
-
-  gableCuts.forEach(panel => {
-
-    if(panel.start === undefined) return
-
-    const x = wallLeft + panel.start * scale
-
-    const seamHeight = Math.max(panel.leftHeight, panel.rightHeight)
-
-    const seamTop = baseY - seamHeight * scale
-
-    drawLine(svg,x,baseY,x,seamTop,"panel-line")
-
+    // shaded panel body
+    drawRect(svg, x, Math.min(leftY, rightY), w, baseY - Math.min(leftY, rightY), panel.ridgePanel ? "panel-cut" : "panel-full")
   })
 
-  /* PANEL CUT LABELS */
+  // Final seam at wall end
+  drawLine(svg, wallRight, baseY, wallRight, rightEaveY, "panel-seam")
 
-  gableCuts.forEach((panel,i) => {
+  // Ribs
+  model.ribs.forEach(rib => {
+    const x = wallX + rib.position * scale
+    const topY = getTopYAtX(x, wallX, baseY, scale, model)
 
-    if(panel.start === undefined) return
+    drawLine(svg, x, baseY, x, topY, "rib-line")
+  })
 
-    const startX = wallLeft + panel.start * scale
-    const endX = wallLeft + panel.end * scale
+  // Top field mark line
+  drawLine(svg, wallX, markLineY, wallRight, markLineY, "dimension-line")
 
-    const midX = (startX + endX) / 2
+  model.seams.forEach(pos => {
+    const x = wallX + pos * scale
+    drawLine(svg, x, markLineY - 6, x, markLineY + 6, "tick")
+  })
 
-    const seamHeight = Math.max(panel.leftHeight, panel.rightHeight)
+  const labeledPositions = []
+  for (let pos = 0; pos <= model.wallLength; pos += model.panelCoverage) {
+    labeledPositions.push(pos)
+  }
+  if (labeledPositions[labeledPositions.length - 1] !== model.wallLength) {
+    labeledPositions.push(model.wallLength)
+  }
 
-    const offset = i % 2 === 0 ? 0 : 14
+  const minSpacing = 50
+  let lastX = -Infinity
 
-    const labelY = baseY - seamHeight * scale - 12 - offset
+  labeledPositions.forEach(pos => {
+    const x = wallX + pos * scale
+    const isStart = pos === 0
+    const isEnd = pos === model.wallLength
+    const distanceToEnd = wallRight - x
+    const tooCloseToEnd = !isEnd && distanceToEnd < minSpacing
+
+    if (!isStart && !isEnd) {
+      if (x - lastX < minSpacing) return
+      if (tooCloseToEnd) return
+    }
+
+    drawText(svg, x, markLineY - 10, `${Math.round(pos)}"`, "dimension-text")
+    lastX = x
+  })
+
+  // Height labels
+  model.gableCuts.forEach((panel, index) => {
+    const midX = wallX + (panel.start + panel.width / 2) * scale
+    const highPoint = Math.max(panel.leftHeight, panel.rightHeight)
+    const labelY = baseY - highPoint * scale - 12 - (index % 2 === 0 ? 0 : 12)
 
     drawText(
       svg,
       midX,
       labelY,
-      `${formatToField(panel.leftHeight)} → ${formatToField(panel.rightHeight)}`
+      `${formatToField(panel.leftHeight)} → ${formatToField(panel.rightHeight)}`,
+      "dimension-text"
     )
-
   })
 
-  /* PEAK LABEL */
+  // Ridge label
+  drawText(svg, ridgeX, ridgeY - 14, `Ridge ${formatToField(model.ridgeHeight)}`, "dimension-text")
 
-  drawText(
-    svg,
-    peakX,
-    peakY - 10,
-    formatToField(peakHeight)
-  )
+  // Total width line
+  drawLine(svg, wallX, baseY + 26, wallRight, baseY + 26, "dimension-line")
+  drawText(svg, wallX + (wallRight - wallX) / 2, baseY + 16, formatToField(model.wallLength), "dimension-text total-text")
+}
 
+function getTopYAtX(xPx, wallX, baseY, scale, model) {
+  const x = (xPx - wallX) / scale
+
+  let heightAtX
+
+  if (x <= model.ridgePosition) {
+    const leftRun = model.ridgePosition || 1
+    const rise = model.ridgeHeight - model.leftEaveHeight
+    heightAtX = model.leftEaveHeight + rise * (x / leftRun)
+  } else {
+    const rightRun = (model.wallLength - model.ridgePosition) || 1
+    const drop = model.ridgeHeight - model.rightEaveHeight
+    heightAtX = model.ridgeHeight - drop * ((x - model.ridgePosition) / rightRun)
+  }
+
+  return baseY - heightAtX * scale
 }
