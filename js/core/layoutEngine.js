@@ -9,6 +9,7 @@ export function generateLayout(config) {
   const seams = panels.map(p => p.start).concat(wallLength)
   const ribs = calculateRibs(wallLength, ribSpacing, startOffset)
 
+  const summary = generatePanelSummary(wallLength, panelCoverage, panels)
   const openingAnalysis = analyzeOpenings(openings, seams, ribs)
 
   return {
@@ -20,7 +21,8 @@ export function generateLayout(config) {
     seams,
     ribs,
     openings,
-    openingAnalysis
+    openingAnalysis,
+    summary
   }
 }
 
@@ -60,6 +62,26 @@ function calculateRibs(length, spacing, start) {
   }
 
   return ribs
+}
+
+/* ---------------- SUMMARY ---------------- */
+
+function generatePanelSummary(wallLength, coverage, panels) {
+  const fullPanels = panels.filter(p => p.width === coverage).length
+
+  const first = panels[0] || null
+  const last = panels[panels.length - 1] || null
+
+  const startPanel = first && first.width !== coverage ? first.width : null
+  const endPanel = last && last.width !== coverage ? last.width : null
+
+  return {
+    wallLength,
+    coverage,
+    fullPanels,
+    startPanel,
+    endPanel
+  }
 }
 
 /* ---------------- OPENINGS ---------------- */
