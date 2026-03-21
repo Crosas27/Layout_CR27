@@ -6,19 +6,62 @@ export function renderSummary(model) {
 
   const s = model.summary
 
-  let html = `
-    <h3>Panel Summary</h3>
-    <p><strong>Wall Length:</strong> ${formatToField(s.wallLength)}</p>
-    <p><strong>Panel Coverage:</strong> ${formatToField(s.coverage)}</p>
-    <p><strong>Full Panels:</strong> ${s.fullPanels}</p>
-  `
+  let html = `<h3>Panel Summary</h3>`
 
-  if (s.startPanel !== null) {
-    html += `<p><strong>Start Panel:</strong> ${formatToField(s.startPanel)}</p>`
-  }
+  if (model.wallType === "gable") {
+    html += `
+      <p><strong>Wall Type:</strong> Gable Endwall</p>
+      <p><strong>Wall Length:</strong> ${formatToField(s.wallLength)}</p>
+      <p><strong>Panel Coverage:</strong> ${formatToField(s.coverage)}</p>
+      <p><strong>Left Eave:</strong> ${formatToField(model.leftEaveHeight)}</p>
+      <p><strong>Ridge Height:</strong> ${formatToField(model.ridgeHeight)}</p>
+      <p><strong>Ridge Position:</strong> ${formatToField(model.ridgePosition)}</p>
+      <p><strong>Right Eave:</strong> ${formatToField(model.rightEaveHeight)}</p>
+      <p><strong>Full Panels:</strong> ${s.fullPanels}</p>
+    `
 
-  if (s.endPanel !== null) {
-    html += `<p><strong>End Panel:</strong> ${formatToField(s.endPanel)}</p>`
+    if (s.startPanel !== null) {
+      html += `<p><strong>Start Panel:</strong> ${formatToField(s.startPanel)}</p>`
+    }
+
+    if (s.endPanel !== null) {
+      html += `<p><strong>End Panel:</strong> ${formatToField(s.endPanel)}</p>`
+    }
+
+    if (model.ridgePanelIndex !== null) {
+      html += `<p><strong>Ridge Panel:</strong> Panel ${model.ridgePanelIndex}</p>`
+    }
+
+    if (Array.isArray(model.gableCuts) && model.gableCuts.length > 0) {
+      html += `<div class="opening-report-block"><h4>Gable Cut List</h4><ul>`
+
+      model.gableCuts.forEach(panel => {
+        html += `
+          <li>
+            Panel ${panel.panel} —
+            ${formatToField(panel.leftHeight)} → ${formatToField(panel.rightHeight)}
+            ${panel.ridgePanel ? " (ridge panel)" : ""}
+          </li>
+        `
+      })
+
+      html += `</ul></div>`
+    }
+  } else {
+    html += `
+      <p><strong>Wall Type:</strong> Sidewall</p>
+      <p><strong>Wall Length:</strong> ${formatToField(s.wallLength)}</p>
+      <p><strong>Panel Coverage:</strong> ${formatToField(s.coverage)}</p>
+      <p><strong>Full Panels:</strong> ${s.fullPanels}</p>
+    `
+
+    if (s.startPanel !== null) {
+      html += `<p><strong>Start Panel:</strong> ${formatToField(s.startPanel)}</p>`
+    }
+
+    if (s.endPanel !== null) {
+      html += `<p><strong>End Panel:</strong> ${formatToField(s.endPanel)}</p>`
+    }
   }
 
   el.innerHTML = html
