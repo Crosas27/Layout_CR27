@@ -1,0 +1,205 @@
+CR27 PANEL LAYOUT TOOL
+PROJECT ANCHORS — DO NOT BREAK THESE
+
+-------------------------------------
+CORE PHILOSOPHY
+-------------------------------------
+This is a FIELD TOOL, not a toy.
+
+The purpose of this system is:
+- prevent bad panel cuts
+- visualize layout clearly
+- reflect real-world install logic
+
+If a change does not improve clarity or reliability → DO NOT ADD IT
+
+
+-------------------------------------
+LAYOUT RULES (LAW)
+-------------------------------------
+1. Panels ALWAYS start at 0 (left origin)
+2. Panel coverage is fixed (default 36")
+3. Ribs are spaced at 12" on center
+4. Layout is PANEL-DRIVEN, not opening-driven
+
+Openings DO NOT:
+- shift layout
+- redefine panel positions
+
+Openings ONLY:
+- generate cuts
+- generate warnings
+
+Violation of this = system failure
+
+
+-------------------------------------
+RIB LOGIC (CRITICAL)
+-------------------------------------
+Rib centers per panel:
+S (Seam) = 0"
+R2 = 12"
+R3 = 24"
+O (Overlap) = 36"
+
+WARNING CONDITION:
+If opening edge is within ±0.5" of rib center → FLAG
+
+Ribs intersecting inside opening = OK
+Rib landing on jamb edge = NOT OK
+
+
+-------------------------------------
+SIDEWALL MODEL
+-------------------------------------
+- Horizontal layout defines panels
+- Wall Height applies vertically to ALL panels
+- Panels run full height unless cut by opening
+
+WallHeight is REQUIRED for:
+- cut sheets
+- real-world panel length output
+
+WallHeight does NOT affect horizontal layout
+
+
+-------------------------------------
+GABLE MODEL
+-------------------------------------
+- Height varies across X
+- Panels defined by same horizontal system
+- Heights interpolated from:
+  - left eave
+  - ridge
+  - right eave
+
+Ridge:
+- must be visually clear
+- must not conflict with dimension labels
+
+Gable logic must remain linear interpolation
+No curve logic. No fancy nonsense.
+
+
+-------------------------------------
+OPENINGS SYSTEM
+-------------------------------------
+Openings are overlays, not drivers.
+
+Each opening has:
+- start (X)
+- width
+
+Future:
+- sill height
+- head height
+
+Openings generate:
+- panel cut segments
+- warning checks
+
+They do NOT:
+- modify panel layout
+- snap panels
+
+
+-------------------------------------
+SUMMARY RULES
+-------------------------------------
+Summary must remain:
+- short
+- readable
+- field-relevant
+
+Sidewall summary includes:
+- Wall Length
+- Wall Height
+- Panel Coverage
+- Full Panels
+- Non-standard panels ONLY
+
+Do NOT list every panel unless necessary
+
+
+-------------------------------------
+SVG RENDER RULES
+-------------------------------------
+The drawing is the PRIMARY OUTPUT
+
+Must always show:
+- wall boundary
+- panel seams
+- ribs
+- openings
+- dimensions
+
+Rules:
+- readable > detailed
+- avoid label clutter
+- ridge must stand out
+- spacing must prevent overlap
+
+If it looks confusing → it is wrong
+
+
+-------------------------------------
+UI RULES
+-------------------------------------
+- Inputs grouped logically
+- No dead states
+- Layout always renders if valid
+
+DO NOT:
+- overbuild controls
+- add unnecessary toggles
+- turn this into CAD software
+
+
+-------------------------------------
+GIT RULES
+-------------------------------------
+main = FIELD SAFE
+experimental = sandbox
+
+NEVER:
+- test risky changes on main
+
+ONLY merge to main when:
+- tested
+- stable
+- trusted in field
+
+
+-------------------------------------
+DEPLOYMENT RULES
+-------------------------------------
+Wasmer / Pages deploy from main ONLY
+
+experimental is NOT public
+
+Live tool must always be:
+- stable
+- predictable
+- usable under pressure
+
+
+-------------------------------------
+DEVELOPMENT RULE
+-------------------------------------
+Before adding ANY feature:
+
+Ask:
+1. Does this prevent mistakes?
+2. Does this improve clarity?
+3. Would I trust this on a job?
+
+If NO → do not build it
+
+
+-------------------------------------
+FINAL RULE
+-------------------------------------
+Do not break what works.
+Ever.
+
+(Yes, this means you.)
