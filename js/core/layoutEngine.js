@@ -12,6 +12,8 @@ export function generateLayout(config) {
 
 function generateSidewallLayout(config) {
   const wallLength = Number(config.wallLength) || 0
+  const wallHeight = Number(config.wallHeight) || 0
+  const panelStopHeight = Number(config.panelStopHeight) || wallHeight
   const panelCoverage = Number(config.panelCoverage) || 36
   const ribSpacing = Number(config.ribSpacing) || 12
   const startOffset = Number(config.startOffset) || 0
@@ -27,6 +29,8 @@ function generateSidewallLayout(config) {
   return {
     wallType: "sidewall",
     wallLength,
+    wallHeight,
+    panelStopHeight,
     panelCoverage,
     ribSpacing,
     startOffset,
@@ -52,6 +56,10 @@ function generateGableLayout(config) {
   const ridgePosition = Number(config.ridgePosition) || 0
   const rightEaveHeight = Number(config.rightEaveHeight) || 0
 
+  const leftPanelStopHeight = Number(config.leftPanelStopHeight) || leftEaveHeight
+  const ridgePanelStopHeight = Number(config.ridgePanelStopHeight) || ridgeHeight
+  const rightPanelStopHeight = Number(config.rightPanelStopHeight) || rightEaveHeight
+
   const panels = calculatePanels(wallLength, panelCoverage)
   const seams = panels.map(p => p.start).concat(wallLength)
   const ribs = calculateRibs(wallLength, ribSpacing, startOffset)
@@ -75,6 +83,24 @@ function generateGableLayout(config) {
       rightEaveHeight
     )
 
+    const leftStopHeight = getGableHeightAtX(
+      panel.start,
+      wallLength,
+      leftPanelStopHeight,
+      ridgePanelStopHeight,
+      ridgePosition,
+      rightPanelStopHeight
+    )
+
+    const rightStopHeight = getGableHeightAtX(
+      panel.end,
+      wallLength,
+      leftPanelStopHeight,
+      ridgePanelStopHeight,
+      ridgePosition,
+      rightPanelStopHeight
+    )
+
     const ridgePanel =
       panel.start < ridgePosition && panel.end > ridgePosition
 
@@ -85,6 +111,8 @@ function generateGableLayout(config) {
       width: panel.width,
       leftHeight,
       rightHeight,
+      leftStopHeight,
+      rightStopHeight,
       ridgePanel
     }
   })
@@ -102,6 +130,9 @@ function generateGableLayout(config) {
     ridgeHeight,
     ridgePosition,
     rightEaveHeight,
+    leftPanelStopHeight,
+    ridgePanelStopHeight,
+    rightPanelStopHeight,
     panels,
     seams,
     ribs,
