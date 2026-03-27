@@ -3,6 +3,7 @@ import { renderSvg } from "./js/renderer/svgRenderer.js"
 import { renderGable } from "./js/renderer/gableRenderer.js"
 import { renderOpeningReport } from "./js/renderer/openingReportRenderer.js"
 import { renderSummary } from "./js/renderer/summaryRenderer.js"
+import { parseMeasurement } from "./js/utils/measurementParser.js"
 
 let openings = []
 
@@ -15,7 +16,15 @@ function updateLayout() {
   const ribSpacingEl = document.getElementById("ribSpacing")
   const startOffsetEl = document.getElementById("startOffset")
 
-  if (!wallTypeEl || !wallLengthEl || !wallHeightEl || !panelStopHeightEl || !panelCoverageEl || !ribSpacingEl || !startOffsetEl) {
+  if (
+    !wallTypeEl ||
+    !wallLengthEl ||
+    !wallHeightEl ||
+    !panelStopHeightEl ||
+    !panelCoverageEl ||
+    !ribSpacingEl ||
+    !startOffsetEl
+  ) {
     console.error("Required input missing")
     return
   }
@@ -24,23 +33,23 @@ function updateLayout() {
 
   const config = {
     wallType,
-    wallLength: Number(wallLengthEl.value) || 0,
-    wallHeight: Number(wallHeightEl.value) || 0,
-    panelStopHeight: Number(panelStopHeightEl.value) || 0,
-    panelCoverage: Number(panelCoverageEl.value) || 36,
-    ribSpacing: Number(ribSpacingEl.value) || 12,
-    startOffset: Number(startOffsetEl.value) || 0,
+    wallLength: parseMeasurement(wallLengthEl.value),
+    wallHeight: parseMeasurement(wallHeightEl.value),
+    panelStopHeight: parseMeasurement(panelStopHeightEl.value),
+    panelCoverage: parseMeasurement(panelCoverageEl.value) || 36,
+    ribSpacing: parseMeasurement(ribSpacingEl.value) || 12,
+    startOffset: parseMeasurement(startOffsetEl.value),
     openings
   }
 
   if (wallType === "gable") {
-    config.leftEaveHeight = Number(document.getElementById("leftEaveHeight")?.value) || 0
-    config.leftPanelStopHeight = Number(document.getElementById("leftPanelStopHeight")?.value) || 0
-    config.ridgeHeight = Number(document.getElementById("ridgeHeight")?.value) || 0
-    config.ridgePanelStopHeight = Number(document.getElementById("ridgePanelStopHeight")?.value) || 0
-    config.ridgePosition = Number(document.getElementById("ridgePosition")?.value) || 0
-    config.rightEaveHeight = Number(document.getElementById("rightEaveHeight")?.value) || 0
-    config.rightPanelStopHeight = Number(document.getElementById("rightPanelStopHeight")?.value) || 0
+    config.leftEaveHeight = parseMeasurement(document.getElementById("leftEaveHeight")?.value)
+    config.leftPanelStopHeight = parseMeasurement(document.getElementById("leftPanelStopHeight")?.value)
+    config.ridgeHeight = parseMeasurement(document.getElementById("ridgeHeight")?.value)
+    config.ridgePanelStopHeight = parseMeasurement(document.getElementById("ridgePanelStopHeight")?.value)
+    config.ridgePosition = parseMeasurement(document.getElementById("ridgePosition")?.value)
+    config.rightEaveHeight = parseMeasurement(document.getElementById("rightEaveHeight")?.value)
+    config.rightPanelStopHeight = parseMeasurement(document.getElementById("rightPanelStopHeight")?.value)
   }
 
   if (config.wallLength <= 0) {
@@ -95,8 +104,8 @@ function addOpening() {
 
   if (!startEl || !widthEl) return
 
-  const start = Number(startEl.value)
-  const width = Number(widthEl.value)
+  const start = parseMeasurement(startEl.value)
+  const width = parseMeasurement(widthEl.value)
 
   if (!start || !width) return
 
