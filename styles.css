@@ -43,10 +43,13 @@ select {
   border-radius: 6px;
   box-sizing: border-box;
   font-family: inherit;
+  font-size: 16px; /* Safari no-zoom fix */
+  -webkit-text-size-adjust: 100%;
 }
 
 input.measure-input {
   font-family: "Fira Code", monospace;
+  font-size: 16px; /* Safari no-zoom fix */
 }
 
 button {
