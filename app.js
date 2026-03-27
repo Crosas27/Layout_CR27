@@ -6,6 +6,7 @@ import { renderSummary } from "./js/renderer/summaryRenderer.js"
 import { parseMeasurement } from "./js/utils/measurementParser.js"
 
 let openings = []
+let activeMeasurementInput = null
 
 function updateLayout() {
   const wallTypeEl = document.getElementById("wallType")
@@ -132,6 +133,94 @@ function syncModeUI() {
   }
 }
 
+function setupMeasurementKeyboard() {
+  const keyboard = document.getElementById("measurementKeyboard")
+  const measureInputs = document.querySelectorAll(".measure-input")
+
+  if (!keyboard) return
+
+  measureInputs.forEach(input => {
+    input.addEventListener("focus", function() {
+      activeMeasurementInput = input
+      keyboard.classList.remove("hidden")
+    })
+
+    input.addEventListener("click", function() {
+      activeMeasurementInput = input
+      keyboard.classList.remove("hidden")
+    })
+  })
+
+  keyboard.addEventListener("click", function(event) {
+    const target = event.target
+    if (!(target instanceof HTMLElement)) return
+
+    if (target.dataset.action === "backspace") {
+      handleBackspace()
+      return
+    }
+
+    if (target.dataset.key) {
+      insertAtCursor(target.dataset.key)
+    }
+  })
+
+  document.addEventListener("click", function(event) {
+    const target = event.target
+    const clickedMeasureInput = target instanceof Element && target.closest(".measure-input")
+    const clickedKeyboard = target instanceof Element && target.closest("#measurementKeyboard")
+
+    if (!clickedMeasureInput && !clickedKeyboard) {
+      keyboard.classList.add("hidden")
+      activeMeasurementInput = null
+    }
+  })
+}
+
+function insertAtCursor(text) {
+  if (!activeMeasurementInput) return
+
+  const input = activeMeasurementInput
+  const start = input.selectionStart ?? input.value.length
+  const end = input.selectionEnd ?? input.value.length
+
+  const before = input.value.slice(0, start)
+  const after = input.value.slice(end)
+
+  input.value = before + text + after
+
+  const newPos = start + text.length
+  input.setSelectionRange(newPos, newPos)
+  input.focus()
+}
+
+function handleBackspace() {
+  if (!activeMeasurementInput) return
+
+  const input = activeMeasurementInput
+  const start = input.selectionStart ?? input.value.length
+  const end = input.selectionEnd ?? input.value.length
+
+  if (start !== end) {
+    const before = input.value.slice(0, start)
+    const after = input.value.slice(end)
+    input.value = before + after
+    input.setSelectionRange(start, start)
+    input.focus()
+    return
+  }
+
+  if (start <= 0) return
+
+  const before = input.value.slice(0, start - 1)
+  const after = input.value.slice(end)
+
+  input.value = before + after
+  const newPos = start - 1
+  input.setSelectionRange(newPos, newPos)
+  input.focus()
+}
+
 document.addEventListener("DOMContentLoaded", function() {
   const btn = document.getElementById("generateBtn")
   const addBtn = document.getElementById("addOpeningBtn")
@@ -157,6 +246,7 @@ document.addEventListener("DOMContentLoaded", function() {
   btn.addEventListener("click", updateLayout)
   addBtn.addEventListener("click", addOpening)
 
+  setupMeasurementKeyboard()
   syncModeUI()
   updateLayout()
 })
