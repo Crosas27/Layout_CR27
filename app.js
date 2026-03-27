@@ -7,22 +7,45 @@ import { renderSummary } from "./js/renderer/summaryRenderer.js"
 let openings = []
 
 function updateLayout() {
-  const wallType = document.getElementById("wallType").value
+  const wallTypeEl = document.getElementById("wallType")
+  const wallLengthEl = document.getElementById("wallLength")
+  const wallHeightEl = document.getElementById("wallHeight")
+  const panelStopHeightEl = document.getElementById("panelStopHeight")
+  const panelCoverageEl = document.getElementById("panelCoverage")
+  const ribSpacingEl = document.getElementById("ribSpacing")
+  const startOffsetEl = document.getElementById("startOffset")
+
+  if (!wallTypeEl || !wallLengthEl || !wallHeightEl || !panelStopHeightEl || !panelCoverageEl || !ribSpacingEl || !startOffsetEl) {
+    console.error("Required input missing")
+    return
+  }
+
+  const wallType = wallTypeEl.value
 
   const config = {
     wallType,
-    wallLength: Number(document.getElementById("wallLength").value) || 0,
-    panelCoverage: Number(document.getElementById("panelCoverage").value) || 36,
-    ribSpacing: Number(document.getElementById("ribSpacing").value) || 12,
-    startOffset: Number(document.getElementById("startOffset").value) || 0,
+    wallLength: Number(wallLengthEl.value) || 0,
+    wallHeight: Number(wallHeightEl.value) || 0,
+    panelStopHeight: Number(panelStopHeightEl.value) || 0,
+    panelCoverage: Number(panelCoverageEl.value) || 36,
+    ribSpacing: Number(ribSpacingEl.value) || 12,
+    startOffset: Number(startOffsetEl.value) || 0,
     openings
   }
 
   if (wallType === "gable") {
-    config.leftEaveHeight = Number(document.getElementById("leftEaveHeight").value) || 0
-    config.ridgeHeight = Number(document.getElementById("ridgeHeight").value) || 0
-    config.ridgePosition = Number(document.getElementById("ridgePosition").value) || 0
-    config.rightEaveHeight = Number(document.getElementById("rightEaveHeight").value) || 0
+    config.leftEaveHeight = Number(document.getElementById("leftEaveHeight")?.value) || 0
+    config.leftPanelStopHeight = Number(document.getElementById("leftPanelStopHeight")?.value) || 0
+    config.ridgeHeight = Number(document.getElementById("ridgeHeight")?.value) || 0
+    config.ridgePanelStopHeight = Number(document.getElementById("ridgePanelStopHeight")?.value) || 0
+    config.ridgePosition = Number(document.getElementById("ridgePosition")?.value) || 0
+    config.rightEaveHeight = Number(document.getElementById("rightEaveHeight")?.value) || 0
+    config.rightPanelStopHeight = Number(document.getElementById("rightPanelStopHeight")?.value) || 0
+  }
+
+  if (config.wallLength <= 0) {
+    console.warn("Invalid wall length")
+    return
   }
 
   const model = generateLayout(config)
@@ -87,7 +110,7 @@ function addOpening() {
 }
 
 function syncModeUI() {
-  const wallType = document.getElementById("wallType").value
+  const wallType = document.getElementById("wallType")?.value
   const gableFields = document.getElementById("gableFields")
   const openingsCard = document.getElementById("openingsCard")
 
@@ -128,3 +151,5 @@ document.addEventListener("DOMContentLoaded", function() {
   syncModeUI()
   updateLayout()
 })
+
+export { updateLayout }
