@@ -13,10 +13,18 @@ export function renderSummary(model) {
       <p><strong>Wall Type:</strong> Gable Endwall</p>
       <p><strong>Wall Length:</strong> ${formatToField(s.wallLength)}</p>
       <p><strong>Panel Coverage:</strong> ${formatToField(s.coverage)}</p>
+
       <p><strong>Left Eave:</strong> ${formatToField(model.leftEaveHeight)}</p>
+      <p><strong>Left Panel Stop:</strong> ${formatToField(model.leftPanelStopHeight)}</p>
+
       <p><strong>Ridge Height:</strong> ${formatToField(model.ridgeHeight)}</p>
+      <p><strong>Ridge Panel Stop:</strong> ${formatToField(model.ridgePanelStopHeight)}</p>
+
       <p><strong>Ridge Position:</strong> ${formatToField(model.ridgePosition)}</p>
+
       <p><strong>Right Eave:</strong> ${formatToField(model.rightEaveHeight)}</p>
+      <p><strong>Right Panel Stop:</strong> ${formatToField(model.rightPanelStopHeight)}</p>
+
       <p><strong>Full Panels:</strong> ${s.fullPanels}</p>
     `
 
@@ -39,7 +47,9 @@ export function renderSummary(model) {
         html += `
           <li>
             Panel ${panel.panel} —
-            ${formatToField(panel.leftHeight)} → ${formatToField(panel.rightHeight)}
+            structural: ${formatToField(panel.leftHeight)} → ${formatToField(panel.rightHeight)}
+            <br>
+            panel stop: ${formatToField(panel.leftStopHeight)} → ${formatToField(panel.rightStopHeight)}
             ${panel.ridgePanel ? " (ridge panel)" : ""}
           </li>
         `
@@ -51,6 +61,8 @@ export function renderSummary(model) {
     html += `
       <p><strong>Wall Type:</strong> Sidewall</p>
       <p><strong>Wall Length:</strong> ${formatToField(s.wallLength)}</p>
+      <p><strong>Wall Height:</strong> ${formatToField(model.wallHeight || 0)}</p>
+      <p><strong>Panel Stop Height:</strong> ${formatToField(model.panelStopHeight || 0)}</p>
       <p><strong>Panel Coverage:</strong> ${formatToField(s.coverage)}</p>
       <p><strong>Full Panels:</strong> ${s.fullPanels}</p>
     `
