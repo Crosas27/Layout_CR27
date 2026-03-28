@@ -1,73 +1,249 @@
-import { generateLayout } from "./js/core/layoutEngine.js"
-import { renderSvg } from "./js/renderer/svgRenderer.js"
-import { renderGable } from "./js/renderer/gableRenderer.js"
+import { generateLayout }      from "./js/core/layoutEngine.js"
+import { renderWall }          from "./js/renderer/wallRenderer.js"
 import { renderOpeningReport } from "./js/renderer/openingReportRenderer.js"
-import { renderSummary } from "./js/renderer/summaryRenderer.js"
-import { parseMeasurement } from "./js/utils/measurementParser.js"
+import { renderSummary }       from "./js/renderer/summaryRenderer.js"
+import { parseMeasurement }    from "./js/utils/measurementParser.js"
+import { formatToField }       from "./js/utils/formatter.js"
+import { buildTextSummary }    from "./js/utils/textExport.js"
 
-let openings = []
-let activeMeasurementInput = null
+/* ================================================================
+   STATE — single source of truth
+   All mutations go through direct assignment + persistState().
+   Layout auto-renders 300ms after any change (debounced).
+================================================================ */
+
+const STORAGE_KEY = "layout_cr27_v2"
+
+const DEFAULT_STATE = {
+  wallType:             "sidewall",
+  wallLength:           "",
+  wallHeight:           "",
+  panelStopHeight:      "",
+  panelCoverage:        '36"',
+  ribSpacing:           '12"',
+  startOffset:          '0"',
+  leftEaveHeight:       "",
+  leftPanelStopHeight:  "",
+  ridgeHeight:          "",
+  ridgePanelStopHeight: "",
+  ridgePosition:        "",
+  rightEaveHeight:      "",
+  rightPanelStopHeight: "",
+  openings:             []
+}
+
+let state       = { ...DEFAULT_STATE }
+let lastModel   = null
+let renderTimer = null
+
+const CONFIG_INPUT_IDS = [
+  "wallLength", "wallHeight", "panelStopHeight", "panelCoverage",
+  "ribSpacing", "startOffset",
+  "leftEaveHeight", "leftPanelStopHeight",
+  "ridgeHeight", "ridgePanelStopHeight",
+  "ridgePosition", "rightEaveHeight", "rightPanelStopHeight"
+]
+
+/* ================================================================
+   PERSISTENCE — localStorage + URL hash
+================================================================ */
+
+function persistState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+  } catch (_) {}
+  updateHash()
+}
+
+function updateHash() {
+  // Only encode config fields — openings can be too long for a URL
+  const { openings, ...config } = state
+  try {
+    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(config))))
+    history.replaceState(null, "", "#" + encoded)
+  } catch (_) {}
+}
+
+function loadState() {
+  // URL hash first (shared links)
+  if (location.hash.length > 1) {
+    try {
+      const decoded = JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(1)))))
+      if (decoded && typeof decoded === "object") {
+        state = { ...DEFAULT_STATE, ...decoded, openings: [] }
+        populateInputs()
+        return
+      }
+    } catch (_) {}
+  }
+
+  // Fall back to localStorage
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY))
+    if (saved && typeof saved === "object") {
+      state = { ...DEFAULT_STATE, ...saved }
+      populateInputs()
+    }
+  } catch (_) {}
+}
+
+function populateInputs() {
+  const wallTypeEl = document.getElementById("wallType")
+  if (wallTypeEl) wallTypeEl.value = state.wallType
+
+  CONFIG_INPUT_IDS.forEach(id => {
+    const el = document.getElementById(id)
+    if (el && state[id] !== undefined) el.value = state[id]
+  })
+
+  syncModeUI()
+  renderOpeningsList()
+}
+
+/* ================================================================
+   INPUT BINDING — auto-sync on every keystroke
+================================================================ */
+
+function bindInputs() {
+  const wallTypeEl = document.getElementById("wallType")
+  if (wallTypeEl) {
+    wallTypeEl.addEventListener("change", () => {
+      state.wallType = wallTypeEl.value
+      syncModeUI()
+      persistState()
+      scheduleRender()
+    })
+  }
+
+  CONFIG_INPUT_IDS.forEach(id => {
+    const el = document.getElementById(id)
+    if (!el) return
+    el.addEventListener("input", () => {
+      state[id] = el.value
+      persistState()
+      scheduleRender()
+    })
+  })
+}
+
+/* ================================================================
+   RENDER SCHEDULING — 300ms debounce, or immediate
+================================================================ */
+
+function scheduleRender(immediate = false) {
+  clearTimeout(renderTimer)
+  if (immediate) {
+    updateLayout()
+  } else {
+    renderTimer = setTimeout(updateLayout, 300)
+  }
+}
+
+/* ================================================================
+   LAYOUT UPDATE
+================================================================ */
 
 function updateLayout() {
-  const wallTypeEl = document.getElementById("wallType")
-  const wallLengthEl = document.getElementById("wallLength")
-  const wallHeightEl = document.getElementById("wallHeight")
-  const panelStopHeightEl = document.getElementById("panelStopHeight")
-  const panelCoverageEl = document.getElementById("panelCoverage")
-  const ribSpacingEl = document.getElementById("ribSpacing")
-  const startOffsetEl = document.getElementById("startOffset")
+  clearError()
 
-  if (
-    !wallTypeEl ||
-    !wallLengthEl ||
-    !wallHeightEl ||
-    !panelStopHeightEl ||
-    !panelCoverageEl ||
-    !ribSpacingEl ||
-    !startOffsetEl
-  ) {
-    console.error("Required input missing")
+  const wallLength = parseMeasurement(state.wallLength)
+  if (!wallLength || wallLength <= 0) {
+    clearOutputs()
     return
   }
-
-  const wallType = wallTypeEl.value
 
   const config = {
-    wallType,
-    wallLength: parseMeasurement(wallLengthEl.value),
-    wallHeight: parseMeasurement(wallHeightEl.value),
-    panelStopHeight: parseMeasurement(panelStopHeightEl.value),
-    panelCoverage: parseMeasurement(panelCoverageEl.value) || 36,
-    ribSpacing: parseMeasurement(ribSpacingEl.value) || 12,
-    startOffset: parseMeasurement(startOffsetEl.value),
-    openings
+    wallType:        state.wallType,
+    wallLength,
+    wallHeight:      parseMeasurement(state.wallHeight),
+    panelStopHeight: parseMeasurement(state.panelStopHeight),
+    panelCoverage:   parseMeasurement(state.panelCoverage) || 36,
+    ribSpacing:      parseMeasurement(state.ribSpacing)    || 12,
+    startOffset:     parseMeasurement(state.startOffset)   || 0,
+    openings:        state.openings
   }
 
-  if (wallType === "gable") {
-    config.leftEaveHeight = parseMeasurement(document.getElementById("leftEaveHeight")?.value)
-    config.leftPanelStopHeight = parseMeasurement(document.getElementById("leftPanelStopHeight")?.value)
-    config.ridgeHeight = parseMeasurement(document.getElementById("ridgeHeight")?.value)
-    config.ridgePanelStopHeight = parseMeasurement(document.getElementById("ridgePanelStopHeight")?.value)
-    config.ridgePosition = parseMeasurement(document.getElementById("ridgePosition")?.value)
-    config.rightEaveHeight = parseMeasurement(document.getElementById("rightEaveHeight")?.value)
-    config.rightPanelStopHeight = parseMeasurement(document.getElementById("rightPanelStopHeight")?.value)
+  if (state.wallType === "gable") {
+    Object.assign(config, {
+      leftEaveHeight:       parseMeasurement(state.leftEaveHeight),
+      leftPanelStopHeight:  parseMeasurement(state.leftPanelStopHeight),
+      ridgeHeight:          parseMeasurement(state.ridgeHeight),
+      ridgePanelStopHeight: parseMeasurement(state.ridgePanelStopHeight),
+      ridgePosition:        parseMeasurement(state.ridgePosition),
+      rightEaveHeight:      parseMeasurement(state.rightEaveHeight),
+      rightPanelStopHeight: parseMeasurement(state.rightPanelStopHeight)
+    })
   }
 
-  if (config.wallLength <= 0) {
-    console.warn("Invalid wall length")
+  lastModel = generateLayout(config)
+
+  renderWall(lastModel)
+  renderOpeningReport(lastModel)
+  renderSummary(lastModel)
+}
+
+function clearOutputs() {
+  const svg     = document.getElementById("wallSvg")
+  const summary = document.getElementById("panelSummary")
+  const report  = document.getElementById("openingReport")
+  if (svg)     svg.innerHTML     = ""
+  if (summary) summary.innerHTML = ""
+  if (report)  report.innerHTML  = ""
+}
+
+/* ================================================================
+   ERROR DISPLAY
+================================================================ */
+
+function showError(msg) {
+  const box = document.getElementById("errorBox")
+  if (!box) return
+  box.textContent = msg
+  box.classList.remove("hidden")
+}
+
+function clearError() {
+  const box = document.getElementById("errorBox")
+  if (box) box.classList.add("hidden")
+}
+
+/* ================================================================
+   OPENINGS MANAGEMENT
+================================================================ */
+
+function addOpening() {
+  const startEl = document.getElementById("openingStart")
+  const widthEl = document.getElementById("openingWidth")
+  if (!startEl || !widthEl) return
+
+  const start = parseMeasurement(startEl.value)
+  const width = parseMeasurement(widthEl.value)
+
+  if (!width || width <= 0) {
+    showError("Opening width is required.")
+    return
+  }
+  if (start < 0) {
+    showError("Opening start cannot be negative.")
     return
   }
 
-  const model = generateLayout(config)
-
-  if (wallType === "gable") {
-    renderGable(model)
-  } else {
-    renderSvg(model)
+  const wallLength = parseMeasurement(state.wallLength)
+  if (wallLength > 0 && start + width > wallLength) {
+    showError(
+      `Opening end (${formatToField(start + width)}) exceeds wall length (${formatToField(wallLength)}).`
+    )
+    return
   }
 
-  renderOpeningReport(model)
-  renderSummary(model)
+  clearError()
+  state.openings = [...state.openings, { start, width }]
+  persistState()
+  renderOpeningsList()
+  scheduleRender(true)
+
+  startEl.value = ""
+  widthEl.value = ""
 }
 
 function renderOpeningsList() {
@@ -76,21 +252,21 @@ function renderOpeningsList() {
 
   list.innerHTML = ""
 
-  openings.forEach(function(op, index) {
-    const div = document.createElement("div")
+  state.openings.forEach((op, index) => {
+    const div   = document.createElement("div")
     div.className = "opening-item"
 
     const label = document.createElement("span")
-    label.textContent = op.start + '" to ' + (op.start + op.width) + '"'
+    label.textContent = formatToField(op.start) + "  →  " + formatToField(op.start + op.width)
 
     const btn = document.createElement("button")
-    btn.textContent = "X"
-    btn.className = "delete-btn"
-
-    btn.onclick = function() {
-      openings.splice(index, 1)
+    btn.textContent = "✕"
+    btn.className   = "delete-btn"
+    btn.onclick = () => {
+      state.openings = state.openings.filter((_, i) => i !== index)
+      persistState()
       renderOpeningsList()
-      updateLayout()
+      scheduleRender(true)
     }
 
     div.appendChild(label)
@@ -99,156 +275,168 @@ function renderOpeningsList() {
   })
 }
 
-function addOpening() {
-  const startEl = document.getElementById("openingStart")
-  const widthEl = document.getElementById("openingWidth")
-
-  if (!startEl || !widthEl) return
-
-  const start = parseMeasurement(startEl.value)
-  const width = parseMeasurement(widthEl.value)
-
-  if (!start || !width) return
-
-  openings.push({ start, width })
-
-  startEl.value = ""
-  widthEl.value = ""
-
-  renderOpeningsList()
-  updateLayout()
-}
+/* ================================================================
+   MODE UI — show/hide gable vs sidewall fields
+================================================================ */
 
 function syncModeUI() {
-  const wallType = document.getElementById("wallType")?.value
+  const isGable     = state.wallType === "gable"
   const gableFields = document.getElementById("gableFields")
-  const openingsCard = document.getElementById("openingsCard")
+  const sideFields  = document.getElementById("sidewallFields")
 
-  if (wallType === "gable") {
-    if (gableFields) gableFields.style.display = "block"
-    if (openingsCard) openingsCard.style.display = "none"
-  } else {
-    if (gableFields) gableFields.style.display = "none"
-    if (openingsCard) openingsCard.style.display = "block"
-  }
+  if (gableFields) gableFields.style.display = isGable ? "block" : "none"
+  if (sideFields)  sideFields.style.display  = isGable ? "none"  : "block"
 }
+
+/* ================================================================
+   SHARE BUTTON — copies URL with encoded state to clipboard
+================================================================ */
+
+function setupShareButton() {
+  const btn = document.getElementById("shareBtn")
+  if (!btn) return
+
+  btn.addEventListener("click", () => {
+    updateHash()
+    const url = location.href
+
+    const copy = () => {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(() => {
+          btn.textContent = "Link Copied!"
+          setTimeout(() => { btn.textContent = "Share Layout" }, 2500)
+        }).catch(() => prompt("Copy this link:", url))
+      } else {
+        prompt("Copy this link:", url)
+      }
+    }
+    copy()
+  })
+}
+
+/* ================================================================
+   COPY CUT LIST — plain-text summary to clipboard
+================================================================ */
+
+function setupCopyTextButton() {
+  const btn = document.getElementById("copyTextBtn")
+  if (!btn) return
+
+  btn.addEventListener("click", () => {
+    if (!lastModel) {
+      showError("Generate a layout first.")
+      return
+    }
+
+    const text = buildTextSummary(lastModel)
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = "Copied!"
+        setTimeout(() => { btn.textContent = "Copy Cut List" }, 2500)
+      }).catch(() => prompt("Copy cut list:", text))
+    } else {
+      prompt("Copy cut list:", text)
+    }
+  })
+}
+
+/* ================================================================
+   MEASUREMENT KEYBOARD
+================================================================ */
+
+let activeInput = null
 
 function setupMeasurementKeyboard() {
   const keyboard = document.getElementById("measurementKeyboard")
-  const measureInputs = document.querySelectorAll(".measure-input")
-
   if (!keyboard) return
 
-  measureInputs.forEach(input => {
-    input.addEventListener("focus", function() {
-      activeMeasurementInput = input
-      keyboard.classList.remove("hidden")
-    })
-
-    input.addEventListener("click", function() {
-      activeMeasurementInput = input
-      keyboard.classList.remove("hidden")
-    })
+  document.querySelectorAll(".measure-input").forEach(input => {
+    input.addEventListener("focus", () => { activeInput = input; keyboard.classList.remove("hidden") })
+    input.addEventListener("click", () => { activeInput = input; keyboard.classList.remove("hidden") })
   })
 
-  keyboard.addEventListener("click", function(event) {
-    const target = event.target
+  keyboard.addEventListener("click", e => {
+    const target = e.target
     if (!(target instanceof HTMLElement)) return
 
     if (target.dataset.action === "backspace") {
       handleBackspace()
+      fireStateSync()
       return
     }
-
+    if (target.dataset.action === "confirm") {
+      keyboard.classList.add("hidden")
+      activeInput = null
+      scheduleRender(true)
+      return
+    }
     if (target.dataset.key) {
       insertAtCursor(target.dataset.key)
+      fireStateSync()
     }
   })
 
-  document.addEventListener("click", function(event) {
-    const target = event.target
-    const clickedMeasureInput = target instanceof Element && target.closest(".measure-input")
-    const clickedKeyboard = target instanceof Element && target.closest("#measurementKeyboard")
-
-    if (!clickedMeasureInput && !clickedKeyboard) {
+  document.addEventListener("click", e => {
+    const t = e.target
+    if (!(t instanceof Element)) return
+    if (!t.closest(".measure-input") && !t.closest("#measurementKeyboard")) {
       keyboard.classList.add("hidden")
-      activeMeasurementInput = null
+      activeInput = null
     }
   })
 }
 
-function insertAtCursor(text) {
-  if (!activeMeasurementInput) return
+function fireStateSync() {
+  if (!activeInput) return
+  const id = activeInput.id
+  if (id && CONFIG_INPUT_IDS.includes(id)) {
+    state[id] = activeInput.value
+    persistState()
+    scheduleRender()
+  }
+  activeInput.dispatchEvent(new Event("input", { bubbles: true }))
+}
 
-  const input = activeMeasurementInput
-  const start = input.selectionStart ?? input.value.length
-  const end = input.selectionEnd ?? input.value.length
-
-  const before = input.value.slice(0, start)
-  const after = input.value.slice(end)
-
-  input.value = before + text + after
-
-  const newPos = start + text.length
-  input.setSelectionRange(newPos, newPos)
-  input.focus()
+function insertAtCursor(char) {
+  if (!activeInput) return
+  const s = activeInput.selectionStart ?? activeInput.value.length
+  const e = activeInput.selectionEnd   ?? activeInput.value.length
+  activeInput.value = activeInput.value.slice(0, s) + char + activeInput.value.slice(e)
+  const pos = s + char.length
+  activeInput.setSelectionRange(pos, pos)
+  activeInput.focus()
 }
 
 function handleBackspace() {
-  if (!activeMeasurementInput) return
+  if (!activeInput) return
+  const s = activeInput.selectionStart ?? activeInput.value.length
+  const e = activeInput.selectionEnd   ?? activeInput.value.length
 
-  const input = activeMeasurementInput
-  const start = input.selectionStart ?? input.value.length
-  const end = input.selectionEnd ?? input.value.length
-
-  if (start !== end) {
-    const before = input.value.slice(0, start)
-    const after = input.value.slice(end)
-    input.value = before + after
-    input.setSelectionRange(start, start)
-    input.focus()
-    return
+  if (s !== e) {
+    activeInput.value = activeInput.value.slice(0, s) + activeInput.value.slice(e)
+    activeInput.setSelectionRange(s, s)
+  } else if (s > 0) {
+    activeInput.value = activeInput.value.slice(0, s - 1) + activeInput.value.slice(e)
+    activeInput.setSelectionRange(s - 1, s - 1)
   }
-
-  if (start <= 0) return
-
-  const before = input.value.slice(0, start - 1)
-  const after = input.value.slice(end)
-
-  input.value = before + after
-  const newPos = start - 1
-  input.setSelectionRange(newPos, newPos)
-  input.focus()
+  activeInput.focus()
 }
 
-document.addEventListener("DOMContentLoaded", function() {
-  const btn = document.getElementById("generateBtn")
-  const addBtn = document.getElementById("addOpeningBtn")
-  const wallType = document.getElementById("wallType")
+/* ================================================================
+   INIT
+================================================================ */
 
-  if (!btn) {
-    console.error("Generate button missing")
-    return
-  }
-
-  if (!addBtn) {
-    console.error("Add Opening button missing")
-    return
-  }
-
-  if (wallType) {
-    wallType.addEventListener("change", function() {
-      syncModeUI()
-      updateLayout()
-    })
-  }
-
-  btn.addEventListener("click", updateLayout)
-  addBtn.addEventListener("click", addOpening)
-
+document.addEventListener("DOMContentLoaded", () => {
+  loadState()
+  bindInputs()
   setupMeasurementKeyboard()
-  syncModeUI()
-  updateLayout()
-})
+  setupShareButton()
+  setupCopyTextButton()
 
-export { updateLayout }
+  const addBtn = document.getElementById("addOpeningBtn")
+  if (addBtn) addBtn.addEventListener("click", addOpening)
+
+  syncModeUI()
+  scheduleRender(true)
+})

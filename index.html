@@ -2,10 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-  />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Panel Layout Tool</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,21 +15,16 @@
   <div class="app">
     <h2>Panel Layout Tool</h2>
 
+    <!-- Error box (hidden by default) -->
+    <div id="errorBox" class="error-box hidden"></div>
+
+    <!-- Config card -->
     <div class="card">
       <label for="wallType">Wall Type</label>
       <select id="wallType">
         <option value="sidewall">Sidewall</option>
         <option value="gable">Gable Endwall</option>
       </select>
-
-      <label for="wallLength">Wall Length</label>
-      <input id="wallLength" class="measure-input" type="text" inputmode="none" placeholder='e.g. 42\' or 504"' />
-
-      <label for="wallHeight">Wall Height</label>
-      <input id="wallHeight" class="measure-input" type="text" inputmode="none" placeholder='e.g. 16\' or 192"' />
-
-      <label for="panelStopHeight">Panel Stop Height</label>
-      <input id="panelStopHeight" class="measure-input" type="text" inputmode="none" placeholder='defaults to wall height' />
 
       <label for="panelCoverage">Panel Coverage</label>
       <input id="panelCoverage" class="measure-input" type="text" inputmode="none" value='36"' />
@@ -43,53 +35,74 @@
       <label for="startOffset">Start Offset</label>
       <input id="startOffset" class="measure-input" type="text" inputmode="none" value='0"' />
 
+      <label for="wallLength">Wall Length</label>
+      <input id="wallLength" class="measure-input" type="text" inputmode="none" placeholder='e.g. 42&apos; or 504"' />
+
+      <!-- Sidewall-only fields -->
+      <div id="sidewallFields">
+        <label for="wallHeight">Wall Height</label>
+        <input id="wallHeight" class="measure-input" type="text" inputmode="none" placeholder='e.g. 16&apos; or 192"' />
+
+        <label for="panelStopHeight">Panel Stop Height</label>
+        <input id="panelStopHeight" class="measure-input" type="text" inputmode="none" placeholder='defaults to wall height' />
+      </div>
+
+      <!-- Gable-only fields -->
       <div id="gableFields" style="display: none;">
         <label for="leftEaveHeight">Left Eave Height</label>
-        <input id="leftEaveHeight" class="measure-input" type="text" inputmode="none" placeholder='e.g. 16\' or 192"' />
+        <input id="leftEaveHeight" class="measure-input" type="text" inputmode="none" placeholder='e.g. 16&apos; or 192"' />
 
         <label for="leftPanelStopHeight">Left Panel Stop Height</label>
         <input id="leftPanelStopHeight" class="measure-input" type="text" inputmode="none" placeholder='defaults to left eave' />
 
         <label for="ridgeHeight">Ridge Height</label>
-        <input id="ridgeHeight" class="measure-input" type="text" inputmode="none" placeholder='e.g. 18\' 6"' />
+        <input id="ridgeHeight" class="measure-input" type="text" inputmode="none" placeholder='e.g. 18&apos; 6"' />
 
         <label for="ridgePanelStopHeight">Ridge Panel Stop Height</label>
         <input id="ridgePanelStopHeight" class="measure-input" type="text" inputmode="none" placeholder='defaults to ridge height' />
 
         <label for="ridgePosition">Ridge Position from Left</label>
-        <input id="ridgePosition" class="measure-input" type="text" inputmode="none" placeholder='e.g. 10\' or 120"' />
+        <input id="ridgePosition" class="measure-input" type="text" inputmode="none" placeholder='e.g. 10&apos; or 120"' />
 
         <label for="rightEaveHeight">Right Eave Height</label>
-        <input id="rightEaveHeight" class="measure-input" type="text" inputmode="none" placeholder='e.g. 10\' 6"' />
+        <input id="rightEaveHeight" class="measure-input" type="text" inputmode="none" placeholder='e.g. 10&apos; 6"' />
 
         <label for="rightPanelStopHeight">Right Panel Stop Height</label>
         <input id="rightPanelStopHeight" class="measure-input" type="text" inputmode="none" placeholder='defaults to right eave' />
       </div>
 
-      <button id="generateBtn">Generate</button>
+      <!-- Export buttons -->
+      <div class="export-row">
+        <button id="shareBtn" class="btn-secondary">Share Layout</button>
+        <button id="copyTextBtn" class="btn-secondary">Copy Cut List</button>
+      </div>
     </div>
 
+    <!-- Openings card -->
     <div class="card" id="openingsCard">
       <h3>Openings</h3>
 
       <div id="openingsList"></div>
 
       <div class="opening-form">
-        <input id="openingStart" class="measure-input" type="text" inputmode="none" placeholder='Start e.g. 2\' 8"' />
-        <input id="openingWidth" class="measure-input" type="text" inputmode="none" placeholder='Width e.g. 3\' or 36"' />
+        <input id="openingStart" class="measure-input" type="text" inputmode="none" placeholder='Start e.g. 2&apos; 8"' />
+        <input id="openingWidth" class="measure-input" type="text" inputmode="none" placeholder='Width e.g. 3&apos; or 36"' />
       </div>
 
       <button id="addOpeningBtn">Add Opening</button>
     </div>
 
+    <!-- SVG visualization -->
     <div class="card">
       <svg id="wallSvg"></svg>
     </div>
 
+    <!-- Reports -->
     <div class="card" id="panelSummary"></div>
     <div class="card" id="openingReport"></div>
   </div>
 
+  <!-- Custom measurement keyboard -->
   <div id="measurementKeyboard" class="measurement-keyboard hidden">
     <div class="keyboard-grid">
       <button type="button" class="key-btn" data-key="1">1</button>
@@ -111,6 +124,7 @@
       <button type="button" class="key-btn" data-key="/">/</button>
       <button type="button" class="key-btn" data-key=".">.</button>
       <button type="button" class="key-btn key-backspace" data-action="backspace">⌫</button>
+      <button type="button" class="key-btn key-confirm" data-action="confirm">↵</button>
     </div>
   </div>
 
