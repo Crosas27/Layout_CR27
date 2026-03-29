@@ -3,7 +3,7 @@ body {
   font-family: system-ui, sans-serif;
   background: #020617;
   color: #e2e8f0;
-  padding-bottom: 220px;
+  padding-bottom: 240px;
 }
 
 .app {
@@ -49,7 +49,7 @@ select {
 
 input.measure-input {
   font-family: "Fira Code", monospace;
-  font-size: 16px; /* Safari no-zoom fix */
+  font-size: 16px;
 }
 
 button {
@@ -66,6 +66,45 @@ button {
 button:active {
   transform: scale(0.98);
 }
+
+/* ---------------- EXPORT BUTTONS ---------------- */
+
+.export-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.btn-secondary {
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  font-size: 13px;
+  padding: 9px 10px;
+}
+
+.btn-secondary:active {
+  background: #1e293b;
+}
+
+/* ---------------- ERROR BOX ---------------- */
+
+.error-box {
+  background: rgba(127, 29, 29, 0.2);
+  border: 1px solid #7f1d1d;
+  color: #fecaca;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  font-family: "Fira Code", monospace;
+  font-size: 13px;
+}
+
+.error-box.hidden {
+  display: none;
+}
+
+/* ---------------- OPENINGS ---------------- */
 
 .opening-form {
   display: flex;
@@ -99,15 +138,17 @@ button:active {
   flex-shrink: 0;
 }
 
+/* ---------------- SVG CONTAINER ---------------- */
+
 #wallSvg {
   width: 100%;
-  height: 460px;
   display: block;
   background: #081226;
   border-radius: 8px;
+  min-height: 100px;
 }
 
-/* ---------------- SVG ---------------- */
+/* ---------------- SVG CLASSES ---------------- */
 
 .wall-outline {
   fill: #0f172a;
@@ -252,11 +293,15 @@ button:active {
 
 .keyboard-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  /* 12-column grid: rows 1-4 have 3 keys (each spans 4/12), last row has 4 keys (each spans 3/12) */
+  grid-template-columns: repeat(12, 1fr);
   gap: 8px;
   max-width: 420px;
   margin: 0 auto;
 }
+
+.keyboard-grid .key-btn:nth-child(-n+12) { grid-column: span 4; }
+.keyboard-grid .key-btn:nth-child(n+13)  { grid-column: span 3; }
 
 .key-btn {
   width: 100%;
@@ -278,9 +323,15 @@ button:active {
   background: #1e293b;
 }
 
+.key-confirm {
+  background: #0ea5e9;
+  color: white;
+  font-size: 20px;
+}
+
 @media (min-width: 900px) {
   .measurement-keyboard {
-    max-width: 460px;
+    max-width: 480px;
     margin: 0 auto;
     left: 50%;
     transform: translateX(-50%);
