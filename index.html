@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Panel Layout Tool</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+ 
+ <title>CR27</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,7 +20,32 @@
     <div id="errorBox" class="error-box hidden"></div>
 
     <!-- Config card -->
-    <div class="card">
+	<div class="card collapsible open">
+	
+<div class="card-header">
+	<span>Wall Setup</span>
+	<span class="chevron">▼</span>
+</div>
+
+<div class="card body">
+	
+	<label>Wall Type</label>
+	<select id="wallType">
+		<option value="sidewall">Sidewall</option>
+		<option value="gable">Gable Endwall</option>
+	</select>
+
+	<label>Wall Length</label>
+	<input id="wallLength" type="text" />
+	
+	<label>Wall Height</label>
+	<input id="wallHeight" type="text" />
+		
+	</div>
+</div>
+	
+/*    <div class="card collapsible open">
+	<span>Wall Setup<span>
       <label for="wallType">Wall Type</label>
       <select id="wallType">
         <option value="sidewall">Sidewall</option>
@@ -37,7 +63,7 @@
 
       <label for="wallLength">Wall Length</label>
       <input id="wallLength" class="measure-input" type="text" inputmode="none" placeholder='e.g. 42&apos; or 504"' />
-
+*/
       <!-- Sidewall-only fields -->
       <div id="sidewallFields">
         <label for="wallHeight">Wall Height</label>

@@ -341,3 +341,35 @@ button:active {
     border-top-right-radius: 12px;
   }
 }
+
+
+/* collapsible test addon*/
+
+.card-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	cursor: pointer;
+	font-weight: bold;
+}
+
+.card-body {
+	margin-top: 10px;
+}
+
+.collapsible .card-body {
+	display: none;
+}
+
+.collapsible.open .card-body {
+	display: block;
+}
+
+.chevron {
+	transition: transform 0.2 ease;
+}
+
+.collapsible.open .chevron {
+	transform: rotate(180deg);
+}
+

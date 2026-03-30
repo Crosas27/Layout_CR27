@@ -433,6 +433,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupMeasurementKeyboard()
   setupShareButton()
   setupCopyTextButton()
+  initCollapsibles()
 
   const addBtn = document.getElementById("addOpeningBtn")
   if (addBtn) addBtn.addEventListener("click", addOpening)
@@ -440,3 +441,16 @@ document.addEventListener("DOMContentLoaded", () => {
   syncModeUI()
   scheduleRender(true)
 })
+
+/* ================================================================
+   collapsible test
+================================================================ */
+
+function initCollapsibles() {
+document.querySelectorAll(".card-header").forEach(header => {
+	header.addEventListener("click", () +> {
+		const card = header.parentElement
+		card.classlist.toggle("open")
+	})
+})
+}
