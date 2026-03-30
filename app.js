@@ -424,10 +424,30 @@ function handleBackspace() {
 }
 
 /* ================================================================
+   collapsible test
+================================================================ */
+
+function initCollapsibles() {
+document.querySelectorAll(".card-header").forEach(header => {
+	header.addEventListener("click", event => {
+		const card = event.target
+		if (target instanceof Element && target.closest("button, input, select, textarea")) {
+			return
+		}
+	const card = header.closest(".collapsible")
+	if (!card) return
+	
+		card.classlist.toggle("open")
+	})
+})
+}
+
+
+/* ================================================================
    INIT
 ================================================================ */
 
-document.addEventListener("DOMContentLoaded",function() => {
+document.addEventListener("DOMContentLoaded", () => {
   loadState()
   bindInputs()
   setupMeasurementKeyboard()
@@ -442,15 +462,3 @@ document.addEventListener("DOMContentLoaded",function() => {
   scheduleRender(true)
 })
 
-/* ================================================================
-   collapsible test
-================================================================ */
-
-function initCollapsibles() {
-document.querySelectorAll(".card-header").forEach(header => {
-	header.addEventListener("click", () => {
-		const card = header.parentElement
-		card.classlist.toggle("open")
-	})
-})
-}
