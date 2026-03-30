@@ -346,30 +346,30 @@ button:active {
 /* collapsible test addon*/
 
 .card-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	cursor: pointer;
-	font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 700;
+  user-select: none;
 }
 
 .card-body {
-	margin-top: 10px;
+  margin-top: 10px;
 }
 
-.collapsible .card-body {
-	display: none;
+.collapsible > .card-body {
+  display: none;
 }
 
-.collapsible.open .card-body {
-	display: block;
+.collapsible.open > .card-body {
+  display: block;
 }
 
 .chevron {
-	transition: transform 0.2 ease;
+  transition: transform 0.2s ease;
 }
 
-.collapsible.open .chevron {
-	transform: rotate(180deg);
+.collapsible.open > .card-header .chevron {
+  transform: rotate(180deg);
 }
-

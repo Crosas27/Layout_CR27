@@ -17,38 +17,21 @@
 
     <div id="errorBox" class="error-box hidden"></div>
 
+    <!-- Wall Setup -->
     <div class="card collapsible open">
       <div class="card-header">
         <span>Wall Setup</span>
         <span class="chevron">▼</span>
       </div>
 
-    <div class="card-body">
+      <div class="card-body">
         <label for="wallType">Wall Type</label>
         <select id="wallType">
           <option value="sidewall">Sidewall</option>
           <option value="gable">Gable Endwall</option>
         </select>
-		
-	<div class="card collapsible">
-      <div class="card-header">
-        <span>Panel Profile</span>
-        <span class="chevron">▼</span>
-      </div>
-	  
-	<div class="card-body">
-        <label for="panelCoverage">Panel Coverage</label>
-        <input id="panelCoverage" class="measure-input" type="text" inputmode="none" value='36"' />
 
-        <label for="ribSpacing">Rib Spacing</label>
-        <input id="ribSpacing" class="measure-input" type="text" inputmode="none" value='12"' />
-
-        <label for="startOffset">Start Offset</label>
-        <input id="startOffset" class="measure-input" type="text" inputmode="none" value='0"' />
-		</div>
-	</div>
-       
-		<label for="wallLength">Wall Length</label>
+        <label for="wallLength">Wall Length</label>
         <input id="wallLength" class="measure-input" type="text" inputmode="none" placeholder='e.g. 42&apos; or 504"' />
 
         <div id="sidewallFields">
@@ -81,14 +64,37 @@
           <label for="rightPanelStopHeight">Right Panel Stop Height</label>
           <input id="rightPanelStopHeight" class="measure-input" type="text" inputmode="none" placeholder='defaults to right eave' />
         </div>
-
-        <div class="export-row">
-          <button id="shareBtn" class="btn-secondary">Share Layout</button>
-          <button id="copyTextBtn" class="btn-secondary">Copy Cut List</button>
-        </div>
       </div>
     </div>
 
+    <!-- Panel Profile -->
+    <div class="card collapsible">
+      <div class="card-header">
+        <span>Panel Profile</span>
+        <span class="chevron">▼</span>
+      </div>
+
+      <div class="card-body">
+        <label for="panelCoverage">Panel Coverage</label>
+        <input id="panelCoverage" class="measure-input" type="text" inputmode="none" value='36"' />
+
+        <label for="ribSpacing">Rib Spacing</label>
+        <input id="ribSpacing" class="measure-input" type="text" inputmode="none" value='12"' />
+
+        <label for="startOffset">Start Offset</label>
+        <input id="startOffset" class="measure-input" type="text" inputmode="none" value='0"' />
+      </div>
+    </div>
+
+    <!-- Export Actions -->
+    <div class="card">
+      <div class="export-row">
+        <button id="shareBtn" class="btn-secondary">Share Layout</button>
+        <button id="copyTextBtn" class="btn-secondary">Copy Cut List</button>
+      </div>
+    </div>
+
+    <!-- Openings -->
     <div class="card" id="openingsCard">
       <h3>Openings</h3>
 
@@ -102,14 +108,17 @@
       <button id="addOpeningBtn">Add Opening</button>
     </div>
 
+    <!-- SVG -->
     <div class="card">
       <svg id="wallSvg"></svg>
     </div>
 
+    <!-- Reports -->
     <div class="card" id="panelSummary"></div>
     <div class="card" id="openingReport"></div>
   </div>
 
+  <!-- Measurement Keyboard -->
   <div id="measurementKeyboard" class="measurement-keyboard hidden">
     <div class="keyboard-grid">
       <button type="button" class="key-btn" data-key="1">1</button>
