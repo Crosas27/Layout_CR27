@@ -437,7 +437,7 @@ document.querySelectorAll(".card-header").forEach(header => {
 	const card = header.closest(".collapsible")
 	if (!card) return
 	
-		card.classlist.toggle("open")
+		card.classList.toggle("open")
 		})
 	})
 }
