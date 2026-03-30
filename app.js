@@ -430,7 +430,7 @@ function handleBackspace() {
 function initCollapsibles() {
 document.querySelectorAll(".card-header").forEach(header => {
 	header.addEventListener("click", event => {
-		const card = event.target
+		const target = event.target
 		if (target instanceof Element && target.closest("button, input, select, textarea")) {
 			return
 		}
@@ -438,8 +438,8 @@ document.querySelectorAll(".card-header").forEach(header => {
 	if (!card) return
 	
 		card.classlist.toggle("open")
+		})
 	})
-})
 }
 
 
@@ -448,7 +448,7 @@ document.querySelectorAll(".card-header").forEach(header => {
 ================================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
-  loadState()
+  loadState() 
   bindInputs()
   setupMeasurementKeyboard()
   setupShareButton()
