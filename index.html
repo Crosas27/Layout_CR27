@@ -23,13 +23,20 @@
         <span class="chevron">▼</span>
       </div>
 
-      <div class="card-body">
+    <div class="card-body">
         <label for="wallType">Wall Type</label>
         <select id="wallType">
           <option value="sidewall">Sidewall</option>
           <option value="gable">Gable Endwall</option>
         </select>
-
+		
+	<div class="card collapsible open">
+      <div class="card-header">
+        <span>Panel Profile</span>
+        <span class="chevron">▼</span>
+      </div>
+	  
+	<div class="card-body">
         <label for="panelCoverage">Panel Coverage</label>
         <input id="panelCoverage" class="measure-input" type="text" inputmode="none" value='36"' />
 
@@ -38,8 +45,10 @@
 
         <label for="startOffset">Start Offset</label>
         <input id="startOffset" class="measure-input" type="text" inputmode="none" value='0"' />
-
-        <label for="wallLength">Wall Length</label>
+		</div>
+	</div>
+       
+		<label for="wallLength">Wall Length</label>
         <input id="wallLength" class="measure-input" type="text" inputmode="none" placeholder='e.g. 42&apos; or 504"' />
 
         <div id="sidewallFields">
