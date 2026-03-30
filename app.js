@@ -427,7 +427,7 @@ function handleBackspace() {
    INIT
 ================================================================ */
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded",function() => {
   loadState()
   bindInputs()
   setupMeasurementKeyboard()
@@ -448,7 +448,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function initCollapsibles() {
 document.querySelectorAll(".card-header").forEach(header => {
-	header.addEventListener("click", () +> {
+	header.addEventListener("click", () => {
 		const card = header.parentElement
 		card.classlist.toggle("open")
 	})
