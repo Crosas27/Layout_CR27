@@ -1,464 +1,410 @@
-import { generateLayout }      from "./js/core/layoutEngine.js"
-import { renderWall }          from "./js/renderer/wallRenderer.js"
-import { renderOpeningReport } from "./js/renderer/openingReportRenderer.js"
-import { renderSummary }       from "./js/renderer/summaryRenderer.js"
-import { parseMeasurement }    from "./js/utils/measurementParser.js"
-import { formatToField }       from "./js/utils/formatter.js"
-import { buildTextSummary }    from "./js/utils/textExport.js"
+/* ══════════════════════════════════════
+   CR27 — Panel Layout Tool
+   Vanilla ES Module — zero dependencies
+   ══════════════════════════════════════ */
 
-/* ================================================================
-   STATE — single source of truth
-   All mutations go through direct assignment + persistState().
-   Layout auto-renders 300ms after any change (debounced).
-================================================================ */
+// ─── Data ───
+const WALL_TYPES = ['Sidewall', 'Gable Endwall'];
+const PANEL_PROFILES = ['PBR Panel', 'AG Panel', 'Standing Seam', 'Corrugated'];
 
-const STORAGE_KEY = "layout_cr27_v2"
+const WALL_FIELDS = {
+  Sidewall: [
+    { id: 'wallLength',     label: 'WALL LENGTH',    unit: 'FT' },
+    { id: 'wallHeight',     label: 'WALL HEIGHT',    unit: 'FT' },
+    { id: 'panelStopHeight',label: 'PANEL STOP HT',  unit: 'FT' },
+  ],
+  'Gable Endwall': [
+    { id: 'wallLength',     label: 'WALL LENGTH',    unit: 'FT' },
+    { id: 'leftEaveHeight', label: 'L EAVE HT',      unit: 'FT' },
+    { id: 'leftPanelStop',  label: 'L PANEL STOP',    unit: 'FT' },
+    { id: 'ridgeHeight',    label: 'RIDGE HT',        unit: 'FT' },
+    { id: 'ridgePanelStop', label: 'RIDGE PANEL STOP',unit: 'FT' },
+    { id: 'ridgePosition',  label: 'RIDGE POS (L)',   unit: 'FT' },
+    { id: 'rightEaveHeight',label: 'R EAVE HT',       unit: 'FT' },
+    { id: 'rightPanelStop', label: 'R PANEL STOP',    unit: 'FT' },
+  ],
+};
 
-const DEFAULT_STATE = {
-  wallType:             "sidewall",
-  wallLength:           "",
-  wallHeight:           "",
-  panelStopHeight:      "",
-  panelCoverage:        '36"',
-  ribSpacing:           '12"',
-  startOffset:          '0"',
-  leftEaveHeight:       "",
-  leftPanelStopHeight:  "",
-  ridgeHeight:          "",
-  ridgePanelStopHeight: "",
-  ridgePosition:        "",
-  rightEaveHeight:      "",
-  rightPanelStopHeight: "",
-  openings:             []
-}
+const PROFILE_FIELDS = [
+  { id: 'panelCoverage', label: 'PANEL COVERAGE', unit: 'IN' },
+  { id: 'ribSpacing',    label: 'RIB SPACING',    unit: 'IN' },
+  { id: 'startOffset',   label: 'START OFFSET',   unit: 'IN' },
+];
 
-let state       = { ...DEFAULT_STATE }
-let lastModel   = null
-let renderTimer = null
+const KEYPAD_KEYS = ['1','2','3','4','5','6','7','8','9',"'",'0','"','/','.','\u232B','\u21B5'];
 
-const CONFIG_INPUT_IDS = [
-  "wallLength", "wallHeight", "panelStopHeight", "panelCoverage",
-  "ribSpacing", "startOffset",
-  "leftEaveHeight", "leftPanelStopHeight",
-  "ridgeHeight", "ridgePanelStopHeight",
-  "ridgePosition", "rightEaveHeight", "rightPanelStopHeight"
-]
+// ─── State ───
+const state = {
+  wallType: 'Sidewall',
+  panelProfile: 'PBR Panel',
+  values: {},
+  openings: [{ left: '', width: '', height: '', sill: '' }],
+  activeField: null,
+  showRibs: true,
+  collapsed: { wall: false, profile: false, openings: false },
+};
 
-/* ================================================================
-   PERSISTENCE — localStorage + URL hash
-================================================================ */
+// ─── DOM refs (cached after init) ───
+const $ = (sel, ctx = document) => ctx.querySelector(sel);
+const $$ = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
 
-function persistState() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
-  } catch (_) {}
-  updateHash()
-}
-
-function updateHash() {
-  // Only encode config fields — openings can be too long for a URL
-  const { openings, ...config } = state
-  try {
-    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(config))))
-    history.replaceState(null, "", "#" + encoded)
-  } catch (_) {}
-}
-
-function loadState() {
-  // URL hash first (shared links)
-  if (location.hash.length > 1) {
-    try {
-      const decoded = JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(1)))))
-      if (decoded && typeof decoded === "object") {
-        state = { ...DEFAULT_STATE, ...decoded, openings: [] }
-        populateInputs()
-        return
-      }
-    } catch (_) {}
+// ─── Helpers ───
+function el(tag, attrs = {}, children = []) {
+  const node = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'className') node.className = v;
+    else if (k.startsWith('data')) node.setAttribute(k.replace(/([A-Z])/g, '-$1').toLowerCase(), v);
+    else if (k === 'textContent') node.textContent = v;
+    else if (k === 'innerHTML') node.innerHTML = v;
+    else if (k.startsWith('on')) node.addEventListener(k.slice(2).toLowerCase(), v);
+    else node.setAttribute(k, v);
   }
-
-  // Fall back to localStorage
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY))
-    if (saved && typeof saved === "object") {
-      state = { ...DEFAULT_STATE, ...saved }
-      populateInputs()
-    }
-  } catch (_) {}
-}
-
-function populateInputs() {
-  const wallTypeEl = document.getElementById("wallType")
-  if (wallTypeEl) wallTypeEl.value = state.wallType
-
-  CONFIG_INPUT_IDS.forEach(id => {
-    const el = document.getElementById(id)
-    if (el && state[id] !== undefined) el.value = state[id]
-  })
-
-  syncModeUI()
-  renderOpeningsList()
-}
-
-/* ================================================================
-   INPUT BINDING — auto-sync on every keystroke
-================================================================ */
-
-function bindInputs() {
-  const wallTypeEl = document.getElementById("wallType")
-  if (wallTypeEl) {
-    wallTypeEl.addEventListener("change", () => {
-      state.wallType = wallTypeEl.value
-      syncModeUI()
-      persistState()
-      scheduleRender()
-    })
+  for (const c of children) {
+    if (typeof c === 'string') node.appendChild(document.createTextNode(c));
+    else if (c) node.appendChild(c);
   }
-
-  CONFIG_INPUT_IDS.forEach(id => {
-    const el = document.getElementById(id)
-    if (!el) return
-    el.addEventListener("input", () => {
-      state[id] = el.value
-      persistState()
-      scheduleRender()
-    })
-  })
+  return node;
 }
 
-/* ================================================================
-   RENDER SCHEDULING — 300ms debounce, or immediate
-================================================================ */
+// ─── Render: Console Input ───
+function renderConInput(field) {
+  const val = state.values[field.id] || '';
+  const wrapper = el('div', { className: 'con-input' }, [
+    el('div', { className: 'con-input__header' }, [
+      el('label', { className: 'con-label', textContent: field.label }),
+      field.unit ? el('span', { className: 'con-unit', textContent: `[${field.unit}]` }) : null,
+    ]),
+    el('div', { className: `nm-well con-input__well${state.activeField === field.id ? ' focused' : ''}` }, [
+      el('span', { className: 'con-input__dot', textContent: '●' }),
+      el('input', {
+        className: `con-input__field${val ? ' has-value' : ''}`,
+        type: 'text',
+        inputMode: 'none',
+        readonly: '',
+        value: val || '—',
+        'data-field-id': field.id,
+      }),
+    ]),
+  ]);
+  // focus handler on the input
+  const inp = $('input', wrapper);
+  inp.addEventListener('focus', () => openKeypad(field.id));
+  return wrapper;
+}
 
-function scheduleRender(immediate = false) {
-  clearTimeout(renderTimer)
-  if (immediate) {
-    updateLayout()
+// ─── Render: Wall Fields ───
+function renderWallFields() {
+  const container = $('#wallFields');
+  container.innerHTML = '';
+  for (const f of WALL_FIELDS[state.wallType]) {
+    container.appendChild(renderConInput(f));
+  }
+}
+
+// ─── Render: Profile Fields ───
+function renderProfileFields() {
+  const container = $('#profileFields');
+  container.innerHTML = '';
+  for (const f of PROFILE_FIELDS) {
+    container.appendChild(renderConInput(f));
+  }
+}
+
+// ─── Render: Openings ───
+function renderOpenings() {
+  const container = $('#openingsList');
+  container.innerHTML = '';
+  const fields = ['left', 'width', 'height', 'sill'];
+
+  state.openings.forEach((opening, i) => {
+    const fieldsGrid = el('div', { className: 'opening-row__fields' },
+      fields.map(f =>
+        el('div', { className: 'opening-row__cell' }, [
+          el('span', { className: 'opening-row__field-label', textContent: f }),
+          el('input', {
+            className: 'opening-row__input',
+            type: 'text',
+            value: opening[f] || '',
+            'data-opening-idx': String(i),
+            'data-opening-field': f,
+          }),
+        ])
+      )
+    );
+
+    const delBtn = el('button', {
+      className: 'opening-row__del',
+      textContent: 'DEL',
+      'data-opening-del': String(i),
+    });
+
+    const row = el('div', { className: 'opening-row nm-well' }, [
+      el('span', { className: 'opening-row__idx', textContent: String(i + 1).padStart(2, '0') }),
+      fieldsGrid,
+      delBtn,
+    ]);
+    container.appendChild(row);
+  });
+
+  $('#openingCount').textContent =
+    `${state.openings.length} OPENING${state.openings.length !== 1 ? 'S' : ''} DEFINED`;
+
+  // update LED
+  const hasData = state.openings.some(o => o.width);
+  const led = $('[data-led="openings"]');
+  led.className = `led${hasData ? ' led--ok' : ''}`;
+}
+
+// ─── Render: Keypad ───
+function renderKeypad() {
+  const grid = $('#keypadGrid');
+  grid.innerHTML = '';
+  for (const k of KEYPAD_KEYS) {
+    const isAction = k === '\u21B5';
+    const isDel = k === '\u232B';
+    const cls = `nm-btn keypad-key${isAction ? ' keypad-key--action' : ''}${isDel ? ' keypad-key--del' : ''}`;
+    const btn = el('button', { className: cls, textContent: k, 'data-key': k });
+    grid.appendChild(btn);
+  }
+}
+
+// ─── Render: Select dropdown ───
+function populateSelect(selectEl, options, current, onSelect) {
+  const dropdown = $('.con-select__dropdown', selectEl);
+  dropdown.innerHTML = '';
+  for (const opt of options) {
+    const btn = el('button', {
+      className: `con-select__option${opt === current ? ' active' : ''}`,
+      innerHTML: `<span class="dot">●</span> ${opt}`,
+    });
+    btn.addEventListener('click', () => {
+      onSelect(opt);
+      dropdown.hidden = true;
+    });
+    dropdown.appendChild(btn);
+  }
+}
+
+// ─── Keypad logic ───
+function openKeypad(fieldId) {
+  state.activeField = fieldId;
+  const overlay = $('#keypadOverlay');
+  overlay.classList.add('open');
+  $('#bottomNav').classList.add('hidden');
+  updateKeypadDisplay();
+  updateAllInputStates();
+}
+
+function closeKeypad() {
+  state.activeField = null;
+  $('#keypadOverlay').classList.remove('open');
+  $('#bottomNav').classList.remove('hidden');
+  updateAllInputStates();
+}
+
+function handleKeyPress(key) {
+  if (!state.activeField) return;
+  const id = state.activeField;
+
+  if (key === '\u232B') {
+    state.values[id] = (state.values[id] || '').slice(0, -1);
+  } else if (key === '\u21B5') {
+    closeKeypad();
+    return;
   } else {
-    renderTimer = setTimeout(updateLayout, 300)
+    state.values[id] = (state.values[id] || '') + key;
   }
+
+  updateKeypadDisplay();
+  updateFieldValue(id);
+  updateStatusIndicators();
 }
 
-/* ================================================================
-   LAYOUT UPDATE
-================================================================ */
-
-function updateLayout() {
-  clearError()
-
-  const wallLength = parseMeasurement(state.wallLength)
-  if (!wallLength || wallLength <= 0) {
-    clearOutputs()
-    return
-  }
-
-  const config = {
-    wallType:        state.wallType,
-    wallLength,
-    wallHeight:      parseMeasurement(state.wallHeight),
-    panelStopHeight: parseMeasurement(state.panelStopHeight),
-    panelCoverage:   parseMeasurement(state.panelCoverage) || 36,
-    ribSpacing:      parseMeasurement(state.ribSpacing)    || 12,
-    startOffset:     parseMeasurement(state.startOffset)   || 0,
-    openings:        state.openings
-  }
-
-  if (state.wallType === "gable") {
-    Object.assign(config, {
-      leftEaveHeight:       parseMeasurement(state.leftEaveHeight),
-      leftPanelStopHeight:  parseMeasurement(state.leftPanelStopHeight),
-      ridgeHeight:          parseMeasurement(state.ridgeHeight),
-      ridgePanelStopHeight: parseMeasurement(state.ridgePanelStopHeight),
-      ridgePosition:        parseMeasurement(state.ridgePosition),
-      rightEaveHeight:      parseMeasurement(state.rightEaveHeight),
-      rightPanelStopHeight: parseMeasurement(state.rightPanelStopHeight)
-    })
-  }
-
-  lastModel = generateLayout(config)
-
-  renderWall(lastModel)
-  renderOpeningReport(lastModel)
-  renderSummary(lastModel)
+function updateKeypadDisplay() {
+  const id = state.activeField;
+  const val = id ? (state.values[id] || '') : '';
+  $('#keypadFieldName').textContent = id ? `INPUT → ${id}` : 'INPUT → —';
+  $('#keypadValue').textContent = val || '—';
 }
 
-function clearOutputs() {
-  const svg     = document.getElementById("wallSvg")
-  const summary = document.getElementById("panelSummary")
-  const report  = document.getElementById("openingReport")
-  if (svg)     svg.innerHTML     = ""
-  if (summary) summary.innerHTML = ""
-  if (report)  report.innerHTML  = ""
+function updateFieldValue(fieldId) {
+  const inp = $(`[data-field-id="${fieldId}"]`);
+  if (!inp) return;
+  const val = state.values[fieldId] || '';
+  inp.value = val || '—';
+  inp.classList.toggle('has-value', !!val);
 }
 
-/* ================================================================
-   ERROR DISPLAY
-================================================================ */
-
-function showError(msg) {
-  const box = document.getElementById("errorBox")
-  if (!box) return
-  box.textContent = msg
-  box.classList.remove("hidden")
-}
-
-function clearError() {
-  const box = document.getElementById("errorBox")
-  if (box) box.classList.add("hidden")
-}
-
-/* ================================================================
-   OPENINGS MANAGEMENT
-================================================================ */
-
-function addOpening() {
-  const startEl = document.getElementById("openingStart")
-  const widthEl = document.getElementById("openingWidth")
-  if (!startEl || !widthEl) return
-
-  const start = parseMeasurement(startEl.value)
-  const width = parseMeasurement(widthEl.value)
-
-  if (!width || width <= 0) {
-    showError("Opening width is required.")
-    return
-  }
-  if (start < 0) {
-    showError("Opening start cannot be negative.")
-    return
-  }
-
-  const wallLength = parseMeasurement(state.wallLength)
-  if (wallLength > 0 && start + width > wallLength) {
-    showError(
-      `Opening end (${formatToField(start + width)}) exceeds wall length (${formatToField(wallLength)}).`
-    )
-    return
-  }
-
-  clearError()
-  state.openings = [...state.openings, { start, width }]
-  persistState()
-  renderOpeningsList()
-  scheduleRender(true)
-
-  startEl.value = ""
-  widthEl.value = ""
-}
-
-function renderOpeningsList() {
-  const list = document.getElementById("openingsList")
-  if (!list) return
-
-  list.innerHTML = ""
-
-  state.openings.forEach((op, index) => {
-    const div   = document.createElement("div")
-    div.className = "opening-item"
-
-    const label = document.createElement("span")
-    label.textContent = formatToField(op.start) + "  →  " + formatToField(op.start + op.width)
-
-    const btn = document.createElement("button")
-    btn.textContent = "✕"
-    btn.className   = "delete-btn"
-    btn.onclick = () => {
-      state.openings = state.openings.filter((_, i) => i !== index)
-      persistState()
-      renderOpeningsList()
-      scheduleRender(true)
+function updateAllInputStates() {
+  $$('.con-input__well').forEach(well => {
+    const inp = $('input', well);
+    if (inp) {
+      const id = inp.getAttribute('data-field-id');
+      well.classList.toggle('focused', id === state.activeField);
     }
-
-    div.appendChild(label)
-    div.appendChild(btn)
-    list.appendChild(div)
-  })
+  });
 }
 
-/* ================================================================
-   MODE UI — show/hide gable vs sidewall fields
-================================================================ */
+// ─── Status indicators ───
+function updateStatusIndicators() {
+  const wallFields = WALL_FIELDS[state.wallType];
+  const allFields = [...wallFields, ...PROFILE_FIELDS];
+  const filled = allFields.filter(f => state.values[f.id]).length;
+  const total = allFields.length;
+  const status = filled >= total ? 'ok' : filled > 0 ? 'warn' : '';
 
-function syncModeUI() {
-  const isGable     = state.wallType === "gable"
-  const gableFields = document.getElementById("gableFields")
-  const sideFields  = document.getElementById("sidewallFields")
+  // header count
+  $('#paramCount').textContent = `${filled}/${total} PARAMS SET`;
 
-  if (gableFields) gableFields.style.display = isGable ? "block" : "none"
-  if (sideFields)  sideFields.style.display  = isGable ? "none"  : "block"
+  // header LED
+  const statusLed = $('#statusLed');
+  statusLed.className = `led led--xs${status === 'ok' ? ' led--ok' : status === 'warn' ? ' led--warn' : ''}`;
+
+  // wall card LED
+  const wallLed = $('[data-led="wall"]');
+  wallLed.className = `led${status === 'ok' ? ' led--ok' : status === 'warn' ? ' led--warn' : ''}`;
 }
 
-/* ================================================================
-   SHARE BUTTON — copies URL with encoded state to clipboard
-================================================================ */
+// ─── Section collapse ───
+function toggleSection(name) {
+  state.collapsed[name] = !state.collapsed[name];
+  const card = $(`[data-section="${name}"]`);
+  const body = $(`[data-body="${name}"]`);
+  card.classList.toggle('collapsed', state.collapsed[name]);
+  body.hidden = state.collapsed[name];
+}
 
-function setupShareButton() {
-  const btn = document.getElementById("shareBtn")
-  if (!btn) return
+// ─── Clock ───
+function startClock() {
+  const clockEl = $('#clock');
+  const tick = () => {
+    clockEl.textContent = new Date().toLocaleTimeString('en-US', { hour12: false });
+  };
+  tick();
+  setInterval(tick, 1000);
+}
 
-  btn.addEventListener("click", () => {
-    updateHash()
-    const url = location.href
+// ─── Init ───
+function init() {
+  startClock();
+  renderWallFields();
+  renderProfileFields();
+  renderOpenings();
+  renderKeypad();
+  updateStatusIndicators();
 
-    const copy = () => {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(url).then(() => {
-          btn.textContent = "Link Copied!"
-          setTimeout(() => { btn.textContent = "Share Layout" }, 2500)
-        }).catch(() => prompt("Copy this link:", url))
-      } else {
-        prompt("Copy this link:", url)
+  // Section toggles
+  $$('[data-toggle]').forEach(btn => {
+    const section = btn.getAttribute('data-toggle');
+    // only collapse sections (not the switch toggle)
+    if (state.collapsed[section] !== undefined) {
+      btn.addEventListener('click', () => toggleSection(section));
+    }
+  });
+
+  // Wall type select
+  const wallSelect = $('[data-select="wallType"]');
+  const wallTrigger = $('.con-select__trigger', wallSelect);
+  const wallDropdown = $('.con-select__dropdown', wallSelect);
+  populateSelect(wallSelect, WALL_TYPES, state.wallType, (val) => {
+    state.wallType = val;
+    $('[data-select-text]', wallSelect).textContent = val;
+    renderWallFields();
+    updateStatusIndicators();
+  });
+  wallTrigger.addEventListener('click', () => {
+    wallDropdown.hidden = !wallDropdown.hidden;
+  });
+
+  // Panel profile select
+  const profileSelect = $('[data-select="panelProfile"]');
+  const profileTrigger = $('.con-select__trigger', profileSelect);
+  const profileDropdown = $('.con-select__dropdown', profileSelect);
+  populateSelect(profileSelect, PANEL_PROFILES, state.panelProfile, (val) => {
+    state.panelProfile = val;
+    $('[data-select-text]', profileSelect).textContent = val;
+  });
+  profileTrigger.addEventListener('click', () => {
+    profileDropdown.hidden = !profileDropdown.hidden;
+  });
+
+  // Toggle switch (ribs)
+  const ribToggle = $('[data-toggle-switch="showRibs"]');
+  ribToggle.addEventListener('click', () => {
+    state.showRibs = !state.showRibs;
+    ribToggle.setAttribute('data-on', String(state.showRibs));
+    $('.con-toggle__label', ribToggle).textContent = state.showRibs ? 'ON' : 'OFF';
+  });
+
+  // Openings — delegate events
+  document.addEventListener('click', (e) => {
+    // Delete opening
+    const delBtn = e.target.closest('[data-opening-del]');
+    if (delBtn) {
+      const idx = parseInt(delBtn.getAttribute('data-opening-del'));
+      state.openings.splice(idx, 1);
+      if (state.openings.length === 0) {
+        state.openings.push({ left: '', width: '', height: '', sill: '' });
       }
+      renderOpenings();
+      return;
     }
-    copy()
-  })
+  });
+
+  document.addEventListener('input', (e) => {
+    // Opening field input
+    const inp = e.target.closest('[data-opening-idx]');
+    if (inp) {
+      const idx = parseInt(inp.getAttribute('data-opening-idx'));
+      const field = inp.getAttribute('data-opening-field');
+      state.openings[idx][field] = inp.value;
+      // update LED
+      const hasData = state.openings.some(o => o.width);
+      $('[data-led="openings"]').className = `led${hasData ? ' led--ok' : ''}`;
+    }
+  });
+
+  // Add opening
+  $('#addOpening').addEventListener('click', () => {
+    state.openings.push({ left: '', width: '', height: '', sill: '' });
+    renderOpenings();
+  });
+
+  // Keypad key presses — delegate
+  $('#keypadGrid').addEventListener('pointerdown', (e) => {
+    const btn = e.target.closest('[data-key]');
+    if (btn) btn.classList.add('nm-btn--pressed');
+  });
+  $('#keypadGrid').addEventListener('pointerup', (e) => {
+    const btn = e.target.closest('[data-key]');
+    if (btn) {
+      btn.classList.remove('nm-btn--pressed');
+      handleKeyPress(btn.getAttribute('data-key'));
+    }
+  });
+  $('#keypadGrid').addEventListener('pointerleave', (e) => {
+    const btn = e.target.closest('[data-key]');
+    if (btn) btn.classList.remove('nm-btn--pressed');
+  }, true);
+
+  // Keypad done
+  $('#keypadDone').addEventListener('click', closeKeypad);
+
+  // Bottom nav
+  $$('.bottom-nav__item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $$('.bottom-nav__item').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // Close dropdowns on outside click
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.con-select')) {
+      $$('.con-select__dropdown').forEach(d => d.hidden = true);
+    }
+  });
 }
 
-/* ================================================================
-   COPY CUT LIST — plain-text summary to clipboard
-================================================================ */
-
-function setupCopyTextButton() {
-  const btn = document.getElementById("copyTextBtn")
-  if (!btn) return
-
-  btn.addEventListener("click", () => {
-    if (!lastModel) {
-      showError("Generate a layout first.")
-      return
-    }
-
-    const text = buildTextSummary(lastModel)
-
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(() => {
-        btn.textContent = "Copied!"
-        setTimeout(() => { btn.textContent = "Copy Cut List" }, 2500)
-      }).catch(() => prompt("Copy cut list:", text))
-    } else {
-      prompt("Copy cut list:", text)
-    }
-  })
-}
-
-/* ================================================================
-   MEASUREMENT KEYBOARD
-================================================================ */
-
-let activeInput = null
-
-function setupMeasurementKeyboard() {
-  const keyboard = document.getElementById("measurementKeyboard")
-  if (!keyboard) return
-
-  document.querySelectorAll(".measure-input").forEach(input => {
-    input.addEventListener("focus", () => { activeInput = input; keyboard.classList.remove("hidden") })
-    input.addEventListener("click", () => { activeInput = input; keyboard.classList.remove("hidden") })
-  })
-
-  keyboard.addEventListener("click", e => {
-    const target = e.target
-    if (!(target instanceof HTMLElement)) return
-
-    if (target.dataset.action === "backspace") {
-      handleBackspace()
-      fireStateSync()
-      return
-    }
-    if (target.dataset.action === "confirm") {
-      keyboard.classList.add("hidden")
-      activeInput = null
-      scheduleRender(true)
-      return
-    }
-    if (target.dataset.key) {
-      insertAtCursor(target.dataset.key)
-      fireStateSync()
-    }
-  })
-
-  document.addEventListener("click", e => {
-    const t = e.target
-    if (!(t instanceof Element)) return
-    if (!t.closest(".measure-input") && !t.closest("#measurementKeyboard")) {
-      keyboard.classList.add("hidden")
-      activeInput = null
-    }
-  })
-}
-
-function fireStateSync() {
-  if (!activeInput) return
-  const id = activeInput.id
-  if (id && CONFIG_INPUT_IDS.includes(id)) {
-    state[id] = activeInput.value
-    persistState()
-    scheduleRender()
-  }
-  activeInput.dispatchEvent(new Event("input", { bubbles: true }))
-}
-
-function insertAtCursor(char) {
-  if (!activeInput) return
-  const s = activeInput.selectionStart ?? activeInput.value.length
-  const e = activeInput.selectionEnd   ?? activeInput.value.length
-  activeInput.value = activeInput.value.slice(0, s) + char + activeInput.value.slice(e)
-  const pos = s + char.length
-  activeInput.setSelectionRange(pos, pos)
-  activeInput.focus()
-}
-
-function handleBackspace() {
-  if (!activeInput) return
-  const s = activeInput.selectionStart ?? activeInput.value.length
-  const e = activeInput.selectionEnd   ?? activeInput.value.length
-
-  if (s !== e) {
-    activeInput.value = activeInput.value.slice(0, s) + activeInput.value.slice(e)
-    activeInput.setSelectionRange(s, s)
-  } else if (s > 0) {
-    activeInput.value = activeInput.value.slice(0, s - 1) + activeInput.value.slice(e)
-    activeInput.setSelectionRange(s - 1, s - 1)
-  }
-  activeInput.focus()
-}
-
-/* ================================================================
-   collapsible test
-================================================================ */
-
-function initCollapsibles() {
-document.querySelectorAll(".card-header").forEach(header => {
-	header.addEventListener("click", event => {
-		const target = event.target
-		if (target instanceof Element && target.closest("button, input, select, textarea")) {
-			return
-		}
-	const card = header.closest(".collapsible")
-	if (!card) return
-	
-		card.classList.toggle("open")
-		})
-	})
-}
-
-
-/* ================================================================
-   INIT
-================================================================ */
-
-document.addEventListener("DOMContentLoaded", () => {
-  loadState() 
-  bindInputs()
-  setupMeasurementKeyboard()
-  setupShareButton()
-  setupCopyTextButton()
-  initCollapsibles()
-
-  const addBtn = document.getElementById("addOpeningBtn")
-  if (addBtn) addBtn.addEventListener("click", addOpening)
-
-  syncModeUI()
-  scheduleRender(true)
-})
-
+// ─── Boot ───
+document.addEventListener('DOMContentLoaded', init);

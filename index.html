@@ -2,147 +2,156 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>CR27</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#08080f" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>CR27 — Panel Layout Tool</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="app">
-    <h2>Panel Layout Tool</h2>
 
-    <div id="errorBox" class="error-box hidden"></div>
+  <!-- Scanline overlay -->
+  <div class="scanlines" aria-hidden="true"></div>
 
-    <!-- Wall Setup -->
-    <div class="card collapsible open">
-      <div class="card-header">
-        <span>Wall Setup</span>
-        <span class="chevron">▼</span>
-      </div>
+  <!-- Status bar -->
+  <div class="status-bar">
+    <span class="status-bar__left"><span class="led led--ok"></span> SYS ONLINE</span>
+    <span id="clock"></span>
+    <span>v2.7.0</span>
+  </div>
 
-      <div class="card-body">
-        <label for="wallType">Wall Type</label>
-        <select id="wallType">
-          <option value="sidewall">Sidewall</option>
-          <option value="gable">Gable Endwall</option>
-        </select>
-
-        <label for="wallLength">Wall Length</label>
-        <input id="wallLength" class="measure-input" type="text" inputmode="none" placeholder='e.g. 42&apos; or 504"' />
-
-        <div id="sidewallFields">
-          <label for="wallHeight">Wall Height</label>
-          <input id="wallHeight" class="measure-input" type="text" inputmode="none" placeholder='e.g. 16&apos; or 192"' />
-
-          <label for="panelStopHeight">Panel Stop Height</label>
-          <input id="panelStopHeight" class="measure-input" type="text" inputmode="none" placeholder='defaults to wall height' />
-        </div>
-
-        <div id="gableFields" style="display: none;">
-          <label for="leftEaveHeight">Left Eave Height</label>
-          <input id="leftEaveHeight" class="measure-input" type="text" inputmode="none" placeholder='e.g. 16&apos; or 192"' />
-
-          <label for="leftPanelStopHeight">Left Panel Stop Height</label>
-          <input id="leftPanelStopHeight" class="measure-input" type="text" inputmode="none" placeholder='defaults to left eave' />
-
-          <label for="ridgeHeight">Ridge Height</label>
-          <input id="ridgeHeight" class="measure-input" type="text" inputmode="none" placeholder='e.g. 18&apos; 6"' />
-
-          <label for="ridgePanelStopHeight">Ridge Panel Stop Height</label>
-          <input id="ridgePanelStopHeight" class="measure-input" type="text" inputmode="none" placeholder='defaults to ridge height' />
-
-          <label for="ridgePosition">Ridge Position from Left</label>
-          <input id="ridgePosition" class="measure-input" type="text" inputmode="none" placeholder='e.g. 10&apos; or 120"' />
-
-          <label for="rightEaveHeight">Right Eave Height</label>
-          <input id="rightEaveHeight" class="measure-input" type="text" inputmode="none" placeholder='e.g. 10&apos; 6"' />
-
-          <label for="rightPanelStopHeight">Right Panel Stop Height</label>
-          <input id="rightPanelStopHeight" class="measure-input" type="text" inputmode="none" placeholder='defaults to right eave' />
+  <!-- Header -->
+  <header class="header">
+    <div class="header__brand">
+      <div class="header__logo nm-raised">CR</div>
+      <div>
+        <div class="header__title">PANEL LAYOUT</div>
+        <div class="header__meta">
+          <span id="statusLed" class="led"></span>
+          <span id="paramCount">0/6 PARAMS SET</span>
         </div>
       </div>
     </div>
-
-    <!-- Panel Profile -->
-    <div class="card collapsible">
-      <div class="card-header">
-        <span>Panel Profile</span>
-        <span class="chevron">▼</span>
-      </div>
-
-      <div class="card-body">
-        <label for="panelCoverage">Panel Coverage</label>
-        <input id="panelCoverage" class="measure-input" type="text" inputmode="none" value='36"' />
-
-        <label for="ribSpacing">Rib Spacing</label>
-        <input id="ribSpacing" class="measure-input" type="text" inputmode="none" value='12"' />
-
-        <label for="startOffset">Start Offset</label>
-        <input id="startOffset" class="measure-input" type="text" inputmode="none" value='0"' />
-      </div>
+    <div class="header__actions">
+      <button class="nm-btn header__btn header__btn--accent">↗ SHARE</button>
+      <button class="nm-btn header__btn">⊟ CUTS</button>
     </div>
+  </header>
 
-    <!-- Export Actions -->
-    <div class="card">
-      <div class="export-row">
-        <button id="shareBtn" class="btn-secondary">Share Layout</button>
-        <button id="copyTextBtn" class="btn-secondary">Copy Cut List</button>
+  <!-- Main content -->
+  <main id="main" class="main">
+
+    <!-- WALL SETUP -->
+    <section class="console-card nm-raised" data-section="wall">
+      <button class="section-bar" data-toggle="wall">
+        <span class="section-bar__arrow">▼</span>
+        <span class="section-bar__icon">◧</span>
+        <span class="section-bar__title">WALL SETUP</span>
+        <span class="led" data-led="wall"></span>
+      </button>
+      <div class="section-body" data-body="wall">
+        <div class="con-select" data-select="wallType">
+          <label class="con-label">WALL TYPE</label>
+          <button class="nm-well con-select__trigger">
+            <span class="con-select__val"><span class="dot">●</span> <span data-select-text>Sidewall</span></span>
+            <span class="con-select__arrow">▼</span>
+          </button>
+          <div class="con-select__dropdown nm-raised" hidden></div>
+        </div>
+        <div id="wallFields"></div>
       </div>
-    </div>
+    </section>
 
-    <!-- Openings -->
-    <div class="card" id="openingsCard">
-      <h3>Openings</h3>
-
-      <div id="openingsList"></div>
-
-      <div class="opening-form">
-        <input id="openingStart" class="measure-input" type="text" inputmode="none" placeholder='Start e.g. 2&apos; 8"' />
-        <input id="openingWidth" class="measure-input" type="text" inputmode="none" placeholder='Width e.g. 3&apos; or 36"' />
+    <!-- PANEL PROFILE -->
+    <section class="console-card nm-raised" data-section="profile">
+      <button class="section-bar" data-toggle="profile">
+        <span class="section-bar__arrow">▼</span>
+        <span class="section-bar__icon">◫</span>
+        <span class="section-bar__title">PANEL PROFILE</span>
+        <span class="led" data-led="profile"></span>
+      </button>
+      <div class="section-body" data-body="profile">
+        <div class="con-select" data-select="panelProfile">
+          <label class="con-label">PROFILE TYPE</label>
+          <button class="nm-well con-select__trigger">
+            <span class="con-select__val"><span class="dot">●</span> <span data-select-text>PBR Panel</span></span>
+            <span class="con-select__arrow">▼</span>
+          </button>
+          <div class="con-select__dropdown nm-raised" hidden></div>
+        </div>
+        <div id="profileFields"></div>
+        <div class="con-toggle">
+          <span class="con-label">SHOW RIB LINES</span>
+          <button class="con-toggle__track nm-well" data-toggle-switch="showRibs" data-on="true">
+            <span class="con-toggle__thumb"></span>
+            <span class="con-toggle__label">ON</span>
+          </button>
+        </div>
       </div>
+    </section>
 
-      <button id="addOpeningBtn">Add Opening</button>
+    <!-- OPENINGS -->
+    <section class="console-card nm-raised" data-section="openings">
+      <button class="section-bar" data-toggle="openings">
+        <span class="section-bar__arrow">▼</span>
+        <span class="section-bar__icon">◻</span>
+        <span class="section-bar__title">OPENINGS</span>
+        <span class="led" data-led="openings"></span>
+      </button>
+      <div class="section-body" data-body="openings">
+        <div class="openings-meta">
+          <span id="openingCount">1 OPENING DEFINED</span>
+          <span>ALL DIMS IN INCHES</span>
+        </div>
+        <div id="openingsList"></div>
+        <button class="nm-btn openings__add" id="addOpening">+ ADD OPENING</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Slide-up keypad overlay -->
+  <div id="keypadOverlay" class="keypad-overlay">
+    <div class="keypad-overlay__inner">
+      <div class="keypad-overlay__header">
+        <div class="keypad-overlay__field">
+          <span class="led led--accent"></span>
+          <span id="keypadFieldName">INPUT → —</span>
+        </div>
+        <button class="nm-btn keypad-overlay__done" id="keypadDone">DONE</button>
+      </div>
+      <div class="nm-well keypad-overlay__preview" id="keypadPreview">
+        <span id="keypadValue">—</span><span class="keypad-cursor"></span>
+      </div>
+      <div class="keypad-grid" id="keypadGrid"></div>
     </div>
-
-    <!-- SVG -->
-    <div class="card">
-      <svg id="wallSvg"></svg>
-    </div>
-
-    <!-- Reports -->
-    <div class="card" id="panelSummary"></div>
-    <div class="card" id="openingReport"></div>
   </div>
 
-  <!-- Measurement Keyboard -->
-  <div id="measurementKeyboard" class="measurement-keyboard hidden">
-    <div class="keyboard-grid">
-      <button type="button" class="key-btn" data-key="1">1</button>
-      <button type="button" class="key-btn" data-key="2">2</button>
-      <button type="button" class="key-btn" data-key="3">3</button>
-
-      <button type="button" class="key-btn" data-key="4">4</button>
-      <button type="button" class="key-btn" data-key="5">5</button>
-      <button type="button" class="key-btn" data-key="6">6</button>
-
-      <button type="button" class="key-btn" data-key="7">7</button>
-      <button type="button" class="key-btn" data-key="8">8</button>
-      <button type="button" class="key-btn" data-key="9">9</button>
-
-      <button type="button" class="key-btn" data-key="'">'</button>
-      <button type="button" class="key-btn" data-key="0">0</button>
-      <button type="button" class="key-btn" data-key='"'>"</button>
-
-      <button type="button" class="key-btn" data-key="/">/</button>
-      <button type="button" class="key-btn" data-key=".">.</button>
-      <button type="button" class="key-btn key-backspace" data-action="backspace">⌫</button>
-      <button type="button" class="key-btn key-confirm" data-action="confirm">↵</button>
-    </div>
-  </div>
+  <!-- Bottom nav -->
+  <nav id="bottomNav" class="bottom-nav">
+    <button class="bottom-nav__item active" data-nav="layout">
+      <span class="bottom-nav__indicator"></span>
+      <span class="bottom-nav__icon">⊞</span>
+      <span class="bottom-nav__label">LAYOUT</span>
+    </button>
+    <button class="bottom-nav__item" data-nav="panels">
+      <span class="bottom-nav__indicator"></span>
+      <span class="bottom-nav__icon">▦</span>
+      <span class="bottom-nav__label">PANELS</span>
+    </button>
+    <button class="bottom-nav__item" data-nav="cutlist">
+      <span class="bottom-nav__indicator"></span>
+      <span class="bottom-nav__icon">☰</span>
+      <span class="bottom-nav__label">CUTS</span>
+    </button>
+    <button class="bottom-nav__item" data-nav="config">
+      <span class="bottom-nav__indicator"></span>
+      <span class="bottom-nav__icon">⚙</span>
+      <span class="bottom-nav__label">CONFIG</span>
+    </button>
+  </nav>
 
   <script type="module" src="app.js"></script>
 </body>
