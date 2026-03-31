@@ -280,12 +280,17 @@ function renderOpeningsList() {
 ================================================================ */
 
 function syncModeUI() {
-  const isGable     = state.wallType === "gable"
+  const isGable = state.wallType === "gable"
   const gableFields = document.getElementById("gableFields")
-  const sideFields  = document.getElementById("sidewallFields")
+  const sideFields = document.getElementById("sidewallFields")
 
-  if (gableFields) gableFields.style.display = isGable ? "block" : "none"
-  if (sideFields)  sideFields.style.display  = isGable ? "none"  : "block"
+  if (gableFields) {
+    gableFields.style.display = isGable ? "" : "none"
+  }
+
+  if (sideFields) {
+    sideFields.style.display = isGable ? "none" : ""
+  }
 }
 
 /* ================================================================
