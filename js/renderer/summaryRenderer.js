@@ -11,7 +11,7 @@ export function renderSummary(model) {
   if (model.wallType === "gable") {
     html += `
       <p><strong>Wall Type:</strong> Gable Endwall</p>
-      <p><strong>Wall Length:</strong> ${formatToField(s.wallLength)}</p>
+      <p><strong>Wall Width:</strong> ${formatToField(s.wallLength)}</p>
       <p><strong>Panel Coverage:</strong> ${formatToField(s.coverage)}</p>
 
       <p><strong>Left Eave:</strong> ${formatToField(model.leftEaveHeight)}</p>
@@ -60,7 +60,7 @@ export function renderSummary(model) {
   } else {
     html += `
       <p><strong>Wall Type:</strong> Sidewall</p>
-      <p><strong>Wall Length:</strong> ${formatToField(s.wallLength)}</p>
+      <p><strong>Wall Width:</strong> ${formatToField(s.wallLength)}</p>
       <p><strong>Wall Height:</strong> ${formatToField(model.wallHeight || 0)}</p>
       <p><strong>Panel Stop Height:</strong> ${formatToField(model.panelStopHeight || 0)}</p>
       <p><strong>Panel Coverage:</strong> ${formatToField(s.coverage)}</p>
