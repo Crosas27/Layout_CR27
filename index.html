@@ -120,29 +120,38 @@
 
   <!-- Measurement Keyboard -->
   <div id="measurementKeyboard" class="measurement-keyboard hidden">
-    <div class="keyboard-grid">
-      <button type="button" class="key-btn" data-key="1">1</button>
-      <button type="button" class="key-btn" data-key="2">2</button>
-      <button type="button" class="key-btn" data-key="3">3</button>
 
-      <button type="button" class="key-btn" data-key="4">4</button>
-      <button type="button" class="key-btn" data-key="5">5</button>
-      <button type="button" class="key-btn" data-key="6">6</button>
-
-      <button type="button" class="key-btn" data-key="7">7</button>
-      <button type="button" class="key-btn" data-key="8">8</button>
-      <button type="button" class="key-btn" data-key="9">9</button>
-
-      <button type="button" class="key-btn" data-key="'">'</button>
-      <button type="button" class="key-btn" data-key="0">0</button>
-      <button type="button" class="key-btn" data-key='"'>"</button>
-
-      <button type="button" class="key-btn" data-key="/">/</button>
-      <button type="button" class="key-btn" data-key="-">-</button>
-      <button type="button" class="key-btn key-backspace" data-action="backspace">⌫</button>
-      <button type="button" class="key-btn key-confirm" data-action="confirm">↵</button>
-    </div>
+  <!-- DISPLAY BAR -->
+  <div class="measurement-display-row">
+    <div id="measurementRaw" class="measurement-raw"></div>
+    <div id="measurementDisplay" class="measurement-display"></div>
   </div>
+
+  <!-- KEYPAD -->
+  <div class="keyboard-grid">
+    <button type="button" class="key-btn" data-key="1">1</button>
+    <button type="button" class="key-btn" data-key="2">2</button>
+    <button type="button" class="key-btn" data-key="3">3</button>
+
+    <button type="button" class="key-btn" data-key="4">4</button>
+    <button type="button" class="key-btn" data-key="5">5</button>
+    <button type="button" class="key-btn" data-key="6">6</button>
+
+    <button type="button" class="key-btn" data-key="7">7</button>
+    <button type="button" class="key-btn" data-key="8">8</button>
+    <button type="button" class="key-btn" data-key="9">9</button>
+
+    <button type="button" class="key-btn" data-key="'">'</button>
+    <button type="button" class="key-btn" data-key="0">0</button>
+    <button type="button" class="key-btn" data-key='"'>"</button>
+
+    <button type="button" class="key-btn" data-key="/">/</button>
+    <button type="button" class="key-btn" data-key="-">-</button>
+    <button type="button" class="key-btn key-backspace" data-action="backspace">⌫</button>
+    <button type="button" class="key-btn key-confirm" data-action="confirm">↵</button>
+  </div>
+
+</div>
 
   <script type="module" src="app.js"></script>
 </body>
