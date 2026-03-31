@@ -67,6 +67,24 @@ button:active {
   transform: scale(0.98);
 }
 
+/*2column layout*/
+.field-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 640px) {
+  .field-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ---------------- EXPORT BUTTONS ---------------- */
 
 .export-row {
