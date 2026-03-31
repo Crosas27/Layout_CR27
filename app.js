@@ -352,8 +352,17 @@ function setupMeasurementKeyboard() {
   if (!keyboard) return
 
   document.querySelectorAll(".measure-input").forEach(input => {
-    input.addEventListener("focus", () => { activeInput = input; keyboard.classList.remove("hidden") })
-    input.addEventListener("click", () => { activeInput = input; keyboard.classList.remove("hidden") })
+    input.addEventListener("focus", () => {
+      activeInput = input
+      keyboard.classList.remove("hidden")
+      updateKeyboardDisplay()
+    })
+
+    input.addEventListener("click", () => {
+      activeInput = input
+      keyboard.classList.remove("hidden")
+      updateKeyboardDisplay()
+    })
   })
 
   keyboard.addEventListener("click", e => {
@@ -363,26 +372,33 @@ function setupMeasurementKeyboard() {
     if (target.dataset.action === "backspace") {
       handleBackspace()
       fireStateSync()
+      updateKeyboardDisplay()
       return
     }
+
     if (target.dataset.action === "confirm") {
       keyboard.classList.add("hidden")
       activeInput = null
+      clearKeyboardDisplay()
       scheduleRender(true)
       return
     }
+
     if (target.dataset.key) {
       insertAtCursor(target.dataset.key)
       fireStateSync()
+      updateKeyboardDisplay()
     }
   })
 
   document.addEventListener("click", e => {
     const t = e.target
     if (!(t instanceof Element)) return
+
     if (!t.closest(".measure-input") && !t.closest("#measurementKeyboard")) {
       keyboard.classList.add("hidden")
       activeInput = null
+      clearKeyboardDisplay()
     }
   })
 }
@@ -400,18 +416,24 @@ function fireStateSync() {
 
 function insertAtCursor(char) {
   if (!activeInput) return
+
   const s = activeInput.selectionStart ?? activeInput.value.length
-  const e = activeInput.selectionEnd   ?? activeInput.value.length
+  const e = activeInput.selectionEnd ?? activeInput.value.length
+
   activeInput.value = activeInput.value.slice(0, s) + char + activeInput.value.slice(e)
+
   const pos = s + char.length
   activeInput.setSelectionRange(pos, pos)
   activeInput.focus()
+
+  updateKeyboardDisplay()
 }
 
 function handleBackspace() {
   if (!activeInput) return
+
   const s = activeInput.selectionStart ?? activeInput.value.length
-  const e = activeInput.selectionEnd   ?? activeInput.value.length
+  const e = activeInput.selectionEnd ?? activeInput.value.length
 
   if (s !== e) {
     activeInput.value = activeInput.value.slice(0, s) + activeInput.value.slice(e)
@@ -420,7 +442,48 @@ function handleBackspace() {
     activeInput.value = activeInput.value.slice(0, s - 1) + activeInput.value.slice(e)
     activeInput.setSelectionRange(s - 1, s - 1)
   }
+
   activeInput.focus()
+  updateKeyboardDisplay()
+}
+
+/*update to MeasurementKeyboard */
+
+function updateKeyboardDisplay() {
+  const rawEl = document.getElementById("measurementRaw")
+  const displayEl = document.getElementById("measurementDisplay")
+
+  if (!rawEl || !displayEl) return
+
+  if (!activeInput) {
+    rawEl.textContent = ""
+    displayEl.textContent = ""
+    return
+  }
+
+  const rawValue = activeInput.value || ""
+  rawEl.textContent = rawValue
+
+  const parsed = parseMeasurement(rawValue)
+
+  if (!rawValue.trim()) {
+    displayEl.textContent = ""
+    return
+  }
+
+  if (parsed > 0 || rawValue.trim() === '0"' || rawValue.trim() === "0" || rawValue.trim() === "0'") {
+    displayEl.textContent = formatToField(parsed)
+  } else {
+    displayEl.textContent = "..."
+  }
+}
+
+function clearKeyboardDisplay() {
+  const rawEl = document.getElementById("measurementRaw")
+  const displayEl = document.getElementById("measurementDisplay")
+
+  if (rawEl) rawEl.textContent = ""
+  if (displayEl) displayEl.textContent = ""
 }
 
 /* ================================================================
