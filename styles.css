@@ -18,32 +18,42 @@ h4 {
   margin: 0 0 10px 0;
 }
 
+h2 {
+  font-size: 28px;
+  line-height: 1.1;
+  margin-bottom: 14px;
+}
+
 .card {
   background: #020617;
   border: 1px solid #334155;
   padding: 14px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   border-radius: 8px;
 }
 
 label {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a5b4cc;
 }
 
 input,
 select {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 12px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
   background: #020617;
   border: 1px solid #334155;
   color: #e2e8f0;
   border-radius: 6px;
   box-sizing: border-box;
   font-family: inherit;
-  font-size: 16px; /* Safari no-zoom fix */
+  font-size: 16px;
   -webkit-text-size-adjust: 100%;
 }
 
@@ -67,11 +77,47 @@ button:active {
   transform: scale(0.98);
 }
 
-/*2column layout*/
+/* ---------------- FIELD LAYOUT ---------------- */
+
 .field-grid-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 10px 12px;
+  margin-bottom: 4px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.field-group input,
+.field-group select {
+  margin-bottom: 0;
+}
+
+.measure-helper {
+  min-height: 15px;
+  margin-top: 4px;
+  font-family: "Fira Code", monospace;
+  font-size: 11px;
+  line-height: 1.2;
+  color: #7dd3fc;
+  opacity: 0.95;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.measure-helper.empty {
+  visibility: hidden;
+}
+
+@media (max-width: 430px) {
+  .field-grid-2 {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ---------------- EXPORT BUTTONS ---------------- */
@@ -298,57 +344,6 @@ button:active {
   display: none;
 }
 
-.keyboard-grid {
-  display: grid;
-  /* 12-column grid: rows 1-4 have 3 keys (each spans 4/12), last row has 4 keys (each spans 3/12) */
-  grid-template-columns: repeat(12, 1fr);
-  gap: 8px;
-  max-width: 420px;
-  margin: 0 auto;
-}
-
-.keyboard-grid .key-btn:nth-child(-n+12) { grid-column: span 4; }
-.keyboard-grid .key-btn:nth-child(n+13)  { grid-column: span 3; }
-
-.key-btn {
-  width: 100%;
-  padding: 14px 0;
-  border: 1px solid #334155;
-  border-radius: 8px;
-  background: #0f172a;
-  color: #e2e8f0;
-  font-family: "Fira Code", monospace;
-  font-size: 22px;
-  font-weight: 600;
-}
-
-.key-btn:active {
-  transform: scale(0.98);
-}
-
-.key-backspace {
-  background: #1e293b;
-}
-
-.key-confirm {
-  background: #0ea5e9;
-  color: white;
-  font-size: 20px;
-}
-
-@media (min-width: 900px) {
-  .measurement-keyboard {
-    max-width: 480px;
-    margin: 0 auto;
-    left: 50%;
-    transform: translateX(-50%);
-    border-left: 1px solid #334155;
-    border-right: 1px solid #334155;
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
-  }
-}
-
 .measurement-display-row {
   display: flex;
   justify-content: space-between;
@@ -383,7 +378,56 @@ button:active {
   text-overflow: ellipsis;
 }
 
-/* collapsible test addon*/
+.keyboard-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 8px;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.keyboard-grid .key-btn:nth-child(-n+12) {
+  grid-column: span 4;
+}
+
+.keyboard-grid .key-btn:nth-child(n+13) {
+  grid-column: span 4;
+}
+
+.keyboard-grid .key-btn:nth-child(13),
+.keyboard-grid .key-btn:nth-child(14),
+.keyboard-grid .key-btn:nth-child(15),
+.keyboard-grid .key-btn:nth-child(16) {
+  grid-column: span 3;
+}
+
+.key-btn {
+  width: 100%;
+  padding: 14px 0;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-family: "Fira Code", monospace;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.key-btn:active {
+  transform: scale(0.98);
+}
+
+.key-backspace {
+  background: #1e293b;
+}
+
+.key-confirm {
+  background: #0ea5e9;
+  color: white;
+  font-size: 20px;
+}
+
+/* ---------------- COLLAPSIBLE CARDS ---------------- */
 
 .card-header {
   display: flex;
@@ -412,4 +456,17 @@ button:active {
 
 .collapsible.open > .card-header .chevron {
   transform: rotate(180deg);
+}
+
+@media (min-width: 900px) {
+  .measurement-keyboard {
+    max-width: 480px;
+    margin: 0 auto;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 1px solid #334155;
+    border-right: 1px solid #334155;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+  }
 }
