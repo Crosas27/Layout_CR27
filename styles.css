@@ -342,6 +342,39 @@ button:active {
   }
 }
 
+.measurement-display-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 0 auto 10px auto;
+  max-width: 420px;
+  padding: 10px 12px;
+  background: #111827;
+  border: 1px solid #334155;
+  border-radius: 8px;
+}
+
+.measurement-raw {
+  font-family: "Fira Code", monospace;
+  font-size: 18px;
+  color: #e2e8f0;
+  min-height: 24px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.measurement-display {
+  font-family: "Fira Code", monospace;
+  font-size: 13px;
+  color: #7dd3fc;
+  text-align: right;
+  min-height: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 /* collapsible test addon*/
 
