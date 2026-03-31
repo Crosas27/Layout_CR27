@@ -21,7 +21,7 @@ export function buildTextSummary(model) {
   // ---- Inputs ----
   lines.push("INPUTS")
   lines.push("-".repeat(36))
-  lines.push(`  Wall Length:         ${formatToField(model.wallLength)}`)
+  lines.push(`  Wall Width:         ${formatToField(model.wallLength)}`)
 
   if (model.wallType === "sidewall") {
     lines.push(`  Wall Height:         ${formatToField(model.wallHeight || 0)}`)
