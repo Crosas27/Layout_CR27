@@ -6,7 +6,7 @@ export function renderSummary(model) {
 
   const s = model.summary
 
-  let html = `<h3>Panel Summary</h3>`
+  let html = `<h3>Wall Summary</h3>`
 
   if (model.wallType === "gable") {
     html += `
