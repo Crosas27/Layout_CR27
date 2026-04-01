@@ -277,7 +277,6 @@ button:active {
 
 /* ---------------- REPORTS ---------------- */
 
-#panelSummary,
 #openingReport,
 .opening-report-block,
 .panel-cut-list,
@@ -286,7 +285,17 @@ button:active {
   font-family: "Fira Code", monospace;
 }
 
-#panelSummary p,
+#panelSummary {
+  font-family: "Fira Code", monospace;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #94a3b8;
+}
+
+#panelSummary p {
+  margin: 0 0 6px 0;
+}
+
 #openingReport p {
   margin: 0 0 10px 0;
 }
