@@ -1,0 +1,344 @@
+CR27 TOKEN GUIDE
+================
+
+Purpose
+-------
+This file explains what each token group controls in styles.css.
+Tokens are the shared values used across the UI so that spacing, type,
+color, and sizing can be adjusted in one place instead of hunting through
+the entire stylesheet.
+
+Naming Standard
+---------------
+Sizes are standardized to:
+
+xs = extra small
+sm = small
+md = medium
+lg = large
+xl = extra large
+
+Not every token family uses every size, but the goal is consistency.
+
+--------------------------------------------------
+1. COLOR TOKENS
+--------------------------------------------------
+These control the visual color system of the app.
+
+Examples:
+--color-bg
+--color-surface
+--color-border
+--color-text
+--color-primary
+--color-warning
+--color-danger
+
+Use these when changing:
+- page background
+- card backgrounds
+- borders
+- text hierarchy
+- button colors
+- warning / error / success states
+- SVG drawing colors
+
+--------------------------------------------------
+2. FONT TOKENS
+--------------------------------------------------
+These define the font families used in the UI.
+
+Examples:
+--font-ui
+--font-mono
+
+Use these when changing:
+- general interface font
+- measurement / report monospace font
+
+--------------------------------------------------
+3. TYPE TOKENS
+--------------------------------------------------
+These control font sizes, line height, font weight, and letter spacing.
+
+Examples:
+--text-xs
+--text-sm
+--text-md
+--text-lg
+--text-xl
+
+--line-sm
+--line-md
+--line-lg
+
+--weight-md
+--weight-sb
+--weight-bd
+
+--track-sm
+--track-md
+--track-lg
+
+Use these when changing:
+- label size
+- summary size
+- cut list size
+- helper text size
+- visual rhythm of text
+
+--------------------------------------------------
+4. SPACING TOKENS
+--------------------------------------------------
+These are the main spacing values used across the app.
+
+Examples:
+--space-xs
+--space-sm
+--space-md
+--space-lg
+--space-xl
+
+Use these when changing:
+- padding
+- gaps
+- margins
+- vertical rhythm
+- card density
+
+This is the main group to adjust when the UI feels:
+- too cramped
+- too loose
+- too form-like
+- too dense
+
+--------------------------------------------------
+5. RADIUS TOKENS
+--------------------------------------------------
+These control corner roundness.
+
+Examples:
+--radius-xs
+--radius-sm
+--radius-md
+--radius-lg
+--radius-xl
+
+Use these when changing:
+- card corners
+- input corners
+- button corners
+- display containers
+
+--------------------------------------------------
+6. BORDER TOKENS
+--------------------------------------------------
+These control border thickness.
+
+Examples:
+--border-xs
+--border-sm
+--border-md
+
+Use these when changing:
+- card outline thickness
+- SVG stroke thickness
+- emphasis around warnings or cut panels
+
+--------------------------------------------------
+7. LAYOUT TOKENS
+--------------------------------------------------
+These control overall layout limits and page padding.
+
+Examples:
+--layout-width
+--layout-bottom-pad
+
+Use these when changing:
+- app max width
+- bottom padding for keyboard space
+
+--------------------------------------------------
+8. COMPONENT TOKENS
+--------------------------------------------------
+These are practical UI control tokens for common components.
+
+8A. Cards
+---------
+Examples:
+--card-padding
+--card-gap
+--card-radius
+--card-border
+
+Controls:
+- card interior spacing
+- spacing between cards
+- card border and shape
+
+8B. Fields
+----------
+Examples:
+--field-gap-x
+--field-gap-y
+
+Controls:
+- spacing between paired inputs
+- spacing between stacked input rows
+
+8C. Labels
+----------
+Examples:
+--label-size
+--label-weight
+--label-color
+--label-spacing
+--label-gap
+
+Controls:
+- label appearance
+- label density
+- spacing between label and input
+
+8D. Inputs
+----------
+Examples:
+--input-pad-y
+--input-pad-x
+--input-radius
+--input-size
+--input-bg
+--input-border
+--input-text
+
+Controls:
+- input size
+- input density
+- input readability
+- input appearance
+
+8E. Helper Text
+---------------
+Examples:
+--helper-size
+--helper-color
+--helper-gap
+
+Controls:
+- inches conversion line under inputs
+- helper quietness / prominence
+
+8F. Buttons
+-----------
+Examples:
+--button-pad-y
+--button-pad-x
+--button-radius
+--button-size
+--button-weight
+
+Controls:
+- button click target size
+- button visual weight
+- button feel
+
+8G. Summary
+-----------
+Examples:
+--summary-size
+--summary-line
+--summary-color
+--summary-gap
+
+Controls:
+- Wall Summary density
+- summary readability
+- summary spacing
+
+8H. Cut List
+------------
+Examples:
+--cut-index-width
+--cut-arrow-width
+--cut-notes-width
+--cut-row-gap
+--cut-row-pad-y
+--cut-value-size
+--cut-subvalue-size
+--cut-notes-size
+
+Controls:
+- cut list row structure
+- spacing
+- big value emphasis
+- supporting inch value size
+- note width and readability
+
+8I. Keyboard
+------------
+Examples:
+--keyboard-width
+--keyboard-width-desktop
+--keyboard-pad
+--keyboard-gap
+--keyboard-key-radius
+--keyboard-key-size
+--keyboard-key-pad-y
+--keyboard-display-radius
+--keyboard-display-pad-y
+--keyboard-display-pad-x
+
+Controls:
+- custom measurement keyboard layout
+- key size
+- keyboard width
+- display row spacing
+
+--------------------------------------------------
+9. HOW TO USE TOKENS
+--------------------------------------------------
+Instead of changing many selectors directly, adjust the token value first.
+
+Example:
+If cards feel too roomy:
+change --card-padding
+
+If the whole form feels too spread out:
+change --field-gap-y
+
+If labels feel too loud:
+change --label-size or --label-color
+
+If the summary feels too big:
+change --summary-size
+
+If the cut list main numbers feel too dominant:
+change --cut-value-size
+
+--------------------------------------------------
+10. RECOMMENDED FIRST TOKENS TO TWEAK
+--------------------------------------------------
+For most UI polish, start here first:
+
+--card-padding
+--field-gap-y
+--label-size
+--helper-size
+--summary-size
+--cut-value-size
+
+These will give the most visible improvements with the least risk.
+
+--------------------------------------------------
+11. RULE OF THUMB
+--------------------------------------------------
+If a style change affects multiple areas, use a token.
+If a style change is only for one highly specific element, a local rule is okay.
+
+Tokens are for:
+- consistency
+- speed
+- easier redesigns
+- less hunting through CSS
+
+End of file.
