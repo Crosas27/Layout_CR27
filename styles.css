@@ -1,114 +1,401 @@
+/* ══════════════════════════════════════
+   CR27 — Field Console Neumorphism
+   Pure CSS — no preprocessor needed
+   ══════════════════════════════════════ */
 
-Skip to content
+/* ─── Tokens ─── */
+:root {
+  --bg:          #08080f;
+  --surface:     #0e0e1a;
+  --raised:      #131322;
+  --well:        #060610;
+  --text:        #e8e8f0;
+  --dim:         #484868;
+  --label:       #5a5a7a;
+  --accent:      #00ffc8;
+  --accent-dim:  #00b890;
+  --accent-glow: rgba(0,255,200,.25);
+  --accent-sub:  rgba(0,255,200,.08);
+  --warn:        #ffaa00;
+  --warn-glow:   rgba(255,170,0,.3);
+  --danger:      #ff2a4a;
+  --danger-glow: rgba(255,42,74,.3);
+  --ok:          #00ff6a;
+  --ok-glow:     rgba(0,255,106,.3);
+  --sh-d:        rgba(0,0,0,.9);
+  --sh-l:        rgba(35,35,60,.15);
+  --scanline:    rgba(0,0,0,.12);
+  --border-sub:  rgba(0,255,200,.07);
+  --border-dim:  rgba(0,255,200,.04);
+  --border-mid:  rgba(0,255,200,.06);
+  --border-hi:   rgba(0,255,200,.15);
+  --border-focus:rgba(0,255,200,.35);
+  --mono:        'Share Tech Mono', 'Courier New', monospace;
+  --sans:        'Rajdhani', 'Segoe UI', sans-serif;
+}
 
-    Crosas27
-    Layout_CR27
+/* ─── Reset ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-Repository navigation
+body {
+  min-height: 100vh;
+  background:
+    linear-gradient(rgba(0,255,200,.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,200,.012) 1px, transparent 1px),
+    var(--bg);
+  background-size: 40px 40px, 40px 40px, 100% 100%;
+  font-family: var(--mono);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
 
-    Code
-    Issues
-    Pull requests
-    Actions
-    Projects
-    Wiki
-    Security and quality
-    Insights
-    Settings
+/* ─── Neumorphism primitives ─── */
+.nm-raised {
+  background: var(--surface);
+  border-radius: 10px;
+  border: 1px solid var(--border-sub);
+  box-shadow: 6px 6px 16px var(--sh-d), -4px -4px 12px var(--sh-l);
+}
 
-Files
-t
+.nm-well {
+  background: var(--well);
+  border-radius: 6px;
+  box-shadow: inset 3px 3px 8px var(--sh-d), inset -3px -3px 8px var(--sh-l);
+  border: 1px solid var(--border-dim);
+}
 
-    Docs
-    js
-    app.js
-    index.html
-    index.txt
-    styles.css
+.nm-btn {
+  background: var(--surface);
+  border-radius: 8px;
+  box-shadow: 4px 4px 10px var(--sh-d), -3px -3px 8px var(--sh-l);
+  border: 1px solid var(--border-mid);
+  color: var(--text);
+  cursor: pointer;
+  transition: all .12s ease;
+  font-family: var(--mono);
+  -webkit-tap-highlight-color: transparent;
+}
+.nm-btn:active {
+  box-shadow: inset 2px 2px 6px var(--sh-d), inset -2px -2px 6px var(--sh-l);
+}
 
-    Layout_CR27
+/* ─── LED ─── */
+.led {
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--dim);
+  flex-shrink: 0;
+}
+.led--ok       { background: var(--ok);     box-shadow: 0 0 6px var(--ok-glow); }
+.led--warn     { background: var(--warn);   box-shadow: 0 0 6px var(--warn-glow); }
+.led--accent   { background: var(--accent); box-shadow: 0 0 6px var(--accent-glow); }
+.led--sm       { width: 5px; height: 5px; }
+.led--xs       { width: 4px; height: 4px; }
 
-/
-in
-NeoMorph
+/* ─── Scanlines ─── */
+.scanlines {
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 100;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    var(--scanline) 2px, var(--scanline) 4px
+  );
+  opacity: .35;
+}
 
-Indent mode
-Indent size
-Line wrap mode
-Editing styles.css file contents
-399
-400
-401
-402
-403
-404
-405
-406
-407
-408
-409
-410
-411
-412
-413
-414
-415
-416
-417
-418
-419
-420
-421
-422
-423
-424
-425
-426
-427
-428
-429
-430
-431
-432
-433
-434
-435
-436
-437
-438
-439
-440
-441
-442
-443
-444
-445
-446
-447
-448
-449
-450
-451
-452
-453
-454
-455
-456
-457
-458
-459
-460
-461
-462
-463
-464
-465
-466
-467
-468
-469
-470
-471
+/* ─── Status bar ─── */
+.status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border-mid);
+  font-size: 9px;
+  color: var(--dim);
+  letter-spacing: 2px;
+}
+.status-bar__left {
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* ─── Header ─── */
+.header {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-mid);
+}
+.header__brand { display: flex; align-items: center; gap: 12px; }
+.header__logo {
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 700;
+  color: var(--accent);
+  text-shadow: 0 0 12px var(--accent-glow);
+  font-family: var(--sans);
+  letter-spacing: 2px;
+}
+.header__title {
+  font-family: var(--sans);
+  font-size: 17px; font-weight: 700;
+  letter-spacing: 3px;
+}
+.header__meta {
+  font-size: 9px; color: var(--dim);
+  letter-spacing: 2px; margin-top: 1px;
+  display: flex; align-items: center; gap: 6px;
+}
+.header__actions { display: flex; gap: 8px; }
+.header__btn {
+  padding: 9px 14px;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+}
+.header__btn--accent {
+  color: var(--accent);
+  text-shadow: 0 0 6px var(--accent-glow);
+}
+
+/* ─── Main ─── */
+.main {
+  flex: 1;
+  padding: 14px 14px 100px;
+  overflow-y: auto;
+}
+
+/* ─── Console Card ─── */
+.console-card { margin-bottom: 14px; overflow: hidden; }
+
+.section-bar {
+  width: 100%;
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px;
+  background: transparent; border: none;
+  cursor: pointer;
+  font-family: var(--sans);
+  -webkit-tap-highlight-color: transparent;
+}
+.section-bar__arrow { font-size: 10px; color: var(--dim); transition: transform .2s; }
+.section-bar__icon  { font-size: 14px; color: var(--accent); font-weight: 600; letter-spacing: 2px; }
+.section-bar__title {
+  flex: 1; text-align: left;
+  font-size: 13px; font-family: var(--sans);
+  font-weight: 700; color: var(--text);
+  letter-spacing: 2.5px;
+}
+
+.section-body {
+  border-top: 1px solid var(--border-mid);
+  padding: 14px 16px 16px;
+  overflow: hidden;
+  transition: max-height .3s ease, opacity .2s ease;
+}
+.section-body[hidden] { display: none; }
+
+/* collapsed arrow */
+.console-card.collapsed .section-bar__arrow { transform: rotate(-90deg); }
+
+/* ─── Console Input ─── */
+.con-input { margin-bottom: 10px; }
+.con-input__header {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 5px;
+}
+.con-label {
+  font-size: 10px; font-family: var(--mono);
+  color: var(--label); letter-spacing: 1.5px;
+}
+.con-unit {
+  font-size: 9px; font-family: var(--mono);
+  color: var(--dim); letter-spacing: 1px;
+}
+.con-input__well {
+  display: flex; align-items: center;
+  padding: 0 12px;
+  transition: border .2s ease;
+}
+.con-input__well.focused { border-color: var(--border-focus); }
+
+.con-input__dot {
+  font-size: 5px; color: var(--dim);
+  margin-right: 8px; transition: color .2s;
+}
+.con-input__well.focused .con-input__dot { color: var(--accent); }
+
+.con-input__field {
+  flex: 1; background: transparent;
+  border: none; outline: none;
+  padding: 10px 0;
+  color: var(--dim);
+  font-size: 15px; font-family: var(--mono);
+  letter-spacing: 1px;
+}
+.con-input__field.has-value { color: var(--accent); }
+
+/* ─── Console Select ─── */
+.con-select { margin-bottom: 10px; position: relative; }
+.con-select__trigger {
+  width: 100%; padding: 10px 12px;
+  display: flex; justify-content: space-between; align-items: center;
+  cursor: pointer; color: var(--accent);
+  font-family: var(--mono); font-size: 13px;
+  letter-spacing: 1px; text-align: left;
+}
+.con-select__val { display: flex; align-items: center; gap: 8px; }
+.con-select__arrow { font-size: 8px; color: var(--dim); }
+
+.con-select__dropdown {
+  position: absolute; top: 100%; left: 0; right: 0;
+  z-index: 30; border-radius: 8px; margin-top: 4px;
+  overflow: hidden; border-color: rgba(0,255,200,.12);
+}
+.con-select__option {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; padding: 10px 14px;
+  background: transparent;
+  border: none; border-bottom: 1px solid var(--border-dim);
+  color: var(--text);
+  font-family: var(--mono); font-size: 12px;
+  cursor: pointer; text-align: left; letter-spacing: 1px;
+}
+.con-select__option.active {
+  background: var(--well); color: var(--accent);
+}
+.con-select__option .dot { font-size: 5px; color: var(--dim); }
+.con-select__option.active .dot { color: var(--accent); }
+
+.dot { font-size: 5px; color: var(--accent); }
+
+/* ─── Console Toggle ─── */
+.con-toggle {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px; padding: 6px 0;
+}
+.con-toggle__track {
+  width: 48px; height: 24px; border-radius: 4px;
+  cursor: pointer; position: relative;
+  transition: border-color .2s;
+}
+.con-toggle__track[data-on="true"] {
+  border-color: rgba(0,255,200,.3);
+}
+.con-toggle__track[data-on="false"] {
+  border-color: rgba(90,90,122,.3);
+}
+.con-toggle__thumb {
+  width: 18px; height: 18px; border-radius: 3px;
+  position: absolute; top: 2px; left: 2px;
+  background: var(--dim);
+  transition: all .2s ease;
+}
+.con-toggle__track[data-on="true"] .con-toggle__thumb {
+  left: 26px;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+.con-toggle__label {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  font-size: 7px; font-family: var(--mono);
+  color: var(--dim); letter-spacing: 1px;
+  right: 6px;
+}
+.con-toggle__track[data-on="true"] .con-toggle__label {
+  left: 6px; right: auto; color: var(--well);
+}
+
+/* ─── Openings ─── */
+.openings-meta {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 9px; color: var(--dim); letter-spacing: 1.5px;
+}
+.opening-row {
+  padding: 10px 12px; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.opening-row__idx {
+  font-size: 10px; font-family: var(--mono);
+  color: var(--accent); font-weight: 700;
+  min-width: 20px; letter-spacing: 1px;
+}
+.opening-row__fields {
+  flex: 1;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+}
+.opening-row__cell { position: relative; }
+.opening-row__field-label {
+  position: absolute; top: -1px; left: 6px;
+  font-size: 7px; font-family: var(--mono);
+  color: var(--dim); letter-spacing: 1px;
+  text-transform: uppercase;
+  background: var(--well); padding: 0 3px; z-index: 1;
+}
+.opening-row__input {
+  width: 100%; background: var(--bg);
+  border: 1px solid var(--border-mid);
+  border-radius: 4px; padding: 9px 6px 6px;
+  color: var(--text); font-size: 12px;
+  font-family: var(--mono); outline: none;
+  letter-spacing: 1px;
+}
+.opening-row__del {
+  background: transparent; border: none;
+  color: var(--danger); font-size: 12px;
+  cursor: pointer; padding: 4px;
+  font-family: var(--mono);
+  text-shadow: 0 0 6px var(--danger-glow);
+}
+.openings__add {
+  width: 100%; padding: 10px 0;
+  font-size: 10px; color: var(--accent);
+  font-weight: 600; letter-spacing: 2px;
+  margin-top: 4px;
+  text-shadow: 0 0 6px var(--accent-glow);
+}
+
+/* ─── Keypad overlay ─── */
+.keypad-overlay {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  z-index: 60;
+  transform: translateY(100%);
+  transition: transform .25s cubic-bezier(.4,0,.2,1);
+  pointer-events: none;
+}
+.keypad-overlay.open {
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.keypad-overlay__inner {
+  background: var(--surface);
+  border-top: 1px solid var(--border-hi);
+  box-shadow: 0 -8px 30px var(--sh-d);
+  padding: 12px 14px calc(env(safe-area-inset-bottom, 0px) + 14px);
+}
+.keypad-overlay__header {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 10px;
+}
+.keypad-overlay__field {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 10px; font-family: var(--mono);
+  color: var(--accent); letter-spacing: 1.5px;
+}
+.keypad-overlay__done {
+  padding: 5px 12px; font-size: 9px;
+  letter-spacing: 1.5px; color: var(--dim); border-radius: 6px;
+}
+.keypad-overlay__preview {
+  padding: 8px 12px; margin-bottom: 10px;
+  font-size: 18px; font-family: var(--mono);
+  color: var(--accent);
+  text-shadow: 0 0 8px var(--accent-glow);
+  letter-spacing: 2px; min-height: 28px;
+  display: flex; align-items: center;
 }
 .keypad-cursor {
   display: inline-block;
@@ -182,6 +469,3 @@ Editing styles.css file contents
   font-weight: 400; letter-spacing: 2px;
 }
 .bottom-nav__item.active .bottom-nav__label { font-weight: 700; }
-Use Control + Shift + m to toggle the tab key moving focus. Alternatively, use esc then tab to move to the next interactive element on the page.
- 
-New File at / · Crosas27/Layout_CR27
