@@ -1,52 +1,109 @@
 /* ---------------- TOKENS---------------- */
 :root {
-  /* ---------- COLOR TOKENS ---------- */
+  /* =========================================================
+     COLOR TOKENS — CORE
+  ========================================================= */
   --color-bg: #020617;
   --color-surface: #020617;
   --color-surface-alt: #081226;
+  --color-surface-soft: #0f172a;
+  --color-surface-raised: #111827;
+
   --color-border: #334155;
   --color-border-soft: #1e293b;
+  --color-border-strong: #475569;
 
   --color-text: #e2e8f0;
+  --color-text-soft: #cbd5e1;
   --color-text-muted: #94a3b8;
-  --color-text-soft: #a5b4cc;
+  --color-text-dim: #64748b;
   --color-text-accent: #7dd3fc;
 
+  /* =========================================================
+     BRAND / ACTION TOKENS
+  ========================================================= */
   --color-primary: #0ea5e9;
   --color-primary-hover: #0284c7;
+  --color-primary-active: #0369a1;
+
   --color-primary-strong: #5b8af0;
   --color-primary-strong-hover: #4c78d8;
   --color-primary-strong-active: #3f67c2;
 
+  --color-button-secondary: #1e293b;
+  --color-button-secondary-hover: #273449;
+  --color-button-secondary-active: #334155;
+
+  /* =========================================================
+     STATUS TOKENS
+  ========================================================= */
+  --color-success: #86efac;
+  --color-success-soft: #a9cbb5;
+  --color-success-bg: rgba(22, 40, 28, 0.35);
+
+  --color-warning: #f59e0b;
+  --color-warning-strong: #fbbf24;
+  --color-warning-soft: #d9b38c;
+  --color-warning-bg: rgba(90, 58, 30, 0.18);
+
   --color-danger: #ef4444;
+  --color-danger-soft: #d9a3a3;
   --color-danger-border: #7f1d1d;
   --color-danger-bg: rgba(127, 29, 29, 0.15);
   --color-danger-text: #fecaca;
 
-  --color-success: #86efac;
-  --color-warning: #f59e0b;
-  --color-warning-strong: #fbbf24;
-
+  /* =========================================================
+     DRAWING / SVG TOKENS
+  ========================================================= */
   --color-panel-full: #1e293b;
-  --color-panel-cut: #111827;
+  --color-panel-full-stroke: #64748b;
 
-/* ---------- FONT TOKENS ---------- */
+  --color-panel-cut: #111827;
+  --color-panel-cut-stroke: #f87171;
+
+  --color-opening-fill: rgba(239, 68, 68, 0.25);
+  --color-opening-stroke: #ef4444;
+
+  --color-rib-line: #22c55e;
+  --color-seam-line: #e2e8f0;
+  --color-dimension-line: #64748b;
+  --color-tick: #ffffff;
+
+  /* =========================================================
+     FONT TOKENS
+  ========================================================= */
   --font-ui: system-ui, sans-serif;
   --font-mono: "Fira Code", monospace;
 
-  --text-xs: 10px;
-  --text-sm: 11px;
-  --text-md: 12px;
-  --text-base: 13px;
+  /* =========================================================
+     TYPE SCALE
+  ========================================================= */
+  --text-2xs: 10px;
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-md: 13px;
+  --text-base: 14px;
   --text-lg: 16px;
   --text-xl: 18px;
   --text-2xl: 28px;
+  --text-3xl: 40px;
 
   --line-tight: 1.2;
   --line-normal: 1.4;
-  --line-loose: 1.5;
+  --line-relaxed: 1.5;
 
-/* ---------- SPACING TOKENS ---------- */
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  --tracking-tight: 0.02em;
+  --tracking-wide: 0.08em;
+  --tracking-wider: 0.12em;
+
+  /* =========================================================
+     SPACING SCALE
+  ========================================================= */
+  --space-0: 0;
   --space-1: 4px;
   --space-2: 6px;
   --space-3: 8px;
@@ -57,28 +114,144 @@
   --space-8: 18px;
   --space-9: 20px;
   --space-10: 24px;
+  --space-11: 28px;
+  --space-12: 32px;
 
-/* ---------- RADIUS TOKENS ---------- */
+  /* =========================================================
+     RADIUS TOKENS
+  ========================================================= */
   --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 10px;
   --radius-xl: 12px;
+  --radius-pill: 999px;
 
-/* ---------- COMPONENT TOKENS ---------- */
+  /* =========================================================
+     STROKE / BORDER TOKENS
+  ========================================================= */
+  --border-thin: 1px;
+  --border-medium: 1.2px;
+  --border-strong: 2px;
+
+  /* =========================================================
+     SHADOW / EFFECT TOKENS
+  ========================================================= */
+  --shadow-none: none;
+  --shadow-soft: 0 0 0 1px rgba(255, 255, 255, 0.02);
+  --focus-ring: 0 0 0 2px rgba(91, 138, 240, 0.18);
+
+  /* =========================================================
+     LAYOUT TOKENS
+  ========================================================= */
+  --layout-max-width: 900px;
+  --layout-bottom-pad: 240px;
+
+  /* =========================================================
+     COMPONENT TOKENS — CARDS
+  ========================================================= */
   --card-padding: var(--space-6);
   --card-gap: var(--space-6);
+  --card-radius: var(--radius-md);
+  --card-border: var(--border-thin) solid var(--color-border);
 
+  /* =========================================================
+     COMPONENT TOKENS — INPUTS
+  ========================================================= */
+  --input-height: auto;
   --input-padding-y: 10px;
   --input-padding-x: 12px;
   --input-radius: var(--radius-sm);
+  --input-font-size: var(--text-lg);
+  --input-font-family: var(--font-ui);
+  --input-font-family-measure: var(--font-mono);
+  --input-bg: var(--color-surface);
+  --input-border: var(--color-border);
+  --input-text: var(--color-text);
 
+  /* =========================================================
+     COMPONENT TOKENS — LABELS / HELPERS
+  ========================================================= */
+  --label-font-size: var(--text-xs);
+  --label-weight: var(--weight-semibold);
+  --label-color: var(--color-text-soft);
+  --label-letter-spacing: var(--tracking-wide);
+  --label-gap-bottom: var(--space-1);
+
+  --helper-font-size: var(--text-xs);
+  --helper-color: var(--color-text-accent);
+  --helper-gap-top: var(--space-1);
+  --helper-line-height: var(--line-tight);
+
+  /* =========================================================
+     COMPONENT TOKENS — BUTTONS
+  ========================================================= */
   --button-padding-y: 10px;
   --button-padding-x: 12px;
   --button-radius: var(--radius-sm);
+  --button-font-size: var(--text-md);
+  --button-font-weight: var(--weight-bold);
 
+  --button-secondary-radius: var(--radius-lg);
+  --button-secondary-padding: var(--space-5);
+
+  /* =========================================================
+     COMPONENT TOKENS — GRID / FORMS
+  ========================================================= */
   --field-gap-x: 12px;
   --field-gap-y: 10px;
-  --helper-gap-top: 4px;
+  --field-group-gap: 0;
+
+  --opening-form-gap: var(--space-3);
+  --opening-item-gap: var(--space-4);
+  --opening-item-padding: var(--space-3);
+
+  /* =========================================================
+     COMPONENT TOKENS — SUMMARY / REPORTS
+  ========================================================= */
+  --summary-font-size: var(--text-sm);
+  --summary-line-height: var(--line-normal);
+  --summary-color: var(--color-text-muted);
+  --summary-item-gap: var(--space-2);
+
+  --report-font-size: var(--text-md);
+  --report-section-gap: var(--space-5);
+
+  /* =========================================================
+     COMPONENT TOKENS — CUT LIST
+  ========================================================= */
+  --cutlist-index-width: 42px;
+  --cutlist-arrow-width: 30px;
+  --cutlist-notes-width: 120px;
+  --cutlist-row-gap: var(--space-3);
+  --cutlist-row-padding-y: var(--space-5);
+
+  --cutlist-value-size: var(--text-xl);
+  --cutlist-subvalue-size: var(--text-xs);
+  --cutlist-notes-size: var(--text-xs);
+
+  /* =========================================================
+     COMPONENT TOKENS — KEYBOARD
+  ========================================================= */
+  --keyboard-max-width: 420px;
+  --keyboard-max-width-desktop: 480px;
+  --keyboard-padding: var(--space-5);
+  --keyboard-gap: var(--space-3);
+
+  --keyboard-key-radius: var(--radius-md);
+  --keyboard-key-font-size: 22px;
+  --keyboard-key-padding-y: 14px;
+
+  --keyboard-display-radius: var(--radius-md);
+  --keyboard-display-padding-y: 10px;
+  --keyboard-display-padding-x: 12px;
+
+  /* =========================================================
+     BREAKPOINT TOKENS (reference only)
+     CSS custom properties cannot be used directly in media queries
+  ========================================================= */
+  --bp-phone-sm: 430px;
+  --bp-mobile: 640px;
+  --bp-desktop: 900px;
 }
 /* --------------- ---------------- */
 
