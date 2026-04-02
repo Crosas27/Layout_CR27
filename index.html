@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -11,9 +12,10 @@
 
   <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
   <div class="app">
-    <h2>Panel Layout Tool</h2>
+    <h2>CR27-Layout</h2>
 
     <div id="errorBox" class="error-box hidden"></div>
 
@@ -25,44 +27,74 @@
       </div>
 
       <div class="card-body">
-        <label for="wallType">Wall Type</label>
-        <select id="wallType">
+        <div class="field-grid-2">
+          <div class="field-group">
+            <label for="wallType">Wall Type</label>
+            <select id="wallType">
           <option value="sidewall">Sidewall</option>
           <option value="gable">Gable Endwall</option>
         </select>
+          </div>
 
-        <label for="wallLength">Wall Length</label>
-        <input id="wallLength" class="measure-input" type="text" inputmode="none" placeholder='e.g. 42&apos; or 504"' />
+          <div class="field-group">
+            <label for="wallLength">Wall Width</label>
+            <input id="wallLength" class="measure-input" type="text" inputmode="none" placeholder='e.g. 42&apos; or 504"' />
+          </div>
+        </div>
 
-        <div id="sidewallFields">
-          <label for="wallHeight">Wall Height</label>
-          <input id="wallHeight" class="measure-input" type="text" inputmode="none" placeholder='e.g. 16&apos; or 192"' />
+        <div id="sidewallFields" class="field-grid-2">
+          <div class="field-group">
+            <label for="wallHeight">Wall Height</label>
+            <input id="wallHeight" class="measure-input" type="text" inputmode="none" placeholder='e.g. 16&apos; or 192"' />
+          </div>
 
-          <label for="panelStopHeight">Panel Stop Height</label>
-          <input id="panelStopHeight" class="measure-input" type="text" inputmode="none" placeholder='defaults to wall height' />
+          <div class="field-group">
+            <label for="panelStopHeight">Panel Stop Height</label>
+            <input id="panelStopHeight" class="measure-input" type="text" inputmode="none" placeholder='defaults to wall height' />
+          </div>
         </div>
 
         <div id="gableFields" style="display: none;">
-          <label for="leftEaveHeight">Left Eave Height</label>
-          <input id="leftEaveHeight" class="measure-input" type="text" inputmode="none" placeholder='e.g. 16&apos; or 192"' />
+          <div class="field-grid-2">
+            <div class="field-group">
+              <label for="leftEaveHeight">Left Eave Height</label>
+              <input id="leftEaveHeight" class="measure-input" type="text" inputmode="none" placeholder='e.g. 16&apos; or 192"' />
+            </div>
 
-          <label for="leftPanelStopHeight">Left Panel Stop Height</label>
-          <input id="leftPanelStopHeight" class="measure-input" type="text" inputmode="none" placeholder='defaults to left eave' />
+            <div class="field-group">
+              <label for="rightEaveHeight">Right Eave Height</label>
+              <input id="rightEaveHeight" class="measure-input" type="text" inputmode="none" placeholder='e.g. 10&apos; 6"' />
+            </div>
+          </div>
 
-          <label for="ridgeHeight">Ridge Height</label>
-          <input id="ridgeHeight" class="measure-input" type="text" inputmode="none" placeholder='e.g. 18&apos; 6"' />
+          <div class="field-grid-2">
+            <div class="field-group">
+              <label for="leftPanelStopHeight">Left Panel Stop Height</label>
+              <input id="leftPanelStopHeight" class="measure-input" type="text" inputmode="none" placeholder='defaults to left eave' />
+            </div>
 
-          <label for="ridgePanelStopHeight">Ridge Panel Stop Height</label>
-          <input id="ridgePanelStopHeight" class="measure-input" type="text" inputmode="none" placeholder='defaults to ridge height' />
+            <div class="field-group">
+              <label for="rightPanelStopHeight">Right Panel Stop Height</label>
+              <input id="rightPanelStopHeight" class="measure-input" type="text" inputmode="none" placeholder='defaults to right eave' />
+            </div>
+          </div>
 
-          <label for="ridgePosition">Ridge Position from Left</label>
-          <input id="ridgePosition" class="measure-input" type="text" inputmode="none" placeholder='e.g. 10&apos; or 120"' />
+          <div class="field-grid-2">
+            <div class="field-group">
+              <label for="ridgeHeight">Ridge Height</label>
+              <input id="ridgeHeight" class="measure-input" type="text" inputmode="none" placeholder='e.g. 18&apos; 6"' />
+            </div>
 
-          <label for="rightEaveHeight">Right Eave Height</label>
-          <input id="rightEaveHeight" class="measure-input" type="text" inputmode="none" placeholder='e.g. 10&apos; 6"' />
+            <div class="field-group">
+              <label for="ridgePosition">Ridge Position from Left</label>
+              <input id="ridgePosition" class="measure-input" type="text" inputmode="none" placeholder='e.g. 10&apos; or 120"' />
+            </div>
+          </div>
 
-          <label for="rightPanelStopHeight">Right Panel Stop Height</label>
-          <input id="rightPanelStopHeight" class="measure-input" type="text" inputmode="none" placeholder='defaults to right eave' />
+          <div class="field-group">
+            <label for="ridgePanelStopHeight">Ridge Panel Stop Height</label>
+            <input id="ridgePanelStopHeight" class="measure-input" type="text" inputmode="none" placeholder='defaults to ridge height' />
+          </div>
         </div>
       </div>
     </div>
@@ -75,14 +107,22 @@
       </div>
 
       <div class="card-body">
-        <label for="panelCoverage">Panel Coverage</label>
-        <input id="panelCoverage" class="measure-input" type="text" inputmode="none" value='36"' />
+        <div class="field-grid-2">
+          <div class="field-group">
+            <label for="panelCoverage">Panel Coverage</label>
+            <input id="panelCoverage" class="measure-input" type="text" inputmode="none" value='36"' />
+          </div>
 
-        <label for="ribSpacing">Rib Spacing</label>
-        <input id="ribSpacing" class="measure-input" type="text" inputmode="none" value='12"' />
+          <div class="field-group">
+            <label for="ribSpacing">Rib Spacing</label>
+            <input id="ribSpacing" class="measure-input" type="text" inputmode="none" value='12"' />
+          </div>
+        </div>
 
-        <label for="startOffset">Start Offset</label>
-        <input id="startOffset" class="measure-input" type="text" inputmode="none" value='0"' />
+        <div class="field-group">
+          <label for="startOffset">Start Offset</label>
+          <input id="startOffset" class="measure-input" type="text" inputmode="none" value='0"' />
+        </div>
       </div>
     </div>
 
@@ -120,6 +160,14 @@
 
   <!-- Measurement Keyboard -->
   <div id="measurementKeyboard" class="measurement-keyboard hidden">
+
+    <!-- DISPLAY BAR -->
+    <div class="measurement-display-row">
+      <div id="measurementRaw" class="measurement-raw"></div>
+      <div id="measurementDisplay" class="measurement-display"></div>
+    </div>
+
+    <!-- KEYPAD -->
     <div class="keyboard-grid">
       <button type="button" class="key-btn" data-key="1">1</button>
       <button type="button" class="key-btn" data-key="2">2</button>
@@ -138,12 +186,14 @@
       <button type="button" class="key-btn" data-key='"'>"</button>
 
       <button type="button" class="key-btn" data-key="/">/</button>
-      <button type="button" class="key-btn" data-key=".">.</button>
+      <button type="button" class="key-btn" data-key="-">-</button>
       <button type="button" class="key-btn key-backspace" data-action="backspace">⌫</button>
       <button type="button" class="key-btn key-confirm" data-action="confirm">↵</button>
     </div>
+
   </div>
 
   <script type="module" src="app.js"></script>
 </body>
+
 </html>
