@@ -1,39 +1,37 @@
-import { generateLayout }      from "./js/core/layoutEngine.js"
-import { renderWall }          from "./js/renderer/wallRenderer.js"
+import { generateLayout } from "./js/core/layoutEngine.js"
+import { renderWall } from "./js/renderer/wallRenderer.js"
 import { renderOpeningReport } from "./js/renderer/openingReportRenderer.js"
-import { renderSummary }       from "./js/renderer/summaryRenderer.js"
-import { parseMeasurement }    from "./js/utils/measurementParser.js"
-import { formatToField }       from "./js/utils/formatter.js"
-import { buildTextSummary }    from "./js/utils/textExport.js"
+import { renderSummary } from "./js/renderer/summaryRenderer.js"
+import { parseMeasurement } from "./js/utils/measurementParser.js"
+import { formatToField } from "./js/utils/formatter.js"
+import { buildTextSummary } from "./js/utils/textExport.js"
 
 /* ================================================================
    STATE — single source of truth
-   All mutations go through direct assignment + persistState().
-   Layout auto-renders 300ms after any change (debounced).
 ================================================================ */
 
 const STORAGE_KEY = "layout_cr27_v2"
 
 const DEFAULT_STATE = {
-  wallType:             "sidewall",
-  wallLength:           "",
-  wallHeight:           "",
-  panelStopHeight:      "",
-  panelCoverage:        '36"',
-  ribSpacing:           '12"',
-  startOffset:          '0"',
-  leftEaveHeight:       "",
-  leftPanelStopHeight:  "",
-  ridgeHeight:          "",
+  wallType: "sidewall",
+  wallLength: "",
+  wallHeight: "",
+  panelStopHeight: "",
+  panelCoverage: '36"',
+  ribSpacing: '12"',
+  startOffset: '0"',
+  leftEaveHeight: "",
+  leftPanelStopHeight: "",
+  ridgeHeight: "",
   ridgePanelStopHeight: "",
-  ridgePosition:        "",
-  rightEaveHeight:      "",
+  ridgePosition: "",
+  rightEaveHeight: "",
   rightPanelStopHeight: "",
-  openings:             []
+  openings: []
 }
 
-let state       = { ...DEFAULT_STATE }
-let lastModel   = null
+let state = { ...DEFAULT_STATE }
+let lastModel = null
 let renderTimer = null
 
 const CONFIG_INPUT_IDS = [
@@ -51,21 +49,19 @@ const CONFIG_INPUT_IDS = [
 function persistState() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
-  } catch (_) {}
+  } catch (_) { }
   updateHash()
 }
 
 function updateHash() {
-  // Only encode config fields — openings can be too long for a URL
   const { openings, ...config } = state
   try {
     const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(config))))
     history.replaceState(null, "", "#" + encoded)
-  } catch (_) {}
+  } catch (_) { }
 }
 
 function loadState() {
-  // URL hash first (shared links)
   if (location.hash.length > 1) {
     try {
       const decoded = JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(1)))))
@@ -74,17 +70,16 @@ function loadState() {
         populateInputs()
         return
       }
-    } catch (_) {}
+    } catch (_) { }
   }
 
-  // Fall back to localStorage
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY))
     if (saved && typeof saved === "object") {
       state = { ...DEFAULT_STATE, ...saved }
       populateInputs()
     }
-  } catch (_) {}
+  } catch (_) { }
 }
 
 function populateInputs() {
@@ -98,6 +93,7 @@ function populateInputs() {
 
   syncModeUI()
   renderOpeningsList()
+  updateAllMeasureHelpers()
 }
 
 /* ================================================================
@@ -118,8 +114,10 @@ function bindInputs() {
   CONFIG_INPUT_IDS.forEach(id => {
     const el = document.getElementById(id)
     if (!el) return
+
     el.addEventListener("input", () => {
       state[id] = el.value
+      updateMeasureHelper(el)
       persistState()
       scheduleRender()
     })
@@ -127,7 +125,7 @@ function bindInputs() {
 }
 
 /* ================================================================
-   RENDER SCHEDULING — 300ms debounce, or immediate
+   RENDER SCHEDULING
 ================================================================ */
 
 function scheduleRender(immediate = false) {
@@ -153,24 +151,24 @@ function updateLayout() {
   }
 
   const config = {
-    wallType:        state.wallType,
+    wallType: state.wallType,
     wallLength,
-    wallHeight:      parseMeasurement(state.wallHeight),
+    wallHeight: parseMeasurement(state.wallHeight),
     panelStopHeight: parseMeasurement(state.panelStopHeight),
-    panelCoverage:   parseMeasurement(state.panelCoverage) || 36,
-    ribSpacing:      parseMeasurement(state.ribSpacing)    || 12,
-    startOffset:     parseMeasurement(state.startOffset)   || 0,
-    openings:        state.openings
+    panelCoverage: parseMeasurement(state.panelCoverage) || 36,
+    ribSpacing: parseMeasurement(state.ribSpacing) || 12,
+    startOffset: parseMeasurement(state.startOffset) || 0,
+    openings: state.openings
   }
 
   if (state.wallType === "gable") {
     Object.assign(config, {
-      leftEaveHeight:       parseMeasurement(state.leftEaveHeight),
-      leftPanelStopHeight:  parseMeasurement(state.leftPanelStopHeight),
-      ridgeHeight:          parseMeasurement(state.ridgeHeight),
+      leftEaveHeight: parseMeasurement(state.leftEaveHeight),
+      leftPanelStopHeight: parseMeasurement(state.leftPanelStopHeight),
+      ridgeHeight: parseMeasurement(state.ridgeHeight),
       ridgePanelStopHeight: parseMeasurement(state.ridgePanelStopHeight),
-      ridgePosition:        parseMeasurement(state.ridgePosition),
-      rightEaveHeight:      parseMeasurement(state.rightEaveHeight),
+      ridgePosition: parseMeasurement(state.ridgePosition),
+      rightEaveHeight: parseMeasurement(state.rightEaveHeight),
       rightPanelStopHeight: parseMeasurement(state.rightPanelStopHeight)
     })
   }
@@ -183,12 +181,12 @@ function updateLayout() {
 }
 
 function clearOutputs() {
-  const svg     = document.getElementById("wallSvg")
+  const svg = document.getElementById("wallSvg")
   const summary = document.getElementById("panelSummary")
-  const report  = document.getElementById("openingReport")
-  if (svg)     svg.innerHTML     = ""
+  const report = document.getElementById("openingReport")
+  if (svg) svg.innerHTML = ""
   if (summary) summary.innerHTML = ""
-  if (report)  report.innerHTML  = ""
+  if (report) report.innerHTML = ""
 }
 
 /* ================================================================
@@ -223,6 +221,7 @@ function addOpening() {
     showError("Opening width is required.")
     return
   }
+
   if (start < 0) {
     showError("Opening start cannot be negative.")
     return
@@ -253,7 +252,7 @@ function renderOpeningsList() {
   list.innerHTML = ""
 
   state.openings.forEach((op, index) => {
-    const div   = document.createElement("div")
+    const div = document.createElement("div")
     div.className = "opening-item"
 
     const label = document.createElement("span")
@@ -261,7 +260,7 @@ function renderOpeningsList() {
 
     const btn = document.createElement("button")
     btn.textContent = "✕"
-    btn.className   = "delete-btn"
+    btn.className = "delete-btn"
     btn.onclick = () => {
       state.openings = state.openings.filter((_, i) => i !== index)
       persistState()
@@ -276,20 +275,25 @@ function renderOpeningsList() {
 }
 
 /* ================================================================
-   MODE UI — show/hide gable vs sidewall fields
+   MODE UI
 ================================================================ */
 
 function syncModeUI() {
-  const isGable     = state.wallType === "gable"
+  const isGable = state.wallType === "gable"
   const gableFields = document.getElementById("gableFields")
-  const sideFields  = document.getElementById("sidewallFields")
+  const sideFields = document.getElementById("sidewallFields")
 
-  if (gableFields) gableFields.style.display = isGable ? "block" : "none"
-  if (sideFields)  sideFields.style.display  = isGable ? "none"  : "block"
+  if (gableFields) {
+    gableFields.style.display = isGable ? "" : "none"
+  }
+
+  if (sideFields) {
+    sideFields.style.display = isGable ? "none" : ""
+  }
 }
 
 /* ================================================================
-   SHARE BUTTON — copies URL with encoded state to clipboard
+   SHARE BUTTON
 ================================================================ */
 
 function setupShareButton() {
@@ -300,22 +304,19 @@ function setupShareButton() {
     updateHash()
     const url = location.href
 
-    const copy = () => {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(url).then(() => {
-          btn.textContent = "Link Copied!"
-          setTimeout(() => { btn.textContent = "Share Layout" }, 2500)
-        }).catch(() => prompt("Copy this link:", url))
-      } else {
-        prompt("Copy this link:", url)
-      }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        btn.textContent = "Link Copied!"
+        setTimeout(() => { btn.textContent = "Share Layout" }, 2500)
+      }).catch(() => prompt("Copy this link:", url))
+    } else {
+      prompt("Copy this link:", url)
     }
-    copy()
   })
 }
 
 /* ================================================================
-   COPY CUT LIST — plain-text summary to clipboard
+   COPY CUT LIST
 ================================================================ */
 
 function setupCopyTextButton() {
@@ -342,6 +343,77 @@ function setupCopyTextButton() {
 }
 
 /* ================================================================
+   MEASUREMENT HELPERS (inches-only under fields)
+================================================================ */
+
+function initMeasurementHelpers() {
+  document.querySelectorAll(".measure-input").forEach(input => {
+    let helper = input.nextElementSibling
+
+    if (!helper || !helper.classList.contains("measure-helper")) {
+      helper = document.createElement("div")
+      helper.className = "measure-helper empty"
+      input.insertAdjacentElement("afterend", helper)
+    }
+
+    updateMeasureHelper(input)
+  })
+}
+
+function updateAllMeasureHelpers() {
+  document.querySelectorAll(".measure-input").forEach(updateMeasureHelper)
+}
+
+function updateMeasureHelper(input) {
+  if (!input) return
+
+  const helper = input.nextElementSibling
+  if (!helper || !helper.classList.contains("measure-helper")) return
+
+  const raw = input.value ? input.value.trim() : ""
+  if (!raw) {
+    helper.textContent = ""
+    helper.classList.add("empty")
+    return
+  }
+
+  const inches = parseMeasurement(raw)
+
+  if (Number.isFinite(inches) && inches > 0) {
+    helper.textContent = formatTotalInches(inches)
+    helper.classList.remove("empty")
+  } else if (raw === "0" || raw === '0"' || raw === "0'") {
+    helper.textContent = '0"'
+    helper.classList.remove("empty")
+  } else {
+    helper.textContent = "..."
+    helper.classList.remove("empty")
+  }
+}
+
+function formatTotalInches(inches) {
+  const rounded = Math.round(inches * 8) / 8
+  const whole = Math.floor(rounded)
+  const frac = rounded - whole
+
+  const map = {
+    0.125: "1/8",
+    0.25: "1/4",
+    0.375: "3/8",
+    0.5: "1/2",
+    0.625: "5/8",
+    0.75: "3/4",
+    0.875: "7/8"
+  }
+
+  const fracText = map[Number(frac.toFixed(3))] || ""
+
+  if (fracText && whole > 0) return `${whole} ${fracText}"`
+  if (fracText) return `${fracText}"`
+  return `${whole}"`
+}
+
+/* ================================================================
    MEASUREMENT KEYBOARD
 ================================================================ */
 
@@ -352,8 +424,17 @@ function setupMeasurementKeyboard() {
   if (!keyboard) return
 
   document.querySelectorAll(".measure-input").forEach(input => {
-    input.addEventListener("focus", () => { activeInput = input; keyboard.classList.remove("hidden") })
-    input.addEventListener("click", () => { activeInput = input; keyboard.classList.remove("hidden") })
+    input.addEventListener("focus", () => {
+      activeInput = input
+      keyboard.classList.remove("hidden")
+      updateKeyboardDisplay()
+    })
+
+    input.addEventListener("click", () => {
+      activeInput = input
+      keyboard.classList.remove("hidden")
+      updateKeyboardDisplay()
+    })
   })
 
   keyboard.addEventListener("click", e => {
@@ -363,55 +444,109 @@ function setupMeasurementKeyboard() {
     if (target.dataset.action === "backspace") {
       handleBackspace()
       fireStateSync()
+      updateKeyboardDisplay()
       return
     }
+
     if (target.dataset.action === "confirm") {
       keyboard.classList.add("hidden")
       activeInput = null
+      clearKeyboardDisplay()
       scheduleRender(true)
       return
     }
+
     if (target.dataset.key) {
       insertAtCursor(target.dataset.key)
       fireStateSync()
+      updateKeyboardDisplay()
     }
   })
 
   document.addEventListener("click", e => {
     const t = e.target
     if (!(t instanceof Element)) return
+
     if (!t.closest(".measure-input") && !t.closest("#measurementKeyboard")) {
       keyboard.classList.add("hidden")
       activeInput = null
+      clearKeyboardDisplay()
     }
   })
+}
+
+function updateKeyboardDisplay() {
+  const rawEl = document.getElementById("measurementRaw")
+  const displayEl = document.getElementById("measurementDisplay")
+
+  if (!rawEl || !displayEl) return
+
+  if (!activeInput) {
+    rawEl.textContent = ""
+    displayEl.textContent = ""
+    return
+  }
+
+  const rawValue = activeInput.value || ""
+  rawEl.textContent = rawValue
+
+  const parsed = parseMeasurement(rawValue)
+
+  if (!rawValue.trim()) {
+    displayEl.textContent = ""
+    return
+  }
+
+  if (parsed > 0 || rawValue.trim() === '0"' || rawValue.trim() === "0" || rawValue.trim() === "0'") {
+    displayEl.textContent = formatToField(parsed)
+  } else {
+    displayEl.textContent = "..."
+  }
+}
+
+function clearKeyboardDisplay() {
+  const rawEl = document.getElementById("measurementRaw")
+  const displayEl = document.getElementById("measurementDisplay")
+
+  if (rawEl) rawEl.textContent = ""
+  if (displayEl) displayEl.textContent = ""
 }
 
 function fireStateSync() {
   if (!activeInput) return
   const id = activeInput.id
+
   if (id && CONFIG_INPUT_IDS.includes(id)) {
     state[id] = activeInput.value
+    updateMeasureHelper(activeInput)
     persistState()
     scheduleRender()
   }
+
   activeInput.dispatchEvent(new Event("input", { bubbles: true }))
 }
 
 function insertAtCursor(char) {
   if (!activeInput) return
+
   const s = activeInput.selectionStart ?? activeInput.value.length
-  const e = activeInput.selectionEnd   ?? activeInput.value.length
+  const e = activeInput.selectionEnd ?? activeInput.value.length
+
   activeInput.value = activeInput.value.slice(0, s) + char + activeInput.value.slice(e)
+
   const pos = s + char.length
   activeInput.setSelectionRange(pos, pos)
   activeInput.focus()
+
+  updateKeyboardDisplay()
+  updateMeasureHelper(activeInput)
 }
 
 function handleBackspace() {
   if (!activeInput) return
+
   const s = activeInput.selectionStart ?? activeInput.value.length
-  const e = activeInput.selectionEnd   ?? activeInput.value.length
+  const e = activeInput.selectionEnd ?? activeInput.value.length
 
   if (s !== e) {
     activeInput.value = activeInput.value.slice(0, s) + activeInput.value.slice(e)
@@ -420,36 +555,40 @@ function handleBackspace() {
     activeInput.value = activeInput.value.slice(0, s - 1) + activeInput.value.slice(e)
     activeInput.setSelectionRange(s - 1, s - 1)
   }
+
   activeInput.focus()
+  updateKeyboardDisplay()
+  updateMeasureHelper(activeInput)
 }
 
 /* ================================================================
-   collapsible test
+   COLLAPSIBLES
 ================================================================ */
 
 function initCollapsibles() {
-document.querySelectorAll(".card-header").forEach(header => {
-	header.addEventListener("click", event => {
-		const target = event.target
-		if (target instanceof Element && target.closest("button, input, select, textarea")) {
-			return
-		}
-	const card = header.closest(".collapsible")
-	if (!card) return
-	
-		card.classList.toggle("open")
-		})
-	})
-}
+  document.querySelectorAll(".card-header").forEach(header => {
+    header.addEventListener("click", event => {
+      const target = event.target
+      if (target instanceof Element && target.closest("button, input, select, textarea")) {
+        return
+      }
 
+      const card = header.closest(".collapsible")
+      if (!card) return
+
+      card.classList.toggle("open")
+    })
+  })
+}
 
 /* ================================================================
    INIT
 ================================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
-  loadState() 
+  loadState()
   bindInputs()
+  initMeasurementHelpers()
   setupMeasurementKeyboard()
   setupShareButton()
   setupCopyTextButton()
@@ -461,4 +600,3 @@ document.addEventListener("DOMContentLoaded", () => {
   syncModeUI()
   scheduleRender(true)
 })
-
