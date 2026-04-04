@@ -61,6 +61,7 @@ select {
 input.measure-input {
   font-family: "Fira Code", monospace;
   font-size: 16px;
+  max-width: 120px;
 }
 
 button {
