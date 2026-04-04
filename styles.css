@@ -8,7 +8,8 @@ body {
 
 .app {
   padding: 16px;
-  max-width: 900px;
+  max-width: 440px;
+  max-height: 956px;
   margin: auto;
 }
 
