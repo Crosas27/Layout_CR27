@@ -82,7 +82,8 @@ button:active {
 /* ---------------- EXPORT BUTTONS ---------------- */
 
 .export-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
   margin-top: 4px;
 }
@@ -119,12 +120,12 @@ button:active {
 /* ---------------- OPENINGS ---------------- */
 
 .opening-form {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
 
 .opening-form input {
-  flex: 1;
   margin-bottom: 0;
 }
 
@@ -134,8 +135,8 @@ button:active {
   padding: 8px;
   margin-bottom: 8px;
   border-radius: 6px;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
   gap: 10px;
   font-family: "Fira Code", monospace;
@@ -358,8 +359,8 @@ button:active {
 /* collapsible test addon*/
 
 .card-header {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
   cursor: pointer;
   font-weight: 700;
