@@ -20,8 +20,8 @@ function generateSidewallLayout(config) {
   const seams           = panels.map(p => p.start).concat(wallLength)
   const ribs            = calculateRibs(wallLength, ribSpacing, startOffset)
   const summary         = buildSummary(wallLength, panelCoverage, panels)
-  const openingAnalysis = analyzeOpenings(openings, seams, ribs, wallLength)
-
+  const openingAnalysis = analyzeOpenings(openings, panels, seams, ribs, wallLength)
+  const panelOpeningCuts = buildPanelOpeningCuts(openingAnalysis)
   return {
     wallType: "sidewall",
     wallLength,
@@ -35,6 +35,7 @@ function generateSidewallLayout(config) {
     ribs,
     openings,
     openingAnalysis,
+    panelOpeningCuts,
     summary
   }
 }
@@ -70,7 +71,8 @@ function generateGableLayout(config) {
     const leftStopHeight  = getGableHeightAtX(panel.start, ...stopArgs)
     const rightStopHeight = getGableHeightAtX(panel.end,   ...stopArgs)
     const ridgePanel      = panel.start < ridgePosition && panel.end > ridgePosition
-
+    const openingAnalysis = analyzeOpenings(openings, panels, seams, ribs, wallLength)
+    const panelOpeningCuts = buildPanelOpeningCuts(openingAnalysis)
     return {
       panel: panel.panel,
       start: panel.start,
@@ -80,7 +82,9 @@ function generateGableLayout(config) {
       rightHeight,
       leftStopHeight,
       rightStopHeight,
-      ridgePanel
+      ridgePanel,
+      openingAnalysis,
+      panelOpeningCuts
     }
   })
 
