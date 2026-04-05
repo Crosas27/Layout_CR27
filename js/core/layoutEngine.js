@@ -179,37 +179,142 @@ function buildSummary(wallLength, coverage, panels) {
 
 /* ---------------- OPENING ANALYSIS ---------------- */
 
-const EDGE_TOLERANCE    = 0.5   // inches — jamb landing on rib centerline
-const RIB_MIN_CLEARANCE = 6     // inches — minimum jamb-to-rib spacing
+/* ---------------- OPENING ANALYSIS ---------------- */
 
-function analyzeOpenings(openings, seams, ribs, wallLength) {
+const EDGE_TOLERANCE = 0.5   // inches — jamb landing on rib centerline
+const RIB_MIN_CLEARANCE = 6  // inches — minimum jamb-to-rib spacing
+
+function analyzeOpenings(openings, panels, seams, ribs, wallLength) {
   return openings.map((opening, index) => {
-    const start = Number(opening.start) || 0
-    const width = Number(opening.width) || 0
-    const end   = start + width
+    const start = clampNum(opening.start, 0, wallLength)
+    const width = Math.max(0, Number(opening.width) || 0)
+    const end = clampNum(start + width, 0, wallLength)
 
-    const nearestLeftSeam  = findNearest(start, seams)
-    const nearestRightSeam = findNearest(end,   seams)
+    const nearestLeftSeam = findNearest(start, seams)
+    const nearestRightSeam = findNearest(end, seams)
 
-    const leftOffsetFromSeam  = start - nearestLeftSeam
-    const rightOffsetFromSeam = end   - nearestRightSeam
+    const leftOffsetFromSeam = start - nearestLeftSeam
+    const rightOffsetFromSeam = end - nearestRightSeam
 
-    const leftEdgeHits  = ribs.filter(r => Math.abs(r.position - start) <= EDGE_TOLERANCE).map(r => r.position)
-    const rightEdgeHits = ribs.filter(r => Math.abs(r.position - end)   <= EDGE_TOLERANCE).map(r => r.position)
+    const leftEdgeHits = ribs
+      .filter(r => Math.abs(r.position - start) <= EDGE_TOLERANCE)
+      .map(r => r.position)
 
-    const intersectingPanels = []
-    for (let i = 0; i < seams.length - 1; i++) {
-      const ps = seams[i], pe = seams[i + 1]
-      if (end <= ps || start >= pe) continue
-      intersectingPanels.push({
-        panel:      i + 1,
-        panelStart: ps,
-        panelEnd:   pe,
-        cutStart:   Math.max(start, ps) - ps,
-        cutEnd:     Math.min(end,   pe) - ps
+    const rightEdgeHits = ribs
+      .filter(r => Math.abs(r.position - end) <= EDGE_TOLERANCE)
+      .map(r => r.position)
+
+    const intersectingPanels = panels
+      .filter(panel => end > panel.start && start < panel.end)
+      .map(panel => {
+        const cutStart = Math.max(start, panel.start) - panel.start
+        const cutEnd = Math.min(end, panel.end) - panel.start
+        const cutWidth = Math.max(0, cutEnd - cutStart)
+
+        const touchesLeftEdge = cutStart <= EDGE_TOLERANCE
+        const touchesRightEdge = Math.abs(panel.width - cutEnd) <= EDGE_TOLERANCE
+        const fullPanelCut = touchesLeftEdge && touchesRightEdge
+
+        const nearestLeftRib = findNearest(start, ribs.map(r => r.position))
+        const nearestRightRib = findNearest(end, ribs.map(r => r.position))
+
+        return {
+          panel: panel.panel,
+          panelStart: panel.start,
+          panelEnd: panel.end,
+          panelWidth: panel.width,
+
+          cutStart,
+          cutEnd,
+          cutWidth,
+
+          touchesLeftEdge,
+          touchesRightEdge,
+          fullPanelCut,
+
+          nearestLeftRib,
+          nearestRightRib
+        }
       })
+
+    const warnings = []
+
+    if (leftEdgeHits.length > 0) {
+      warnings.push('Left jamb lands on a rib centerline (within 1/2" tolerance).')
     }
 
+    if (rightEdgeHits.length > 0) {
+      warnings.push('Right jamb lands on a rib centerline (within 1/2" tolerance).')
+    }
+
+    ribs.forEach(rib => {
+      const dL = Math.abs(rib.position - start)
+      const dR = Math.abs(rib.position - end)
+
+      if (dL > EDGE_TOLERANCE && dL < RIB_MIN_CLEARANCE) {
+        warnings.push(
+          `Left jamb is ${fmtIn(dL)} from rib at ${rib.position}" — min clearance 6".`
+        )
+      }
+
+      if (dR > EDGE_TOLERANCE && dR < RIB_MIN_CLEARANCE) {
+        warnings.push(
+          `Right jamb is ${fmtIn(dR)} from rib at ${rib.position}" — min clearance 6".`
+        )
+      }
+    })
+
+    return {
+      id: index + 1,
+      start,
+      width,
+      end,
+
+      nearestLeftSeam,
+      nearestRightSeam,
+      leftOffsetFromSeam,
+      rightOffsetFromSeam,
+
+      leftEdgeHits,
+      rightEdgeHits,
+
+      intersectingPanels,
+      warnings
+    }
+  })
+}
+
+function buildPanelOpeningCuts(openingAnalysis) {
+  const map = {}
+
+  openingAnalysis.forEach(opening => {
+    opening.intersectingPanels.forEach(cut => {
+      if (!map[cut.panel]) map[cut.panel] = []
+
+      map[cut.panel].push({
+        openingId: opening.id,
+        openingStart: opening.start,
+        openingEnd: opening.end,
+
+        cutStart: cut.cutStart,
+        cutEnd: cut.cutEnd,
+        cutWidth: cut.cutWidth,
+
+        touchesLeftEdge: cut.touchesLeftEdge,
+        touchesRightEdge: cut.touchesRightEdge,
+        fullPanelCut: cut.fullPanelCut
+      })
+    })
+  })
+
+  return map
+}
+
+function clampNum(value, min, max) {
+  const n = Number(value)
+  if (!Number.isFinite(n)) return min
+  return Math.min(Math.max(n, min), max)
+}
     const warnings = []
 
     if (leftEdgeHits.length > 0)  warnings.push('Left jamb lands on a rib centerline (within 1/2" tolerance).')
