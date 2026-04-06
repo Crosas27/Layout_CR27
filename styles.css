@@ -707,7 +707,7 @@ button:active {
 /* ---------------- MEASUREMENT KEYBOARD ---------------- */
 
 .measurement-keyboard {
-  position: fixed;
+  position: flex;
   left: 0;
   right: 0;
   bottom: 0;
