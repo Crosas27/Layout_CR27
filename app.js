@@ -417,10 +417,6 @@ function formatTotalInches(inches) {
    MEASUREMENT KEYBOARD
 ================================================================ */
 
-/* ================================================================
-   MEASUREMENT KEYBOARD
-================================================================ */
-
 let activeInput = null
 
 function setupMeasurementKeyboard() {
@@ -558,7 +554,7 @@ function handleBackspace() {
 }
 /* ================================================================
    COLLAPSIBLES
-================================================================ */
+in */
 
 function initCollapsibles() {
   document.querySelectorAll(".card-header").forEach(header => {
