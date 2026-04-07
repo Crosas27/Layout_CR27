@@ -586,17 +586,44 @@ function initCollapsibles() {
 ================================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
-  loadState()
-  bindInputs()
-  initMeasurementHelpers()
-  setupMeasurementKeyboard()
-  setupShareButton()
-  setupCopyTextButton()
-  initCollapsibles()
+  try {
+    console.log("INIT start")
 
-  const addBtn = document.getElementById("addOpeningBtn")
-  if (addBtn) addBtn.addEventListener("click", addOpening)
+    loadState()
+    console.log("loadState ok")
 
-  syncModeUI()
-  scheduleRender(true)
+    bindInputs()
+    console.log("bindInputs ok")
+
+    initMeasurementHelpers()
+    console.log("initMeasurementHelpers ok")
+
+    setupMeasurementKeyboard()
+    console.log("setupMeasurementKeyboard ok")
+
+    setupShareButton()
+    console.log("setupShareButton ok")
+
+    setupCopyTextButton()
+    console.log("setupCopyTextButton ok")
+
+    initCollapsibles()
+    console.log("initCollapsibles ok")
+
+    const addBtn = document.getElementById("addOpeningBtn")
+    if (addBtn) {
+      addBtn.addEventListener("click", addOpening)
+      console.log("addOpeningBtn listener ok")
+    }
+
+    syncModeUI()
+    console.log("syncModeUI ok")
+
+    scheduleRender(true)
+    console.log("scheduleRender ok")
+
+    console.log("INIT done")
+  } catch (err) {
+    console.error("INIT FAILED:", err)
+  }
 })
