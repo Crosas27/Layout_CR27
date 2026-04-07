@@ -707,15 +707,16 @@ button:active {
 /* ---------------- MEASUREMENT KEYBOARD ---------------- */
 
 .measurement-keyboard {
-  position: flex;
+  position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
-  padding: var(--keyboard-pad);
-  background: rgba(2, 6, 23, 0.96);
-  border-top: var(--border-xs) solid var(--color-border);
+  padding: 12px;
+  background: rgba(2, 6, 23, 0.98);
+  border-top: 1px solid #334155;
   backdrop-filter: blur(8px);
-  z-index: 999;
+  z-index: 99999;
+  display: block;
 }
 
 .measurement-keyboard.hidden {
@@ -726,19 +727,19 @@ button:active {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: var(--keyboard-gap);
+  gap: 12px;
   margin: 0 auto 10px auto;
-  max-width: var(--keyboard-width);
-  padding: var(--keyboard-display-pad-y) var(--keyboard-display-pad-x);
-  background: var(--color-surface-raised);
-  border: var(--border-xs) solid var(--color-border);
-  border-radius: var(--keyboard-display-radius);
+  max-width: 420px;
+  padding: 10px 12px;
+  background: #111827;
+  border: 1px solid #334155;
+  border-radius: 8px;
 }
 
 .measurement-raw {
-  font-family: var(--font-mono);
-  font-size: var(--text-xl);
-  color: var(--color-text);
+  font-family: "Fira Code", monospace;
+  font-size: 18px;
+  color: #e2e8f0;
   min-height: 24px;
   white-space: nowrap;
   overflow: hidden;
@@ -746,9 +747,9 @@ button:active {
 }
 
 .measurement-display {
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
-  color: var(--color-text-accent);
+  font-family: "Fira Code", monospace;
+  font-size: 13px;
+  color: #7dd3fc;
   text-align: right;
   min-height: 20px;
   white-space: nowrap;
@@ -759,8 +760,8 @@ button:active {
 .keyboard-grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  gap: var(--keyboard-gap);
-  max-width: var(--keyboard-width);
+  gap: 8px;
+  max-width: 420px;
   margin: 0 auto;
 }
 
@@ -781,14 +782,14 @@ button:active {
 
 .key-btn {
   width: 100%;
-  padding: var(--keyboard-key-pad-y) 0;
-  border: var(--border-xs) solid var(--color-border);
-  border-radius: var(--keyboard-key-radius);
-  background: var(--color-surface-soft);
-  color: var(--color-text);
-  font-family: var(--font-mono);
-  font-size: var(--keyboard-key-size);
-  font-weight: var(--weight-sb);
+  padding: 14px 0;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-family: "Fira Code", monospace;
+  font-size: 22px;
+  font-weight: 600;
 }
 
 .key-btn:active {
@@ -796,15 +797,27 @@ button:active {
 }
 
 .key-backspace {
-  background: var(--color-secondary);
+  background: #1e293b;
 }
 
 .key-confirm {
-  background: var(--color-primary);
+  background: #0ea5e9;
   color: white;
   font-size: 20px;
 }
 
+@media (min-width: 900px) {
+  .measurement-keyboard {
+    max-width: 480px;
+    margin: 0 auto;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 1px solid #334155;
+    border-right: 1px solid #334155;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+  }
+}
 /* ---------------- COLLAPSIBLE CARDS ---------------- */
 
 .card-header {
