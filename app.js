@@ -417,6 +417,10 @@ function formatTotalInches(inches) {
    MEASUREMENT KEYBOARD
 ================================================================ */
 
+/* ================================================================
+   MEASUREMENT KEYBOARD
+================================================================ */
+
 let activeInput = null
 
 function setupMeasurementKeyboard() {
@@ -427,34 +431,52 @@ function setupMeasurementKeyboard() {
     input.addEventListener("focus", () => {
       activeInput = input
       keyboard.classList.remove("hidden")
+      updateMeasurementKeyboardDisplay()
     })
 
     input.addEventListener("click", () => {
       activeInput = input
       keyboard.classList.remove("hidden")
+      updateMeasurementKeyboardDisplay()
     })
   })
 
-  keyboard.addEventListener("click", e => {
-    const target = e.target
-    if (!(target instanceof HTMLElement)) return
+  // Prevent taps on keyboard from doing weird mobile browser nonsense
+  keyboard.addEventListener("touchstart", e => {
+    e.preventDefault()
+  }, { passive: false })
 
-    if (target.dataset.action === "backspace") {
+  keyboard.addEventListener("mousedown", e => {
+    e.preventDefault()
+  })
+
+  keyboard.addEventListener("click", e => {
+    e.preventDefault()
+
+    const target = e.target
+    if (!(target instanceof Element)) return
+
+    const key = target.closest(".key-btn")
+    if (!(key instanceof HTMLElement)) return
+
+    if (key.dataset.action === "backspace") {
       handleBackspace()
       fireStateSync()
+      updateMeasurementKeyboardDisplay()
       return
     }
 
-    if (target.dataset.action === "confirm") {
+    if (key.dataset.action === "confirm") {
       keyboard.classList.add("hidden")
       activeInput = null
       scheduleRender(true)
       return
     }
 
-    if (target.dataset.key) {
-      insertAtCursor(target.dataset.key)
+    if (key.dataset.key) {
+      insertAtCursor(key.dataset.key)
       fireStateSync()
+      updateMeasurementKeyboardDisplay()
     }
   })
 
@@ -469,6 +491,71 @@ function setupMeasurementKeyboard() {
   })
 }
 
+function fireStateSync() {
+  if (!activeInput) return
+
+  const id = activeInput.id
+  if (id && CONFIG_INPUT_IDS.includes(id)) {
+    state[id] = activeInput.value
+    persistState()
+    scheduleRender()
+  }
+
+  activeInput.dispatchEvent(new Event("input", { bubbles: true }))
+}
+
+function insertAtCursor(char) {
+  if (!activeInput) return
+
+  activeInput.focus()
+
+  const start = activeInput.selectionStart ?? activeInput.value.length
+  const end = activeInput.selectionEnd ?? activeInput.value.length
+
+  activeInput.value =
+    activeInput.value.slice(0, start) +
+    char +
+    activeInput.value.slice(end)
+
+  const pos = start + char.length
+
+  try {
+    activeInput.setSelectionRange(pos, pos)
+  } catch {
+    // some mobile browsers get weird here, ignore
+  }
+
+  activeInput.focus()
+}
+
+function handleBackspace() {
+  if (!activeInput) return
+
+  activeInput.focus()
+
+  const start = activeInput.selectionStart ?? activeInput.value.length
+  const end = activeInput.selectionEnd ?? activeInput.value.length
+
+  if (start !== end) {
+    activeInput.value =
+      activeInput.value.slice(0, start) +
+      activeInput.value.slice(end)
+
+    try {
+      activeInput.setSelectionRange(start, start)
+    } catch {}
+  } else if (start > 0) {
+    activeInput.value =
+      activeInput.value.slice(0, start - 1) +
+      activeInput.value.slice(end)
+
+    try {
+      activeInput.setSelectionRange(start - 1, start - 1)
+    } catch {}
+  }
+
+  activeInput.focus()
+}
 /* ================================================================
    COLLAPSIBLES
 ================================================================ */
