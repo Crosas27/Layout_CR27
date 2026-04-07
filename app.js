@@ -420,48 +420,18 @@ function formatTotalInches(inches) {
 let activeInput = null
 
 function setupMeasurementKeyboard() {
-  console.log("setupMeasurementKeyboard entered")
-
   const keyboard = document.getElementById("measurementKeyboard")
-  console.log("keyboard found?", !!keyboard)
+  if (!keyboard) return
 
-  if (!keyboard) {
-    console.warn("measurementKeyboard not found")
-    return
-  }
-
-  const inputs = document.querySelectorAll(".measure-input")
-  console.log("measure-input count:", inputs.length)
-
-  inputs.forEach(input => {
+  document.querySelectorAll(".measure-input").forEach(input => {
     input.addEventListener("focus", () => {
-      console.log("focus fired:", input.id)
       activeInput = input
       keyboard.classList.remove("hidden")
-      keyboard.style.display = "block"
-keyboard.style.position = "fixed"
-keyboard.style.left = "0"
-keyboard.style.right = "0"
-keyboard.style.bottom = "0"
-keyboard.style.zIndex = "99999"
-keyboard.style.background = "#111"
-keyboard.style.border = "2px solid red"
-      console.log("keyboard classes after focus:", keyboard.className)
     })
 
     input.addEventListener("click", () => {
-      console.log("click fired:", input.id)
       activeInput = input
       keyboard.classList.remove("hidden")
-      keyboard.style.display = "block"
-keyboard.style.position = "fixed"
-keyboard.style.left = "0"
-keyboard.style.right = "0"
-keyboard.style.bottom = "0"
-keyboard.style.zIndex = "99999"
-keyboard.style.background = "#111"
-keyboard.style.border = "2px solid red"
-      console.log("keyboard classes after click:", keyboard.className)
     })
   })
 
@@ -495,96 +465,8 @@ keyboard.style.border = "2px solid red"
     if (!t.closest(".measure-input") && !t.closest("#measurementKeyboard")) {
       keyboard.classList.add("hidden")
       activeInput = null
-    
-   clearKeyboardDisplay()
     }
   })
-}
-
-function updateKeyboardDisplay() {
-  const rawEl = document.getElementById("measurementRaw")
-  const displayEl = document.getElementById("measurementDisplay")
-
-  if (!rawEl || !displayEl) return
-
-  if (!activeInput) {
-    rawEl.textContent = ""
-    displayEl.textContent = ""
-    return
-  }
-
-  const rawValue = activeInput.value || ""
-  rawEl.textContent = rawValue
-
-  const parsed = parseMeasurement(rawValue)
-
-  if (!rawValue.trim()) {
-    displayEl.textContent = ""
-    return
-  }
-
-  if (parsed > 0 || rawValue.trim() === '0"' || rawValue.trim() === "0" || rawValue.trim() === "0'") {
-    displayEl.textContent = formatToField(parsed)
-  } else {
-    displayEl.textContent = "..."
-  }
-}
-
-function clearKeyboardDisplay() {
-  const rawEl = document.getElementById("measurementRaw")
-  const displayEl = document.getElementById("measurementDisplay")
-
-  if (rawEl) rawEl.textContent = ""
-  if (displayEl) displayEl.textContent = ""
-}
-
-function fireStateSync() {
-  if (!activeInput) return
-  const id = activeInput.id
-
-  if (id && CONFIG_INPUT_IDS.includes(id)) {
-    state[id] = activeInput.value
-    updateMeasureHelper(activeInput)
-    persistState()
-    scheduleRender()
-  }
-
-  activeInput.dispatchEvent(new Event("input", { bubbles: true }))
-}
-
-function insertAtCursor(char) {
-  if (!activeInput) return
-
-  const s = activeInput.selectionStart ?? activeInput.value.length
-  const e = activeInput.selectionEnd ?? activeInput.value.length
-
-  activeInput.value = activeInput.value.slice(0, s) + char + activeInput.value.slice(e)
-
-  const pos = s + char.length
-  activeInput.setSelectionRange(pos, pos)
-  activeInput.focus()
-
-  updateKeyboardDisplay()
-  updateMeasureHelper(activeInput)
-}
-
-function handleBackspace() {
-  if (!activeInput) return
-
-  const s = activeInput.selectionStart ?? activeInput.value.length
-  const e = activeInput.selectionEnd ?? activeInput.value.length
-
-  if (s !== e) {
-    activeInput.value = activeInput.value.slice(0, s) + activeInput.value.slice(e)
-    activeInput.setSelectionRange(s, s)
-  } else if (s > 0) {
-    activeInput.value = activeInput.value.slice(0, s - 1) + activeInput.value.slice(e)
-    activeInput.setSelectionRange(s - 1, s - 1)
-  }
-
-  activeInput.focus()
-  updateKeyboardDisplay()
-  updateMeasureHelper(activeInput)
 }
 
 /* ================================================================
