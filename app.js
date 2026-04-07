@@ -438,6 +438,14 @@ function setupMeasurementKeyboard() {
       console.log("focus fired:", input.id)
       activeInput = input
       keyboard.classList.remove("hidden")
+      keyboard.style.display = "block"
+keyboard.style.position = "fixed"
+keyboard.style.left = "0"
+keyboard.style.right = "0"
+keyboard.style.bottom = "0"
+keyboard.style.zIndex = "99999"
+keyboard.style.background = "#111"
+keyboard.style.border = "2px solid red"
       console.log("keyboard classes after focus:", keyboard.className)
     })
 
@@ -445,6 +453,14 @@ function setupMeasurementKeyboard() {
       console.log("click fired:", input.id)
       activeInput = input
       keyboard.classList.remove("hidden")
+      keyboard.style.display = "block"
+keyboard.style.position = "fixed"
+keyboard.style.left = "0"
+keyboard.style.right = "0"
+keyboard.style.bottom = "0"
+keyboard.style.zIndex = "99999"
+keyboard.style.background = "#111"
+keyboard.style.border = "2px solid red"
       console.log("keyboard classes after click:", keyboard.className)
     })
   })
