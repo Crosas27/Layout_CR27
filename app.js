@@ -420,20 +420,32 @@ function formatTotalInches(inches) {
 let activeInput = null
 
 function setupMeasurementKeyboard() {
-  const keyboard = document.getElementById("measurementKeyboard")
-  if (!keyboard) return
+  console.log("setupMeasurementKeyboard entered")
 
-  document.querySelectorAll(".measure-input").forEach(input => {
+  const keyboard = document.getElementById("measurementKeyboard")
+  console.log("keyboard found?", !!keyboard)
+
+  if (!keyboard) {
+    console.warn("measurementKeyboard not found")
+    return
+  }
+
+  const inputs = document.querySelectorAll(".measure-input")
+  console.log("measure-input count:", inputs.length)
+
+  inputs.forEach(input => {
     input.addEventListener("focus", () => {
+      console.log("focus fired:", input.id)
       activeInput = input
       keyboard.classList.remove("hidden")
-      updateKeyboardDisplay()
+      console.log("keyboard classes after focus:", keyboard.className)
     })
 
     input.addEventListener("click", () => {
+      console.log("click fired:", input.id)
       activeInput = input
       keyboard.classList.remove("hidden")
-      updateKeyboardDisplay()
+      console.log("keyboard classes after click:", keyboard.className)
     })
   })
 
@@ -444,14 +456,12 @@ function setupMeasurementKeyboard() {
     if (target.dataset.action === "backspace") {
       handleBackspace()
       fireStateSync()
-      updateKeyboardDisplay()
       return
     }
 
     if (target.dataset.action === "confirm") {
       keyboard.classList.add("hidden")
       activeInput = null
-      clearKeyboardDisplay()
       scheduleRender(true)
       return
     }
@@ -459,7 +469,6 @@ function setupMeasurementKeyboard() {
     if (target.dataset.key) {
       insertAtCursor(target.dataset.key)
       fireStateSync()
-      updateKeyboardDisplay()
     }
   })
 
@@ -470,7 +479,8 @@ function setupMeasurementKeyboard() {
     if (!t.closest(".measure-input") && !t.closest("#measurementKeyboard")) {
       keyboard.classList.add("hidden")
       activeInput = null
-      clearKeyboardDisplay()
+    
+   clearKeyboardDisplay()
     }
   })
 }
