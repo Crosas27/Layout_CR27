@@ -549,8 +549,36 @@ function handleBackspace() {
       activeInput.setSelectionRange(start - 1, start - 1)
     } catch {}
   }
+function updateMeasurementKeyboardDisplay() {
+  const rawEl = document.getElementById("measurementRaw")
+  const displayEl = document.getElementById("measurementDisplay")
 
-  activeInput.focus()
+  if (!rawEl || !displayEl) return
+
+  if (!activeInput) {
+    rawEl.textContent = ""
+    displayEl.textContent = ""
+    return
+  }
+
+  const raw = activeInput.value || ""
+  rawEl.textContent = raw
+
+  if (!raw.trim()) {
+    displayEl.textContent = ""
+    return
+  }
+
+  try {
+    const inches = parseMeasurement(raw)
+    if (Number.isFinite(inches)) {
+      displayEl.textContent = `${formatToField(inches)}`
+    } else {
+      displayEl.textContent = ""
+    }
+  } catch {
+    displayEl.textContent = ""
+  }
 }
 /* ================================================================
    COLLAPSIBLES
