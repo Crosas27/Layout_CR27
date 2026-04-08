@@ -347,13 +347,37 @@ function setupCopyTextButton() {
 
 let activeInput = null
 
+function updateMeasurementDisplay() {
+  const rawEl  = document.getElementById("measurementRaw")
+  const dispEl = document.getElementById("measurementDisplay")
+  if (!rawEl || !dispEl) return
+
+  const raw = activeInput ? activeInput.value : ""
+  rawEl.textContent = raw
+
+  if (!raw.trim()) {
+    dispEl.textContent = ""
+    return
+  }
+  const inches = parseMeasurement(raw)
+  dispEl.textContent = inches > 0 ? formatToField(inches) : ""
+}
+
 function setupMeasurementKeyboard() {
   const keyboard = document.getElementById("measurementKeyboard")
   if (!keyboard) return
 
   document.querySelectorAll(".measure-input").forEach(input => {
-    input.addEventListener("focus", () => { activeInput = input; keyboard.classList.remove("hidden") })
-    input.addEventListener("click", () => { activeInput = input; keyboard.classList.remove("hidden") })
+    input.addEventListener("focus", () => {
+      activeInput = input
+      keyboard.classList.remove("hidden")
+      updateMeasurementDisplay()
+    })
+    input.addEventListener("click", () => {
+      activeInput = input
+      keyboard.classList.remove("hidden")
+      updateMeasurementDisplay()
+    })
   })
 
   keyboard.addEventListener("click", e => {
@@ -363,6 +387,7 @@ function setupMeasurementKeyboard() {
     if (target.dataset.action === "backspace") {
       handleBackspace()
       fireStateSync()
+      updateMeasurementDisplay()
       return
     }
     if (target.dataset.action === "confirm") {
@@ -374,6 +399,7 @@ function setupMeasurementKeyboard() {
     if (target.dataset.key) {
       insertAtCursor(target.dataset.key)
       fireStateSync()
+      updateMeasurementDisplay()
     }
   })
 
@@ -389,12 +415,6 @@ function setupMeasurementKeyboard() {
 
 function fireStateSync() {
   if (!activeInput) return
-  const id = activeInput.id
-  if (id && CONFIG_INPUT_IDS.includes(id)) {
-    state[id] = activeInput.value
-    persistState()
-    scheduleRender()
-  }
   activeInput.dispatchEvent(new Event("input", { bubbles: true }))
 }
 
@@ -436,6 +456,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const addBtn = document.getElementById("addOpeningBtn")
   if (addBtn) addBtn.addEventListener("click", addOpening)
+
+  document.querySelectorAll(".collapsible .card-header").forEach(header => {
+    header.addEventListener("click", () => {
+      header.closest(".collapsible").classList.toggle("open")
+    })
+  })
 
   syncModeUI()
   scheduleRender(true)
