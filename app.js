@@ -414,6 +414,7 @@ function formatTotalInches(inches) {
 }
 
 /* ================================================================
+/* ================================================================
    MEASUREMENT KEYBOARD
 ================================================================ */
 
@@ -437,7 +438,6 @@ function setupMeasurementKeyboard() {
     })
   })
 
-  // Prevent taps on keyboard from doing weird mobile browser nonsense
   keyboard.addEventListener("touchstart", e => {
     e.preventDefault()
   }, { passive: false })
@@ -517,9 +517,7 @@ function insertAtCursor(char) {
 
   try {
     activeInput.setSelectionRange(pos, pos)
-  } catch {
-    // some mobile browsers get weird here, ignore
-  }
+  } catch {}
 
   activeInput.focus()
 }
@@ -549,6 +547,10 @@ function handleBackspace() {
       activeInput.setSelectionRange(start - 1, start - 1)
     } catch {}
   }
+
+  activeInput.focus()
+}
+
 function updateMeasurementKeyboardDisplay() {
   const rawEl = document.getElementById("measurementRaw")
   const displayEl = document.getElementById("measurementDisplay")
@@ -572,7 +574,7 @@ function updateMeasurementKeyboardDisplay() {
   try {
     const inches = parseMeasurement(raw)
     if (Number.isFinite(inches)) {
-      displayEl.textContent = `${formatToField(inches)}`
+      displayEl.textContent = formatToField(inches)
     } else {
       displayEl.textContent = ""
     }
@@ -580,9 +582,7 @@ function updateMeasurementKeyboardDisplay() {
     displayEl.textContent = ""
   }
 }
-/* ================================================================
-   COLLAPSIBLES
-in */
+/* =======COLLAPSIBLES======== */
 
 function initCollapsibles() {
   document.querySelectorAll(".card-header").forEach(header => {
