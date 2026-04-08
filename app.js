@@ -416,12 +416,11 @@ function formatTotalInches(inches) {
 /* ================================================================
    MEASUREMENT KEYBOARD
 ================================================================ */
-
-let activeInput = null
-
 function setupMeasurementKeyboard() {
   const keyboard = document.getElementById("measurementKeyboard")
   if (!keyboard) return
+
+  const keyButtons = keyboard.querySelectorAll(".key-btn")
 
   document.querySelectorAll(".measure-input").forEach(input => {
     input.addEventListener("focus", () => {
@@ -437,34 +436,32 @@ function setupMeasurementKeyboard() {
     })
   })
 
-  keyboard.addEventListener("pointerdown", e => {
-    const target = e.target
-    if (!(target instanceof Element)) return
+  keyButtons.forEach(btn => {
+    btn.addEventListener("click", e => {
+      e.preventDefault()
 
-    const key = target.closest(".key-btn")
-    if (!(key instanceof HTMLElement)) return
+      if (!activeInput) return
 
-    e.preventDefault()
+      if (btn.dataset.action === "backspace") {
+        handleBackspace()
+        fireStateSync()
+        updateMeasurementKeyboardDisplay()
+        return
+      }
 
-    if (key.dataset.action === "backspace") {
-      handleBackspace()
-      fireStateSync()
-      updateMeasurementKeyboardDisplay()
-      return
-    }
+      if (btn.dataset.action === "confirm") {
+        keyboard.classList.add("hidden")
+        activeInput = null
+        scheduleRender(true)
+        return
+      }
 
-    if (key.dataset.action === "confirm") {
-      keyboard.classList.add("hidden")
-      activeInput = null
-      scheduleRender(true)
-      return
-    }
-
-    if (key.dataset.key) {
-      insertAtCursor(key.dataset.key)
-      fireStateSync()
-      updateMeasurementKeyboardDisplay()
-    }
+      if (btn.dataset.key) {
+        insertAtCursor(btn.dataset.key)
+        fireStateSync()
+        updateMeasurementKeyboardDisplay()
+      }
+    })
   })
 
   document.addEventListener("click", e => {
