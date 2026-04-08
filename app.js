@@ -416,6 +416,7 @@ function formatTotalInches(inches) {
 /* ================================================================
    MEASUREMENT KEYBOARD
 ================================================================ */
+
 function setupMeasurementKeyboard() {
   const keyboard = document.getElementById("measurementKeyboard")
   if (!keyboard) return
@@ -474,7 +475,8 @@ function setupMeasurementKeyboard() {
     }
   })
 }
-/* ================================================================
+
+/*================================================================
    COLLAPSIBLES
 ================================================================ */
 
