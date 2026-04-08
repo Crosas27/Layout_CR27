@@ -437,12 +437,14 @@ function setupMeasurementKeyboard() {
     })
   })
 
-  keyboard.addEventListener("click", e => {
+  keyboard.addEventListener("pointerdown", e => {
     const target = e.target
     if (!(target instanceof Element)) return
 
     const key = target.closest(".key-btn")
     if (!(key instanceof HTMLElement)) return
+
+    e.preventDefault()
 
     if (key.dataset.action === "backspace") {
       handleBackspace()
@@ -474,96 +476,6 @@ function setupMeasurementKeyboard() {
       activeInput = null
     }
   })
-}
-
-function fireStateSync() {
-  if (!activeInput) return
-
-  const id = activeInput.id
-  if (id && CONFIG_INPUT_IDS.includes(id)) {
-    state[id] = activeInput.value
-    persistState()
-    scheduleRender()
-  }
-
-  activeInput.dispatchEvent(new Event("input", { bubbles: true }))
-}
-
-function insertAtCursor(char) {
-  if (!activeInput) return
-
-  const start = activeInput.selectionStart ?? activeInput.value.length
-  const end = activeInput.selectionEnd ?? activeInput.value.length
-
-  activeInput.value =
-    activeInput.value.slice(0, start) +
-    char +
-    activeInput.value.slice(end)
-
-  const pos = start + char.length
-
-  try {
-    activeInput.setSelectionRange(pos, pos)
-  } catch {}
-
-  activeInput.focus()
-}
-
-function handleBackspace() {
-  if (!activeInput) return
-
-  const start = activeInput.selectionStart ?? activeInput.value.length
-  const end = activeInput.selectionEnd ?? activeInput.value.length
-
-  if (start !== end) {
-    activeInput.value =
-      activeInput.value.slice(0, start) +
-      activeInput.value.slice(end)
-
-    try {
-      activeInput.setSelectionRange(start, start)
-    } catch {}
-  } else if (start > 0) {
-    activeInput.value =
-      activeInput.value.slice(0, start - 1) +
-      activeInput.value.slice(end)
-
-    try {
-      activeInput.setSelectionRange(start - 1, start - 1)
-    } catch {}
-  }
-
-  activeInput.focus()
-}
-
-function updateMeasurementKeyboardDisplay() {
-  const rawEl = document.getElementById("measurementRaw")
-  const displayEl = document.getElementById("measurementDisplay")
-
-  if (!rawEl || !displayEl) return
-
-  if (!activeInput) {
-    rawEl.textContent = ""
-    displayEl.textContent = ""
-    return
-  }
-
-  const raw = activeInput.value || ""
-  rawEl.textContent = raw
-
-  if (!raw.trim()) {
-    displayEl.textContent = ""
-    return
-  }
-
-  try {
-    const inches = parseMeasurement(raw)
-    displayEl.textContent = Number.isFinite(inches)
-      ? formatToField(inches)
-      : ""
-  } catch {
-    displayEl.textContent = ""
-  }
 }
 /* ================================================================
    COLLAPSIBLES
