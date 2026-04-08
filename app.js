@@ -413,8 +413,7 @@ function formatTotalInches(inches) {
   return `${whole}"`
 }
 
-/* ================================================================
-/* ================================================================
+//* ================================================================
    MEASUREMENT KEYBOARD
 ================================================================ */
 
@@ -438,17 +437,7 @@ function setupMeasurementKeyboard() {
     })
   })
 
-  keyboard.addEventListener("touchstart", e => {
-    e.preventDefault()
-  }, { passive: false })
-
-  keyboard.addEventListener("mousedown", e => {
-    e.preventDefault()
-  })
-
   keyboard.addEventListener("click", e => {
-    e.preventDefault()
-
     const target = e.target
     if (!(target instanceof Element)) return
 
@@ -503,8 +492,6 @@ function fireStateSync() {
 function insertAtCursor(char) {
   if (!activeInput) return
 
-  activeInput.focus()
-
   const start = activeInput.selectionStart ?? activeInput.value.length
   const end = activeInput.selectionEnd ?? activeInput.value.length
 
@@ -524,8 +511,6 @@ function insertAtCursor(char) {
 
 function handleBackspace() {
   if (!activeInput) return
-
-  activeInput.focus()
 
   const start = activeInput.selectionStart ?? activeInput.value.length
   const end = activeInput.selectionEnd ?? activeInput.value.length
@@ -573,16 +558,16 @@ function updateMeasurementKeyboardDisplay() {
 
   try {
     const inches = parseMeasurement(raw)
-    if (Number.isFinite(inches)) {
-      displayEl.textContent = formatToField(inches)
-    } else {
-      displayEl.textContent = ""
-    }
+    displayEl.textContent = Number.isFinite(inches)
+      ? formatToField(inches)
+      : ""
   } catch {
     displayEl.textContent = ""
   }
 }
-/* =======COLLAPSIBLES======== */
+/* ================================================================
+   COLLAPSIBLES
+================================================================ */
 
 function initCollapsibles() {
   document.querySelectorAll(".card-header").forEach(header => {
@@ -599,7 +584,6 @@ function initCollapsibles() {
     })
   })
 }
-
 /* ================================================================
    INIT
 ================================================================ */
