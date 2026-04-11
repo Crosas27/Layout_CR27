@@ -1,65 +1,144 @@
 import { formatToField } from "../utils/formatter.js"
 
-function offsetText(value) {
-  const r = Math.round(value * 1000) / 1000
-  if (r === 0) return `0"`
-  if (r > 0)   return `${formatToField(r)} right of seam`
-  return `${formatToField(Math.abs(r))} left of seam`
-}
-
 export function renderOpeningReport(model) {
-  const container = document.getElementById("openingReport")
-  if (!container) return
+  const el = document.getElementById("openingReport")
+  if (!el) return
 
-  const analysis = model.openingAnalysis || []
+  const openings = Array.isArray(model?.openingAnalysis) ? model.openingAnalysis : []
 
-  if (analysis.length === 0) {
-    container.innerHTML = `<h3>Openings Report</h3><p>No openings entered.</p>`
+  if (!openings.length) {
+    el.innerHTML = `<h3>Openings Report</h3><p>No openings added.</p>`
     return
   }
 
-  let html = `<h3>Openings Report</h3>`
+  const blocks = openings.map(opening => renderOpeningBlock(opening)).join("")
 
-  analysis.forEach(item => {
-    html += `
-      <div class="opening-report-block">
-        <h4>Opening ${item.id}</h4>
-        <p><strong>Start:</strong> ${formatToField(item.start)}</p>
-        <p><strong>Width:</strong> ${formatToField(item.width)}</p>
-        <p><strong>End:</strong> ${formatToField(item.end)}</p>
+  el.innerHTML = `
+    <h3>Openings Report</h3>
+    ${blocks}
+  `
+}
 
-        <p><strong>Nearest left seam:</strong> ${formatToField(item.nearestLeftSeam)}</p>
-        <p><strong>Nearest right seam:</strong> ${formatToField(item.nearestRightSeam)}</p>
+function renderOpeningBlock(opening) {
+  const sizeLine = `${formatToField(opening.width)} × ${formatToField(opening.height || 0)}`
+  const sillLine = formatToField(opening.bottom || 0)
+  const topLine = formatToField(opening.top || 0)
 
-        <p><strong>Left jamb from nearest seam:</strong> ${offsetText(item.leftOffsetFromSeam)}</p>
-        <p><strong>Right jamb from nearest seam:</strong> ${offsetText(item.rightOffsetFromSeam)}</p>
+  const seamNotes = `
+    <p><strong>Start:</strong> ${formatToField(opening.start)}</p>
+    <p><strong>Width:</strong> ${formatToField(opening.width)}</p>
+    <p><strong>End:</strong> ${formatToField(opening.end)}</p>
+    <p><strong>Size:</strong> ${sizeLine}</p>
+    <p><strong>Sill:</strong> ${sillLine}</p>
+    <p><strong>Top:</strong> ${topLine}</p>
+    <p><strong>Nearest left seam:</strong> ${formatToField(opening.nearestLeftSeam)}</p>
+    <p><strong>Nearest right seam:</strong> ${formatToField(opening.nearestRightSeam)}</p>
+    <p><strong>Left jamb from nearest seam:</strong> ${describeOffset(opening.leftOffsetFromSeam)}</p>
+    <p><strong>Right jamb from nearest seam:</strong> ${describeOffset(opening.rightOffsetFromSeam)}</p>
+  `
+
+  const ribHits = []
+  if (opening.leftEdgeHits?.length) {
+    ribHits.push(
+      `<p><strong>Left jamb edge hits:</strong> ${opening.leftEdgeHits.map(formatToField).join(", ")}</p>`
+    )
+  }
+  if (opening.rightEdgeHits?.length) {
+    ribHits.push(
+      `<p><strong>Right jamb edge hits:</strong> ${opening.rightEdgeHits.map(formatToField).join(", ")}</p>`
+    )
+  }
+
+  const panelCuts = opening.intersectingPanels?.length
+    ? `
+      <div class="panel-cut-list">
+        <p><strong>Panel cuts:</strong></p>
+        <ul>
+          ${opening.intersectingPanels.map(renderPanelCutInstruction).join("")}
+        </ul>
+      </div>
     `
+    : `<p><strong>Panel cuts:</strong> None</p>`
 
-    if (item.leftEdgeHits && item.leftEdgeHits.length > 0) {
-      html += `<p><strong>Left jamb edge hits:</strong> ${item.leftEdgeHits.map(formatToField).join(", ")}</p>`
-    }
-    if (item.rightEdgeHits && item.rightEdgeHits.length > 0) {
-      html += `<p><strong>Right jamb edge hits:</strong> ${item.rightEdgeHits.map(formatToField).join(", ")}</p>`
-    }
+  const warnings = opening.warnings?.length
+    ? `
+      <div class="warning-box">
+        <p><strong>Warnings:</strong></p>
+        <ul>
+          ${opening.warnings.map(w => `<li>${escapeHtml(w)}</li>`).join("")}
+        </ul>
+      </div>
+    `
+    : `<p class="good-status">No rib/seam warnings.</p>`
 
-    if (item.intersectingPanels && item.intersectingPanels.length > 0) {
-      html += `<div class="panel-cut-list"><strong>Panels affected:</strong><ul>`
-      item.intersectingPanels.forEach(cut => {
-        html += `<li>Panel ${cut.panel} — cut ${formatToField(cut.cutStart)} to ${formatToField(cut.cutEnd)} (panel range ${formatToField(cut.panelStart)} to ${formatToField(cut.panelEnd)})</li>`
-      })
-      html += `</ul></div>`
-    }
+  return `
+    <div class="opening-report-block">
+      <p><strong>Opening ${opening.id}</strong></p>
+      ${seamNotes}
+      ${ribHits.join("")}
+      ${panelCuts}
+      ${warnings}
+    </div>
+  `
+}
 
-    if (item.warnings && item.warnings.length > 0) {
-      html += `<div class="warning-box"><strong>Warnings:</strong><ul>`
-      item.warnings.forEach(w => { html += `<li>${w}</li>` })
-      html += `</ul></div>`
-    } else {
-      html += `<p class="good-status"><strong>Status:</strong> Clear</p>`
-    }
+function renderPanelCutInstruction(cut) {
+  const typeLabel = formatCutType(cut.cutType)
 
-    html += `</div>`
-  })
+  const widthLine = `<div><strong>Cut width:</strong> ${formatToField(cut.cutWidth)}</div>`
+  const heightLine = `<div><strong>Height:</strong> ${formatToField(cut.height || 0)}</div>`
+  const sillLine = `<div><strong>Sill:</strong> ${formatToField(cut.bottom || 0)}</div>`
 
-  container.innerHTML = html
+  let seamInstruction = ""
+
+  if (cut.cutType === "left-notch") {
+    seamInstruction = `<div><strong>From right seam:</strong> ${formatToField(cut.cutWidth)}</div>`
+  } else if (cut.cutType === "right-notch") {
+    seamInstruction = `<div><strong>From left seam:</strong> ${formatToField(cut.cutFromLeft)}</div>`
+  } else if (cut.cutType === "full-width") {
+    seamInstruction = `<div><strong>Full panel width cut:</strong> ${formatToField(cut.panelWidth)}</div>`
+  } else {
+    seamInstruction = `
+      <div><strong>From left seam:</strong> ${formatToField(cut.cutFromLeft)}</div>
+      <div><strong>From right seam:</strong> ${formatToField(cut.cutToRight)}</div>
+    `
+  }
+
+  return `
+    <li>
+      <strong>Panel ${cut.panel}</strong> — ${typeLabel}
+      <div>${seamInstruction}</div>
+      ${widthLine}
+      ${heightLine}
+      ${sillLine}
+    </li>
+  `
+}
+
+function formatCutType(type) {
+  switch (type) {
+    case "left-notch":
+      return "Left Notch"
+    case "right-notch":
+      return "Right Notch"
+    case "full-width":
+      return "Full-Width Cut"
+    case "interior-notch":
+      return "Interior Notch"
+    default:
+      return "Cut"
+  }
+}
+
+function describeOffset(value) {
+  const abs = Math.abs(Number(value) || 0)
+  const dir = value > 0 ? "right of seam" : value < 0 ? "left of seam" : "at seam"
+  return `${formatToField(abs)} ${dir}`
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
 }
