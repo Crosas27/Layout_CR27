@@ -158,14 +158,24 @@ function buildSidewall(parts, model, width, height) {
   })
 
   // Openings (with height + sill)
-  if (Array.isArray(model.openings)) {
-    model.openings.forEach(op => {
-      const x     = wallX + op.start * scale
-      const w     = op.width * scale
-      const sill  = (op.sillHeight || 0) * scale
-      const opH   = (op.height || eaveH) * scale
-      const opY   = baseY - sill - opH
-      parts.push(rect(x, opY, w, opH, "opening-box"))
+if (Array.isArray(model.openings) && model.wallHeight > 0) {
+  const scaleY = wallH / model.wallHeight
+
+  model.openings.forEach(op => {
+    const openingBottom = Number(op.bottom) || 0
+    const openingHeight = Number(op.height) || 0
+    const openingTop = openingBottom + openingHeight
+
+    const x = wallX + op.start * scale
+    const w = op.width * scale
+    const h = openingHeight * scaleY
+    const y = wallY + wallH - (openingTop * scaleY)
+
+    if (w > 0 && h > 0) {
+      parts.push(rect(x, y, w, h, "opening-box"))
+    }
+  })
+}
       // Opening dimension label
       const label = op.height
         ? `${formatToField(op.width)} × ${formatToField(op.height)}`
@@ -286,30 +296,53 @@ function buildGable(parts, model, width, height) {
   })
 
   // Openings (with actual height + sill)
-  if (Array.isArray(model.openings)) {
-    model.openings.forEach(op => {
-      const x     = wallX + op.start * scale
-      const w     = op.width * scale
-      const sill  = (op.sillHeight || 0) * scale
-      const opH   = op.height
-        ? op.height * scale
-        : (() => {
-            const ht = getGableHeightAtX(
-              op.start + op.width / 2, model.wallLength,
-              model.leftEaveHeight, model.ridgeHeight,
-              model.ridgePosition, model.rightEaveHeight
-            )
-            return ht * scale
-          })()
-      const opY = baseY - sill - opH
-      parts.push(rect(x, opY, w, opH, "opening-box"))
-      const label = op.height
-        ? `${formatToField(op.width)} × ${formatToField(op.height)}`
-        : formatToField(op.width)
-      parts.push(text(x + w / 2, opY - 6, label, "dimension-text opening-label"))
-    })
-  }
+ // Openings
+if (Array.isArray(model.openings)) {
+  model.openings.forEach(op => {
+    const openingBottom = Number(op.bottom) || 0
+    const openingHeight = Number(op.height) || 0
 
+    const x = wallX + op.start * scale
+    const w = op.width * scale
+
+    const leftRoofHeight = getGableHeightAtX(
+      op.start,
+      model.wallLength,
+      model.leftEaveHeight,
+      model.ridgeHeight,
+      model.ridgePosition,
+      model.rightEaveHeight
+    )
+
+    const centerRoofHeight = getGableHeightAtX(
+      op.start + op.width / 2,
+      model.wallLength,
+      model.leftEaveHeight,
+      model.ridgeHeight,
+      model.ridgePosition,
+      model.rightEaveHeight
+    )
+
+    const rightRoofHeight = getGableHeightAtX(
+      op.start + op.width,
+      model.wallLength,
+      model.leftEaveHeight,
+      model.ridgeHeight,
+      model.ridgePosition,
+      model.rightEaveHeight
+    )
+
+    const allowableTop = Math.min(leftRoofHeight, centerRoofHeight, rightRoofHeight)
+    const actualTop = Math.min(openingBottom + openingHeight, allowableTop)
+    const actualHeight = Math.max(0, actualTop - openingBottom)
+
+    if (w > 0 && actualHeight > 0) {
+      const y = baseY - actualTop * scale
+      const h = actualHeight * scale
+      parts.push(rect(x, y, w, h, "opening-box"))
+    }
+  })
+}
   // Ridge callout
   parts.push(line(ridgeX, ridgeY - 4, ridgeX, ridgeY - 24, "tick"))
   parts.push(text(ridgeX, ridgeY - 34, `RIDGE  ${formatToField(model.ridgeHeight)}`, "dimension-text ridge-label"))
