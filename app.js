@@ -277,11 +277,6 @@ function addOpening() {
   widthEl.value = ""
   bottomEl.value = ""
   heightEl.value = ""
-
-  updateMeasureHelper(startEl)
-  updateMeasureHelper(widthEl)
-  updateMeasureHelper(bottomEl)
-  updateMeasureHelper(heightEl)
 }
 
 function renderOpeningsList() {
