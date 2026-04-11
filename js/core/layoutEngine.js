@@ -432,6 +432,10 @@ function analyzeOpenings(openings, panels, seams, ribs, wallLength) {
     const width = Math.max(0, Number(opening.width) || 0)
     const end = clampNum(start + width, 0, wallLength)
 
+    const bottom = Math.max(0, Number(opening.bottom) || 0)
+    const height = Math.max(0, Number(opening.height) || 0)
+    const top = bottom + height
+
     const nearestLeftSeam = findNearest(start, seams)
     const nearestRightSeam = findNearest(end, seams)
 
@@ -446,6 +450,8 @@ function analyzeOpenings(openings, panels, seams, ribs, wallLength) {
       .filter(r => Math.abs(r.position - end) <= EDGE_TOLERANCE)
       .map(r => r.position)
 
+    const ribPositions = ribs.map(r => r.position)
+
     const intersectingPanels = panels
       .filter(panel => end > panel.start && start < panel.end)
       .map(panel => {
@@ -457,8 +463,14 @@ function analyzeOpenings(openings, panels, seams, ribs, wallLength) {
         const touchesRightEdge = Math.abs(panel.width - cutEnd) <= EDGE_TOLERANCE
         const fullPanelCut = touchesLeftEdge && touchesRightEdge
 
-        const nearestLeftRib = findNearest(start, ribs.map(r => r.position))
-        const nearestRightRib = findNearest(end, ribs.map(r => r.position))
+        let cutType = "interior-notch"
+        if (fullPanelCut) {
+          cutType = "full-width"
+        } else if (touchesLeftEdge) {
+          cutType = "left-notch"
+        } else if (touchesRightEdge) {
+          cutType = "right-notch"
+        }
 
         return {
           panel: panel.panel,
@@ -470,12 +482,20 @@ function analyzeOpenings(openings, panels, seams, ribs, wallLength) {
           cutEnd,
           cutWidth,
 
+          cutFromLeft: cutStart,
+          cutToRight: Math.max(0, panel.width - cutEnd),
+
+          bottom,
+          height,
+          top,
+
           touchesLeftEdge,
           touchesRightEdge,
           fullPanelCut,
+          cutType,
 
-          nearestLeftRib,
-          nearestRightRib
+          nearestLeftRib: findNearest(start, ribPositions),
+          nearestRightRib: findNearest(end, ribPositions)
         }
       })
 
@@ -508,9 +528,14 @@ function analyzeOpenings(openings, panels, seams, ribs, wallLength) {
 
     return {
       id: index + 1,
+
       start,
       width,
       end,
+
+      bottom,
+      height,
+      top,
 
       nearestLeftSeam,
       nearestRightSeam,
@@ -535,6 +560,9 @@ function buildPanelOpeningCuts(openingAnalysis) {
 
       map[cut.panel].push({
         openingId: opening.id,
+        panel: cut.panel,
+        panelWidth: cut.panelWidth,
+
         openingStart: opening.start,
         openingEnd: opening.end,
 
@@ -542,9 +570,17 @@ function buildPanelOpeningCuts(openingAnalysis) {
         cutEnd: cut.cutEnd,
         cutWidth: cut.cutWidth,
 
+        cutFromLeft: cut.cutFromLeft,
+        cutToRight: cut.cutToRight,
+
+        bottom: cut.bottom,
+        height: cut.height,
+        top: cut.top,
+
         touchesLeftEdge: cut.touchesLeftEdge,
         touchesRightEdge: cut.touchesRightEdge,
-        fullPanelCut: cut.fullPanelCut
+        fullPanelCut: cut.fullPanelCut,
+        cutType: cut.cutType
       })
     })
   })
