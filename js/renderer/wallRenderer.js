@@ -182,6 +182,8 @@ function buildSidewall(parts, model, width, height) {
 
         const label = `${formatToField(op.width)} × ${formatToField(openingHeight)}`
         parts.push(text(x + w / 2, y - 6, label, "dimension-text opening-label"))
+        const sillLabel = `${formatToField(openingBottom)} ↑`
+        parts.push(text(x + w / 2, y + h + 14, sillLabel, "dimension-text"))
       }
     })
   }
