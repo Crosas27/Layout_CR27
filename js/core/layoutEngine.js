@@ -426,9 +426,6 @@ function buildSummary(wallLength, coverage, panels) {
    OPENING ANALYSIS
 ================================================================ */
 
-const EDGE_TOLERANCE = 0.5   // inches
-const RIB_MIN_CLEARANCE = 6  // inches
-
 function analyzeOpenings(openings, panels, seams, ribs, wallLength) {
   return openings.map((opening, index) => {
     const start = clampNum(opening.start, 0, wallLength)
