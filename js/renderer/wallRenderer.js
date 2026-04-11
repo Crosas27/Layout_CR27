@@ -222,96 +222,6 @@ function buildSidewall(parts, model, width, height) {
 // ---- Gable ----
 
 function buildGable(parts, model, width, height) {
-  const padX     = 24
-  const topPad   = 90
-  const botPad   = 70
-  const drawWidth  = width - padX * 2
-  const drawHeight = height - topPad - botPad
-
-  const maxH = Math.max(
-    model.leftEaveHeight  || 0,
-    model.ridgeHeight     || 0,
-    model.rightEaveHeight || 0
-  )
-  if (!maxH) return
-
-  const scaleX = drawWidth / model.wallLength
-  const scaleY = drawHeight / maxH
-  const scale  = Math.min(scaleX, scaleY)
-
-  const wallX      = padX
-  const baseY      = height - botPad
-  const wallRight  = wallX + model.wallLength * scale
-  const leftEaveY  = baseY - model.leftEaveHeight  * scale
-  const ridgeX     = wallX + model.ridgePosition   * scale
-  const ridgeY     = baseY - model.ridgeHeight      * scale
-  const rightEaveY = baseY - model.rightEaveHeight  * scale
-  const markLineY  = topPad - 26
-
-  // Direction indicator
-  buildDirectionArrow(parts, wallX, wallRight, topPad - 56)
-
-  // Top dimension line — synced to actual seam positions
-  parts.push(line(wallX, markLineY, wallRight, markLineY, "dimension-line"))
-  model.seams.forEach(pos => {
-    const x = wallX + pos * scale
-    parts.push(line(x, markLineY - 6, x, markLineY + 6, "tick"))
-  })
-  buildTopLabels(parts, model, wallX, wallRight, markLineY, scale)
-
-  // Ground line
-  parts.push(line(wallX, baseY, wallRight, baseY, "dimension-line"))
-
-  // Gable outline
-  parts.push(line(wallX,     baseY,     wallX,     leftEaveY,  "gable-outline"))
-  parts.push(line(wallX,     leftEaveY, ridgeX,    ridgeY,     "gable-outline"))
-  parts.push(line(ridgeX,    ridgeY,    wallRight, rightEaveY, "gable-outline"))
-  parts.push(line(wallRight, rightEaveY, wallRight, baseY,     "gable-outline"))
-
-  // Panels (accurate trapezoid polygons)
-  model.gableCuts.forEach(panel => {
-    const x  = wallX + panel.start * scale
-    const xr = wallX + panel.end   * scale
-    const lY = baseY - panel.leftHeight  * scale
-    const rY = baseY - panel.rightHeight * scale
-    const cls = panel.ridgePanel ? "panel-cut" : "panel-full"
-    parts.push(polygon([[x, baseY], [xr, baseY], [xr, rY], [x, lY]], cls))
-  })
-
-  // Seams (vertical lines at each seam position up to gable height)
-  model.seams.forEach(pos => {
-    const x  = wallX + pos * scale
-    const ht = getGableHeightAtX(
-      pos, model.wallLength,
-      model.leftEaveHeight, model.ridgeHeight,
-      model.ridgePosition, model.rightEaveHeight
-    )
-    const topY = baseY - ht * scale
-    parts.push(line(x, baseY, x, topY, "panel-seam"))
-  })
-
-  // Panel numbers + widths
-  model.gableCuts.forEach(panel => {
-    const x = wallX + (panel.start + panel.width / 2) * scale
-    const w = panel.width * scale
-    if (w >= 22) {
-      parts.push(text(x, baseY - 14, String(panel.panel), "panel-label"))
-      parts.push(text(x, baseY - 2, formatToField(panel.width), "dimension-text panel-width"))
-    }
-  })
-
-  // Ribs (clipped to gable outline)
-  model.ribs.forEach(rib => {
-    const x  = wallX + rib.position * scale
-    const ht = getGableHeightAtX(
-      rib.position, model.wallLength,
-      model.leftEaveHeight, model.ridgeHeight,
-      model.ridgePosition, model.rightEaveHeight
-    )
-    parts.push(line(x, baseY, x, baseY - ht * scale, "rib-line"))
-  })
-
-  // Openings (with actual height + sill)function buildGable(parts, model, width, height) {
   const padX = 24
   const topPad = 90
   const botPad = 70
@@ -338,10 +248,8 @@ function buildGable(parts, model, width, height) {
   const rightEaveY = baseY - model.rightEaveHeight * scale
   const markLineY = topPad - 26
 
-  // Direction indicator
   buildDirectionArrow(parts, wallX, wallRight, topPad - 56)
 
-  // Top dimension line
   parts.push(line(wallX, markLineY, wallRight, markLineY, "dimension-line"))
   model.seams.forEach(pos => {
     const x = wallX + pos * scale
@@ -349,16 +257,13 @@ function buildGable(parts, model, width, height) {
   })
   buildTopLabels(parts, model, wallX, wallRight, markLineY, scale)
 
-  // Ground line
   parts.push(line(wallX, baseY, wallRight, baseY, "dimension-line"))
 
-  // Gable outline
   parts.push(line(wallX, baseY, wallX, leftEaveY, "gable-outline"))
   parts.push(line(wallX, leftEaveY, ridgeX, ridgeY, "gable-outline"))
   parts.push(line(ridgeX, ridgeY, wallRight, rightEaveY, "gable-outline"))
   parts.push(line(wallRight, rightEaveY, wallRight, baseY, "gable-outline"))
 
-  // Panels
   model.gableCuts.forEach(panel => {
     const x = wallX + panel.start * scale
     const xr = wallX + panel.end * scale
@@ -369,7 +274,6 @@ function buildGable(parts, model, width, height) {
     parts.push(polygon([[x, baseY], [xr, baseY], [xr, rY], [x, lY]], cls))
   })
 
-  // Seams
   model.seams.forEach(pos => {
     const x = wallX + pos * scale
     const ht = getGableHeightAtX(
@@ -384,7 +288,6 @@ function buildGable(parts, model, width, height) {
     parts.push(line(x, baseY, x, topY, "panel-seam"))
   })
 
-  // Panel numbers + widths
   model.gableCuts.forEach(panel => {
     const x = wallX + (panel.start + panel.width / 2) * scale
     const w = panel.width * scale
@@ -395,7 +298,6 @@ function buildGable(parts, model, width, height) {
     }
   })
 
-  // Ribs
   model.ribs.forEach(rib => {
     const x = wallX + rib.position * scale
     const ht = getGableHeightAtX(
@@ -409,7 +311,6 @@ function buildGable(parts, model, width, height) {
     parts.push(line(x, baseY, x, baseY - ht * scale, "rib-line"))
   })
 
-  // Openings (actual bottom + height, clipped to roof)
   if (Array.isArray(model.openings)) {
     model.openings.forEach(op => {
       const openingBottom = Number(op.bottom) || 0
@@ -461,7 +362,6 @@ function buildGable(parts, model, width, height) {
     })
   }
 
-  // Ridge callout
   parts.push(line(ridgeX, ridgeY - 4, ridgeX, ridgeY - 24, "tick"))
   parts.push(
     text(
@@ -472,7 +372,6 @@ function buildGable(parts, model, width, height) {
     )
   )
 
-  // Eave height labels
   parts.push(
     text(wallX - 4, leftEaveY, formatToField(model.leftEaveHeight), "dimension-text", "end")
   )
@@ -480,7 +379,6 @@ function buildGable(parts, model, width, height) {
     text(wallRight + 4, rightEaveY, formatToField(model.rightEaveHeight), "dimension-text", "start")
   )
 
-  // Panel height labels
   let lastLabelX = -Infinity
   model.gableCuts.forEach(panel => {
     const midX = wallX + (panel.start + panel.width / 2) * scale
@@ -495,7 +393,6 @@ function buildGable(parts, model, width, height) {
     lastLabelX = midX
   })
 
-  // Total width line
   parts.push(line(wallX, baseY + 28, wallRight, baseY + 28, "dimension-line"))
   parts.push(
     text(
@@ -506,7 +403,6 @@ function buildGable(parts, model, width, height) {
     )
   )
 }
-
 // ---- Shared: top label row (synced to actual seam positions) ----
 
 function buildTopLabels(parts, model, wallX, wallRight, markLineY, scale) {
