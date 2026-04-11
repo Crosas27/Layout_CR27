@@ -422,14 +422,17 @@ function buildSummary(wallLength, coverage, panels) {
   }
 }
 
-/* ---------------- OPENING ANALYSIS ---------------- */
+/* ================================================================
+   OPENING ANALYSIS
+================================================================ */
+
+const EDGE_TOLERANCE = 0.5   // inches
+const RIB_MIN_CLEARANCE = 6  // inches
 
 function analyzeOpenings(openings, panels, seams, ribs, wallLength) {
-  const ribPositions = ribs.map(r => r.position)
-
   return openings.map((opening, index) => {
     const start = clampNum(opening.start, 0, wallLength)
-    const width = Math.max(0, num(opening.width))
+    const width = Math.max(0, Number(opening.width) || 0)
     const end = clampNum(start + width, 0, wallLength)
 
     const nearestLeftSeam = findNearest(start, seams)
@@ -457,6 +460,9 @@ function analyzeOpenings(openings, panels, seams, ribs, wallLength) {
         const touchesRightEdge = Math.abs(panel.width - cutEnd) <= EDGE_TOLERANCE
         const fullPanelCut = touchesLeftEdge && touchesRightEdge
 
+        const nearestLeftRib = findNearest(start, ribs.map(r => r.position))
+        const nearestRightRib = findNearest(end, ribs.map(r => r.position))
+
         return {
           panel: panel.panel,
           panelStart: panel.start,
@@ -471,8 +477,8 @@ function analyzeOpenings(openings, panels, seams, ribs, wallLength) {
           touchesRightEdge,
           fullPanelCut,
 
-          nearestLeftRib: findNearest(start, ribPositions),
-          nearestRightRib: findNearest(end, ribPositions)
+          nearestLeftRib,
+          nearestRightRib
         }
       })
 
@@ -547,6 +553,12 @@ function buildPanelOpeningCuts(openingAnalysis) {
   })
 
   return map
+}
+
+function clampNum(value, min, max) {
+  const n = Number(value)
+  if (!Number.isFinite(n)) return min
+  return Math.min(Math.max(n, min), max)
 }
 
 /* ---------------- MATH HELPERS ---------------- */
