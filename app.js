@@ -214,36 +214,74 @@ function clearError() {
 function addOpening() {
   const startEl = document.getElementById("openingStart")
   const widthEl = document.getElementById("openingWidth")
-  if (!startEl || !widthEl) return
+  const bottomEl = document.getElementById("openingBottom")
+  const heightEl = document.getElementById("openingHeight")
+
+  if (!startEl || !widthEl || !bottomEl || !heightEl) return
 
   const start = parseMeasurement(startEl.value)
   const width = parseMeasurement(widthEl.value)
+  const bottom = parseMeasurement(bottomEl.value)
+  const height = parseMeasurement(heightEl.value)
 
-  if (!width || width <= 0) {
+  if (!Number.isFinite(start) || start < 0) {
+    showError("Opening start is required and cannot be negative.")
+    return
+  }
+
+  if (!Number.isFinite(width) || width <= 0) {
     showError("Opening width is required.")
     return
   }
-  if (start < 0) {
-    showError("Opening start cannot be negative.")
+
+  if (!Number.isFinite(bottom) || bottom < 0) {
+    showError("Opening bottom height is required and cannot be negative.")
+    return
+  }
+
+  if (!Number.isFinite(height) || height <= 0) {
+    showError("Opening height is required.")
     return
   }
 
   const wallLength = parseMeasurement(state.wallLength)
-  if (wallLength > 0 && start + width > wallLength) {
+  if (Number.isFinite(wallLength) && start + width > wallLength) {
     showError(
-      `Opening end (${formatToField(start + width)}) exceeds wall length (${formatToField(wallLength)}).`
+      `Opening end (${formatToField(start + width)}) exceeds wall width (${formatToField(wallLength)}).`
     )
     return
   }
 
+  if (state.wallType === "sidewall") {
+    const wallHeight = parseMeasurement(state.wallHeight)
+    if (Number.isFinite(wallHeight) && bottom + height > wallHeight) {
+      showError(
+        `Opening top (${formatToField(bottom + height)}) exceeds wall height (${formatToField(wallHeight)}).`
+      )
+      return
+    }
+  }
+
   clearError()
-  state.openings = [...state.openings, { start, width }]
+
+  state.openings = [
+    ...state.openings,
+    { start, width, bottom, height }
+  ]
+
   persistState()
   renderOpeningsList()
   scheduleRender(true)
 
   startEl.value = ""
   widthEl.value = ""
+  bottomEl.value = ""
+  heightEl.value = ""
+
+  updateMeasureHelper(startEl)
+  updateMeasureHelper(widthEl)
+  updateMeasureHelper(bottomEl)
+  updateMeasureHelper(heightEl)
 }
 
 function renderOpeningsList() {
@@ -253,15 +291,18 @@ function renderOpeningsList() {
   list.innerHTML = ""
 
   state.openings.forEach((op, index) => {
-    const div   = document.createElement("div")
+    const div = document.createElement("div")
     div.className = "opening-item"
 
     const label = document.createElement("span")
-    label.textContent = formatToField(op.start) + "  →  " + formatToField(op.start + op.width)
+    label.textContent =
+      `${formatToField(op.start)} → ${formatToField(op.start + op.width)} • ` +
+      `bottom ${formatToField(op.bottom || 0)} • ` +
+      `height ${formatToField(op.height || 0)}`
 
     const btn = document.createElement("button")
     btn.textContent = "✕"
-    btn.className   = "delete-btn"
+    btn.className = "delete-btn"
     btn.onclick = () => {
       state.openings = state.openings.filter((_, i) => i !== index)
       persistState()
