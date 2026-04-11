@@ -23,7 +23,7 @@ function polygon(points, cls) {
   return `<polygon points="${pts}" class="${cls}"/>`
 }
 
-// ---- Defs: crisp rendering + legend styles ----
+// ---- Defs: crisp rendering + legend styles ---
 
 function svgDefs() {
   return `<style>
