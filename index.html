@@ -133,18 +133,61 @@
     </div>
 
     <!-- Openings -->
-    <div class="card" id="openingsCard">
-      <h3>Openings</h3>
+<div class="card" id="openingsCard">
+  <h3>Openings</h3>
 
-      <div id="openingsList"></div>
+  <div id="openingsList"></div>
 
-      <div class="opening-form">
-        <input id="openingStart" class="measure-input" type="text" inputmode="none" placeholder='Start e.g. 2&apos; 8"' />
-        <input id="openingWidth" class="measure-input" type="text" inputmode="none" placeholder='Width e.g. 3&apos; or 36"' />
-      </div>
-
-      <button id="addOpeningBtn">Add Opening</button>
+  <div class="field-grid-2">
+    <div class="field-group">
+      <label for="openingStart">Start From Left</label>
+      <input
+        id="openingStart"
+        class="measure-input"
+        type="text"
+        inputmode="none"
+        placeholder='e.g. 2&apos; 8"'
+      />
     </div>
+
+    <div class="field-group">
+      <label for="openingWidth">Opening Width</label>
+      <input
+        id="openingWidth"
+        class="measure-input"
+        type="text"
+        inputmode="none"
+        placeholder='e.g. 3&apos; or 36"'
+      />
+    </div>
+  </div>
+
+  <div class="field-grid-2">
+    <div class="field-group">
+      <label for="openingBottom">Bottom Height</label>
+      <input
+        id="openingBottom"
+        class="measure-input"
+        type="text"
+        inputmode="none"
+        placeholder='e.g. 0" or 3&apos;'
+      />
+    </div>
+
+    <div class="field-group">
+      <label for="openingHeight">Opening Height</label>
+      <input
+        id="openingHeight"
+        class="measure-input"
+        type="text"
+        inputmode="none"
+        placeholder='e.g. 7&apos; or 84"'
+      />
+    </div>
+  </div>
+
+  <button id="addOpeningBtn">Add Opening</button>
+</div>
 
     <!-- SVG -->
     <div class="card">
