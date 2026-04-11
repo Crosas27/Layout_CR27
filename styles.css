@@ -266,6 +266,11 @@ button:active {
   transform: scale(0.98);
 }
 
+html,
+body {
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+}
 /* ---------------- FIELD LAYOUT ---------------- */
 
 .field-grid-2 {
@@ -705,6 +710,11 @@ button:active {
 }
 
 /* ---------------- MEASUREMENT KEYBOARD ---------------- */
+
+.key-btn,
+button {
+  touch-action: manipulation;
+}
 
 .measurement-keyboard {
   position: fixed;
