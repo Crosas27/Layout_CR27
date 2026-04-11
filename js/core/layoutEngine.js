@@ -552,12 +552,6 @@ function buildPanelOpeningCuts(openingAnalysis) {
   return map
 }
 
-function clampNum(value, min, max) {
-  const n = Number(value)
-  if (!Number.isFinite(n)) return min
-  return Math.min(Math.max(n, min), max)
-}
-
 /* ---------------- MATH HELPERS ---------------- */
 
 function num(value, fallback = 0) {
