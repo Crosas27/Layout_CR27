@@ -1,7 +1,7 @@
 import { formatToField } from "../utils/formatter.js"
 import { getGableHeightAtX } from "../core/layoutEngine.js"
 
-// ---- SVG element builders (template literal approach) ----
+// ---- SVG element builders ----
 
 const f = n => Math.round(n * 100) / 100
 
@@ -14,7 +14,11 @@ function line(x1, y1, x2, y2, cls) {
 }
 
 function text(x, y, content, cls, anchor = "middle") {
-  const safe = String(content).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+  const safe = String(content)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+
   return `<text x="${f(x)}" y="${f(y)}" text-anchor="${anchor}" class="${cls}">${safe}</text>`
 }
 
@@ -23,7 +27,7 @@ function polygon(points, cls) {
   return `<polygon points="${pts}" class="${cls}"/>`
 }
 
-// ---- Defs: crisp rendering + legend styles ---
+// ---- Defs ----
 
 function svgDefs() {
   return `<style>
@@ -32,7 +36,7 @@ function svgDefs() {
   </style>`
 }
 
-// ---- Legend block ----
+// ---- Legend ----
 
 function buildLegend(parts, x, y) {
   const sw = 14
@@ -59,12 +63,13 @@ function buildLegend(parts, x, y) {
 function buildDirectionArrow(parts, wallX, wallRight, y) {
   const mid = (wallX + wallRight) / 2
   const arrowLen = Math.min((wallRight - wallX) * 0.3, 80)
-  const aLeft  = mid - arrowLen / 2
+  const aLeft = mid - arrowLen / 2
   const aRight = mid + arrowLen / 2
 
   parts.push(line(aLeft, y, aRight, y, "direction-arrow"))
-  // Arrowhead
-  parts.push(`<polygon points="${f(aRight)},${f(y)} ${f(aRight - 6)},${f(y - 4)} ${f(aRight - 6)},${f(y + 4)}" class="direction-arrow-head"/>`)
+  parts.push(
+    `<polygon points="${f(aRight)},${f(y)} ${f(aRight - 6)},${f(y - 4)} ${f(aRight - 6)},${f(y + 4)}" class="direction-arrow-head"/>`
+  )
 
   parts.push(text(aLeft - 4, y + 4, "START", "direction-text", "end"))
   parts.push(text(aRight + 4, y + 4, "END", "direction-text", "start"))
@@ -77,21 +82,21 @@ export function renderWall(model) {
   if (!svg || !model.wallLength) return
 
   const width = svg.clientWidth || 900
-  const parts = []
+  const parts = [svgDefs()]
 
   if (model.wallType === "gable") {
     const height = 500
-    parts.push(svgDefs())
     buildGable(parts, model, width, height)
     buildLegend(parts, 24, height - 24)
+
     svg.setAttribute("viewBox", `0 0 ${width} ${height}`)
     svg.setAttribute("width", "100%")
     svg.setAttribute("height", height)
   } else {
     const height = 340
-    parts.push(svgDefs())
     buildSidewall(parts, model, width, height)
     buildLegend(parts, 24, height - 24)
+
     svg.setAttribute("viewBox", `0 0 ${width} ${height}`)
     svg.setAttribute("width", "100%")
     svg.setAttribute("height", height)
@@ -109,7 +114,6 @@ function buildSidewall(parts, model, width, height) {
   const drawWidth = width - padX * 2
   const drawHeight = height - topPad - botPad
 
-  // Scale both axes proportionally so the wall height is accurate
   const eaveH = model.eaveHeight || model.wallHeight || 120
   const scaleX = drawWidth / model.wallLength
   const scaleY = drawHeight / eaveH
@@ -124,13 +128,10 @@ function buildSidewall(parts, model, width, height) {
   const markLineY = topPad - 26
   const totalLineY = baseY + 28
 
-  // Direction indicator
   buildDirectionArrow(parts, wallX, wallRight, topPad - 56)
 
-  // Wall outline
   parts.push(rect(wallX, wallY, wallW, wallH, "wall-outline"))
 
-  // Panels
   model.panels.forEach((panel, i) => {
     const x = wallX + panel.start * scale
     const w = (panel.end - panel.start) * scale
@@ -151,19 +152,16 @@ function buildSidewall(parts, model, width, height) {
     }
   })
 
-  // Seams
   model.seams.forEach(pos => {
     const x = wallX + pos * scale
     parts.push(line(x, wallY, x, baseY, "panel-seam"))
   })
 
-  // Ribs
   model.ribs.forEach(rib => {
     const x = wallX + rib.position * scale
     parts.push(line(x, wallY, x, baseY, "rib-line"))
   })
 
-  // Openings (with actual bottom + height)
   if (Array.isArray(model.openings) && model.wallHeight > 0) {
     const openingScaleY = wallH / model.wallHeight
 
@@ -182,14 +180,15 @@ function buildSidewall(parts, model, width, height) {
 
         const label = `${formatToField(op.width)} × ${formatToField(openingHeight)}`
         parts.push(text(x + w / 2, y - 6, label, "dimension-text opening-label"))
+
         if (openingBottom > 0) {
-  const sillLabel = `${formatToField(openingBottom)} ↑`
-  parts.push(text(x + w / 2, y + h + 14, sillLabel, "dimension-text"))
-}
-    }
+          const sillLabel = `${formatToField(openingBottom)} ↑`
+          parts.push(text(x + w / 2, y + h + 14, sillLabel, "dimension-text"))
+        }
+      }
+    })
   }
 
-  // Top dimension line
   parts.push(line(wallX, markLineY, wallRight, markLineY, "dimension-line"))
   model.seams.forEach(pos => {
     const x = wallX + pos * scale
@@ -197,7 +196,6 @@ function buildSidewall(parts, model, width, height) {
   })
   buildTopLabels(parts, model, wallX, wallRight, markLineY, scale)
 
-  // Eave height label (left side)
   parts.push(line(wallX - 12, wallY, wallX - 12, baseY, "dimension-line"))
   parts.push(line(wallX - 18, wallY, wallX - 6, wallY, "tick"))
   parts.push(line(wallX - 18, baseY, wallX - 6, baseY, "tick"))
@@ -211,7 +209,6 @@ function buildSidewall(parts, model, width, height) {
     )
   )
 
-  // Bottom total line
   parts.push(line(wallX, totalLineY, wallRight, totalLineY, "dimension-line"))
   parts.push(
     text(
@@ -222,6 +219,7 @@ function buildSidewall(parts, model, width, height) {
     )
   )
 }
+
 // ---- Gable ----
 
 function buildGable(parts, model, width, height) {
@@ -361,6 +359,11 @@ function buildGable(parts, model, width, height) {
 
         const label = `${formatToField(op.width)} × ${formatToField(actualHeight)}`
         parts.push(text(x + w / 2, y - 6, label, "dimension-text opening-label"))
+
+        if (openingBottom > 0) {
+          const sillLabel = `${formatToField(openingBottom)} ↑`
+          parts.push(text(x + w / 2, y + h + 14, sillLabel, "dimension-text"))
+        }
       }
     })
   }
@@ -406,20 +409,19 @@ function buildGable(parts, model, width, height) {
     )
   )
 }
-// ---- Shared: top label row (synced to actual seam positions) ----
+
+// ---- Shared: top label row ----
 
 function buildTopLabels(parts, model, wallX, wallRight, markLineY, scale) {
-  // Use real positions: start, every seam, and end
   const positions = [0, ...model.seams, model.wallLength]
 
   const minSpacing = 54
   let lastX = -Infinity
 
   positions.forEach((pos, i) => {
-    const x      = wallX + pos * scale
+    const x = wallX + pos * scale
     const isEdge = i === 0 || i === positions.length - 1
 
-    // Always label edges; skip interior labels that would collide
     if (!isEdge) {
       if (x - lastX < minSpacing) return
       if (wallRight - x < minSpacing) return
