@@ -48,7 +48,7 @@ function generateSidewallLayout(config) {
   const startOffset     = num(config.startOffset, 0)
   const openings        = Array.isArray(config.openings) ? config.openings : []
 
-  const panels = calculatePanels(wallLength, panelCoverage)
+  const panels = calculatePanels(wallLength, panelCoverage, startOffset)
   const seams = panels.map(p => p.start).concat(wallLength)
   const ribs = calculateRibs(wallLength, ribSpacing, startOffset)
 
@@ -128,7 +128,7 @@ function generateGableLayout(config) {
   const ridgePanelStopHeight = num(config.ridgePanelStopHeight, ridgeHeight)
   const rightPanelStopHeight = num(config.rightPanelStopHeight, rightEaveHeight)
 
-  const panels = calculatePanels(wallLength, panelCoverage)
+  const panels = calculatePanels(wallLength, panelCoverage, startOffset)
   const seams = panels.map(p => p.start).concat(wallLength)
   const ribs = calculateRibs(wallLength, ribSpacing, startOffset)
 
@@ -331,97 +331,41 @@ function buildGablePanelCut(panel, geo) {
  * when wallLength % coverage !== 0, start panel width == end panel width
  * so the layout is visually balanced.
  */
-function calculatePanels(length, coverage) {
+function calculatePanels(length, coverage, startOffset = 0) {
   if (length <= EPS || coverage <= EPS) return []
 
-  if (length <= coverage + EPS) {
-    return [{ panel: 1, start: 0, end: length, width: length }]
-  }
-
-  const wholeCount = Math.floor(length / coverage)
-  const remainder = length - wholeCount * coverage
-
-  if (remainder < EPS) {
-    const panels = []
-    for (let pos = 0, i = 1; pos < length - EPS; pos += coverage, i++) {
-      const end = Math.min(pos + coverage, length)
-      panels.push({ panel: i, start: pos, end, width: end - pos })
-    }
-    return panels
-  }
-
-  const edgeWidth = (coverage + remainder) / 2
-  const middleLen = length - edgeWidth * 2
-  const fullCount = middleLen > EPS ? Math.floor((middleLen + EPS) / coverage) : 0
-
   const panels = []
+
+  // Normalize offset into a 0..coverage range
+  let offset = Number(startOffset) || 0
+  offset = ((offset % coverage) + coverage) % coverage
+
+  // Build the seam grid so the first seam can exist before x=0
+  let pos = -offset
   let panelNo = 1
 
-  panels.push({
-    panel: panelNo++,
-    start: 0,
-    end: edgeWidth,
-    width: edgeWidth
-  })
+  while (pos < length - EPS) {
+    const rawStart = pos
+    const rawEnd = pos + coverage
 
-  for (let i = 0; i < fullCount; i++) {
-    const start = edgeWidth + i * coverage
-    const end = start + coverage
-    panels.push({
-      panel: panelNo++,
-      start,
-      end,
-      width: coverage
-    })
+    const start = Math.max(0, rawStart)
+    const end = Math.min(length, rawEnd)
+    const width = end - start
+
+    if (width > EPS) {
+      panels.push({
+        panel: panelNo++,
+        start,
+        end,
+        width
+      })
+    }
+
+    pos += coverage
   }
-
-  panels.push({
-    panel: panelNo,
-    start: length - edgeWidth,
-    end: length,
-    width: edgeWidth
-  })
 
   return panels
 }
-
-function calculateRibs(length, spacing, start) {
-  if (length <= EPS || spacing <= EPS) return []
-
-  const ribs = []
-  let pos = start
-
-  if (pos < 0) {
-    pos += Math.ceil(-pos / spacing) * spacing
-  }
-
-  for (; pos <= length + EPS; pos += spacing) {
-    if (pos >= -EPS) {
-      ribs.push({ position: pos })
-    }
-  }
-
-  return ribs
-}
-
-function buildSummary(wallLength, coverage, panels) {
-  const fullPanels = panels.filter(p => Math.abs(p.width - coverage) < EPS).length
-  const first = panels[0] || null
-  const last = panels[panels.length - 1] || null
-
-  const startPanel = first && Math.abs(first.width - coverage) > EPS ? first.width : null
-  const endPanel = last && Math.abs(last.width - coverage) > EPS ? last.width : null
-
-  return {
-    wallLength,
-    coverage,
-    totalPanels: panels.length,
-    fullPanels,
-    startPanel,
-    endPanel
-  }
-}
-
 /* ================================================================
    OPENING ANALYSIS
 ================================================================ */
