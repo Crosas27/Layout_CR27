@@ -743,110 +743,120 @@ body {
 }
 
 /* ---------------- MEASUREMENT KEYBOARD ---------------- */
-
 .key-btn,
 button {
   touch-action: manipulation;
+  cursor: crosshair; /* Technical feel */
 }
 
+/* 2. The Keyboard Container */
 .measurement-keyboard {
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 12px;
-  background: rgba(2, 6, 23, 0.98);
-  border-top: 1px solid #334155;
-  backdrop-filter: blur(8px);
+  padding: 16px;
+  /* Blueprint Grid Texture */
+  background-color: var(--blueprint-blue);
+  background-image: 
+    linear-gradient(var(--blueprint-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--blueprint-line) 1px, transparent 1px);
+  background-size: 20px 20px;
+  border-top: 2px solid #ffffff;
   z-index: 99999;
   display: block;
 }
 
-.measurement-keyboard.hidden {
-  display: none;
-}
-
+/* 3. The Display Row (Now looks like an Annotation Box) */
 .measurement-display-row {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  margin: 0 auto 10px auto;
+  flex-direction: column; /* Stacked for technical readout */
+  align-items: flex-start;
+  margin: 0 auto 15px auto;
   max-width: 420px;
-  padding: 10px 12px;
-  background: #111827;
-  border: 1px solid #334155;
-  border-radius: 8px;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid #ffffff;
+  position: relative;
+}
+
+/* Add corner "ticks" or crosshairs to the display */
+.measurement-display-row::before {
+  content: "REF: DATA_INPUT";
+  position: absolute;
+  top: -18px;
+  left: 0;
+  font-family: var(--mono-font);
+  font-size: 10px;
+  color: #fff;
 }
 
 .measurement-raw {
-  font-family: "Fira Code", monospace;
-  font-size: 18px;
-  color: #e2e8f0;
-  min-height: 24px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-family: var(--mono-font);
+  font-size: 24px;
+  color: #ffffff;
+  letter-spacing: 2px;
 }
 
 .measurement-display {
-  font-family: "Fira Code", monospace;
-  font-size: 13px;
-  color: #7dd3fc;
-  text-align: right;
-  min-height: 20px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-family: var(--mono-font);
+  font-size: 12px;
+  color: var(--safety-yellow);
+  text-transform: uppercase;
 }
 
+/* 4. The Grid & Keys */
 .keyboard-grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  gap: 8px;
+  gap: 6px;
   max-width: 420px;
   margin: 0 auto;
 }
 
-.keyboard-grid .key-btn:nth-child(-n+12) {
-  grid-column: span 4;
-}
-
-.keyboard-grid .key-btn:nth-child(n+13) {
-  grid-column: span 4;
-}
-
-.keyboard-grid .key-btn:nth-child(13),
-.keyboard-grid .key-btn:nth-child(14),
-.keyboard-grid .key-btn:nth-child(15),
-.keyboard-grid .key-btn:nth-child(16) {
-  grid-column: span 3;
-}
-
 .key-btn {
   width: 100%;
-  padding: 14px 0;
-  border: 1px solid #334155;
-  border-radius: 8px;
-  background: #0f172a;
-  color: #e2e8f0;
-  font-family: "Fira Code", monospace;
-  font-size: 22px;
-  font-weight: 600;
+  padding: 16px 0;
+  border: 1px solid #ffffff;
+  border-radius: 0; /* Sharp corners for drafting feel */
+  background: rgba(15, 23, 42, 0.8);
+  color: #ffffff;
+  font-family: var(--mono-font);
+  font-size: 20px;
+  /* Add subtle corner anchors */
+  box-shadow: -2px -2px 0px -1px rgba(255,255,255,0.5);
 }
 
-.key-btn:active {
-  transform: scale(0.98);
-}
-
+/* Specialized Key Styles */
 .key-backspace {
-  background: #1e293b;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--safety-yellow);
 }
 
 .key-confirm {
-  background: #0ea5e9;
-  color: white;
-  font-size: 20px;
+  background: var(--safety-orange);
+  color: #000;
+  font-weight: 900;
+  border: 2px solid #000;
+  text-transform: uppercase;
+}
+
+.key-btn:active {
+  background: #ffffff;
+  color: var(--blueprint-blue);
+  transform: translateY(1px);
+}
+
+/* Dimension Line Ticks */
+.keyboard-grid::after {
+  content: "|<-- 420px [AUTO_SCALE] -->|";
+  display: block;
+  grid-column: span 12;
+  text-align: center;
+  font-family: var(--mono-font);
+  font-size: 10px;
+  color: rgba(255,255,255,0.6);
+  margin-top: 8px;
 }
 
 /* ---------------- COLLAPSIBLE CARDS ---------------- */
