@@ -743,11 +743,10 @@ body {
 }
 
 /* ---------------- MEASUREMENT KEYBOARD ---------------- */
+
 .key-btn,
 button {
   touch-action: manipulation;
-  /* Added technical cursor for style */
-  cursor: crosshair;
 }
 
 .measurement-keyboard {
@@ -756,15 +755,9 @@ button {
   right: 0;
   bottom: 0;
   padding: 12px;
-  /* Blueprint Cyan/Dark Blue background */
-  background: rgba(0, 51, 102, 0.98); 
-  /* Persistent light-gray grid effect via linear-gradient */
-  background-image: 
-    linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-  background-size: 20px 20px;
-  border-top: 1px solid #ffffff;
-  backdrop-filter: blur(4px);
+  background: rgba(2, 6, 23, 0.98);
+  border-top: 1px solid #334155;
+  backdrop-filter: blur(8px);
   z-index: 99999;
   display: block;
 }
@@ -781,17 +774,15 @@ button {
   margin: 0 auto 10px auto;
   max-width: 420px;
   padding: 10px 12px;
-  /* Dark technical background */
-  background: #001a33; 
-  /* Sharp corners for drafting feel */
-  border: 1px solid #ffffff;
-  border-radius: 0; 
+  background: #111827;
+  border: 1px solid #334155;
+  border-radius: 8px;
 }
 
 .measurement-raw {
   font-family: "Fira Code", monospace;
   font-size: 18px;
-  color: #ffffff;
+  color: #e2e8f0;
   min-height: 24px;
   white-space: nowrap;
   overflow: hidden;
@@ -801,8 +792,7 @@ button {
 .measurement-display {
   font-family: "Fira Code", monospace;
   font-size: 13px;
-  /* High-Vis Safety Yellow for secondary info */
-  color: #fde047; 
+  color: #7dd3fc;
   text-align: right;
   min-height: 20px;
   white-space: nowrap;
@@ -836,35 +826,28 @@ button {
 .key-btn {
   width: 100%;
   padding: 14px 0;
-  /* Thin white strokes (skeleton feel) */
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  border-radius: 0; 
-  background: rgba(0, 31, 63, 0.6);
-  color: #ffffff;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  background: #0f172a;
+  color: #e2e8f0;
   font-family: "Fira Code", monospace;
   font-size: 22px;
   font-weight: 600;
 }
 
 .key-btn:active {
-  transform: scale(0.96);
-  background: #ffffff;
-  color: #003366;
+  transform: scale(0.98);
 }
 
 .key-backspace {
-  /* Subtle vellum/paper feel for utility keys */
-  background: rgba(255, 255, 255, 0.1);
+  background: #1e293b;
 }
 
 .key-confirm {
-  /* High-Vis Safety Orange for primary action */
-  background: #ff8c00;
-  border: 1px solid #000000;
-  color: #000000;
+  background: #0ea5e9;
+  color: white;
   font-size: 20px;
 }
-
 
 /* ---------------- COLLAPSIBLE CARDS ---------------- */
 
