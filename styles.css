@@ -746,118 +746,125 @@ body {
 .key-btn,
 button {
   touch-action: manipulation;
-  cursor: crosshair; /* Technical feel */
+  /* Added technical cursor for style */
+  cursor: crosshair;
 }
 
-/* 2. The Keyboard Container */
 .measurement-keyboard {
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 16px;
-  /* Blueprint Grid Texture */
-  background-color: var(--blueprint-blue);
+  padding: 12px;
+  /* Blueprint Cyan/Dark Blue background */
+  background: rgba(0, 51, 102, 0.98); 
+  /* Persistent light-gray grid effect via linear-gradient */
   background-image: 
-    linear-gradient(var(--blueprint-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--blueprint-line) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
   background-size: 20px 20px;
-  border-top: 2px solid #ffffff;
+  border-top: 1px solid #ffffff;
+  backdrop-filter: blur(4px);
   z-index: 99999;
   display: block;
 }
 
-/* 3. The Display Row (Now looks like an Annotation Box) */
-.measurement-display-row {
-  display: flex;
-  flex-direction: column; /* Stacked for technical readout */
-  align-items: flex-start;
-  margin: 0 auto 15px auto;
-  max-width: 420px;
-  padding: 8px 12px;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid #ffffff;
-  position: relative;
+.measurement-keyboard.hidden {
+  display: none;
 }
 
-/* Add corner "ticks" or crosshairs to the display */
-.measurement-display-row::before {
-  content: "REF: DATA_INPUT";
-  position: absolute;
-  top: -18px;
-  left: 0;
-  font-family: var(--mono-font);
-  font-size: 10px;
-  color: #fff;
+.measurement-display-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 0 auto 10px auto;
+  max-width: 420px;
+  padding: 10px 12px;
+  /* Dark technical background */
+  background: #001a33; 
+  /* Sharp corners for drafting feel */
+  border: 1px solid #ffffff;
+  border-radius: 0; 
 }
 
 .measurement-raw {
-  font-family: var(--mono-font);
-  font-size: 24px;
+  font-family: "Fira Code", monospace;
+  font-size: 18px;
   color: #ffffff;
-  letter-spacing: 2px;
+  min-height: 24px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .measurement-display {
-  font-family: var(--mono-font);
-  font-size: 12px;
-  color: var(--safety-yellow);
-  text-transform: uppercase;
+  font-family: "Fira Code", monospace;
+  font-size: 13px;
+  /* High-Vis Safety Yellow for secondary info */
+  color: #fde047; 
+  text-align: right;
+  min-height: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* 4. The Grid & Keys */
 .keyboard-grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  gap: 6px;
+  gap: 8px;
   max-width: 420px;
   margin: 0 auto;
 }
 
+.keyboard-grid .key-btn:nth-child(-n+12) {
+  grid-column: span 4;
+}
+
+.keyboard-grid .key-btn:nth-child(n+13) {
+  grid-column: span 4;
+}
+
+.keyboard-grid .key-btn:nth-child(13),
+.keyboard-grid .key-btn:nth-child(14),
+.keyboard-grid .key-btn:nth-child(15),
+.keyboard-grid .key-btn:nth-child(16) {
+  grid-column: span 3;
+}
+
 .key-btn {
   width: 100%;
-  padding: 16px 0;
-  border: 1px solid #ffffff;
-  border-radius: 0; /* Sharp corners for drafting feel */
-  background: rgba(15, 23, 42, 0.8);
+  padding: 14px 0;
+  /* Thin white strokes (skeleton feel) */
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 0; 
+  background: rgba(0, 31, 63, 0.6);
   color: #ffffff;
-  font-family: var(--mono-font);
-  font-size: 20px;
-  /* Add subtle corner anchors */
-  box-shadow: -2px -2px 0px -1px rgba(255,255,255,0.5);
-}
-
-/* Specialized Key Styles */
-.key-backspace {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--safety-yellow);
-}
-
-.key-confirm {
-  background: var(--safety-orange);
-  color: #000;
-  font-weight: 900;
-  border: 2px solid #000;
-  text-transform: uppercase;
+  font-family: "Fira Code", monospace;
+  font-size: 22px;
+  font-weight: 600;
 }
 
 .key-btn:active {
+  transform: scale(0.96);
   background: #ffffff;
-  color: var(--blueprint-blue);
-  transform: translateY(1px);
+  color: #003366;
 }
 
-/* Dimension Line Ticks */
-.keyboard-grid::after {
-  content: "|<-- 420px [AUTO_SCALE] -->|";
-  display: block;
-  grid-column: span 12;
-  text-align: center;
-  font-family: var(--mono-font);
-  font-size: 10px;
-  color: rgba(255,255,255,0.6);
-  margin-top: 8px;
+.key-backspace {
+  /* Subtle vellum/paper feel for utility keys */
+  background: rgba(255, 255, 255, 0.1);
 }
+
+.key-confirm {
+  /* High-Vis Safety Orange for primary action */
+  background: #ff8c00;
+  border: 1px solid #000000;
+  color: #000000;
+  font-size: 20px;
+}
+
 
 /* ---------------- COLLAPSIBLE CARDS ---------------- */
 
