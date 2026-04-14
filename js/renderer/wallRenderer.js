@@ -189,6 +189,26 @@ function buildSidewall(parts, model, width, height) {
     })
   }
 
+   // Panel cut zones (visual fabrication overlay)
+  if (Array.isArray(model.panelCuts) && model.wallHeight > 0) {
+    const openingScaleY = wallH / model.wallHeight
+
+    model.panelCuts.forEach(panel => {
+      const cuts = Array.isArray(panel.openingCuts) ? panel.openingCuts : []
+
+      cuts.forEach(cut => {
+        const x = wallX + (panel.start + cut.cutStart) * scale
+        const w = cut.cutWidth * scale
+        const h = (cut.height || 0) * openingScaleY
+        const y = wallY + wallH - (((cut.bottom || 0) + (cut.height || 0)) * openingScaleY)
+
+        if (w > 0 && h > 0) {
+          parts.push(rect(x, y, w, h, "panel-cut-zone"))
+        }
+      })
+    })
+  } 
+  
   parts.push(line(wallX, markLineY, wallRight, markLineY, "dimension-line"))
   model.seams.forEach(pos => {
     const x = wallX + pos * scale
