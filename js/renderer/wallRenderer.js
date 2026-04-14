@@ -56,6 +56,11 @@ function buildLegend(parts, x, y) {
   parts.push(rect(cx, y, sw, sw, "opening-box"))
   cx += sw + gap
   parts.push(text(cx, y + 12, "Opening", "legend-text", "start"))
+  cx += 58
+
+  parts.push(rect(cx, y, sw, sw, "panel-cut-zone"))
+  cx += sw + gap
+  parts.push(text(cx, y + 12, "Cut Zone", "legend-text", "start"))
 }
 
 // ---- Direction indicator ----
@@ -79,7 +84,7 @@ function buildDirectionArrow(parts, wallX, wallRight, y) {
 
 export function renderWall(model) {
   const svg = document.getElementById("wallSvg")
-  if (!svg || !model.wallLength) return
+  if (!svg || !model?.wallLength) return
 
   const width = svg.clientWidth || 900
   const parts = [svgDefs()]
@@ -189,7 +194,7 @@ function buildSidewall(parts, model, width, height) {
     })
   }
 
-   // Panel cut zones (visual fabrication overlay)
+  // fabrication overlay
   if (Array.isArray(model.panelCuts) && model.wallHeight > 0) {
     const openingScaleY = wallH / model.wallHeight
 
@@ -199,16 +204,18 @@ function buildSidewall(parts, model, width, height) {
       cuts.forEach(cut => {
         const x = wallX + (panel.start + cut.cutStart) * scale
         const w = cut.cutWidth * scale
-        const h = (cut.height || 0) * openingScaleY
-        const y = wallY + wallH - (((cut.bottom || 0) + (cut.height || 0)) * openingScaleY)
+        const openingHeight = Number(cut.height) || 0
+        const openingBottom = Number(cut.bottom) || 0
+        const h = openingHeight * openingScaleY
+        const y = wallY + wallH - ((openingBottom + openingHeight) * openingScaleY)
 
         if (w > 0 && h > 0) {
           parts.push(rect(x, y, w, h, "panel-cut-zone"))
         }
       })
     })
-  } 
-  
+  }
+
   parts.push(line(wallX, markLineY, wallRight, markLineY, "dimension-line"))
   model.seams.forEach(pos => {
     const x = wallX + pos * scale
@@ -385,6 +392,58 @@ function buildGable(parts, model, width, height) {
           parts.push(text(x + w / 2, y + h + 14, sillLabel, "dimension-text"))
         }
       }
+    })
+  }
+
+  // fabrication overlay
+  if (Array.isArray(model.gableCuts)) {
+    model.gableCuts.forEach(panel => {
+      const cuts = Array.isArray(panel.openingCuts) ? panel.openingCuts : []
+
+      cuts.forEach(cut => {
+        const x = wallX + (panel.start + cut.cutStart) * scale
+        const w = cut.cutWidth * scale
+
+        const openingBottom = Number(cut.bottom) || 0
+        const openingHeight = Number(cut.height) || 0
+
+        const leftRoofHeight = getGableHeightAtX(
+          panel.start + cut.cutStart,
+          model.wallLength,
+          model.leftEaveHeight,
+          model.ridgeHeight,
+          model.ridgePosition,
+          model.rightEaveHeight
+        )
+
+        const centerRoofHeight = getGableHeightAtX(
+          panel.start + cut.cutStart + cut.cutWidth / 2,
+          model.wallLength,
+          model.leftEaveHeight,
+          model.ridgeHeight,
+          model.ridgePosition,
+          model.rightEaveHeight
+        )
+
+        const rightRoofHeight = getGableHeightAtX(
+          panel.start + cut.cutEnd,
+          model.wallLength,
+          model.leftEaveHeight,
+          model.ridgeHeight,
+          model.ridgePosition,
+          model.rightEaveHeight
+        )
+
+        const allowableTop = Math.min(leftRoofHeight, centerRoofHeight, rightRoofHeight)
+        const actualTop = Math.min(openingBottom + openingHeight, allowableTop)
+        const actualHeight = Math.max(0, actualTop - openingBottom)
+
+        if (w > 0 && actualHeight > 0) {
+          const y = baseY - actualTop * scale
+          const h = actualHeight * scale
+          parts.push(rect(x, y, w, h, "panel-cut-zone"))
+        }
+      })
     })
   }
 
