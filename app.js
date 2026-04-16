@@ -7,12 +7,6 @@ import { formatToField }       from "./js/utils/formatter.js"
 import { buildTextSummary }    from "./js/utils/textExport.js"
 
 /* ================================================================
-   STATE — single source of truth
-   All mutations go through direct assignment + persistState().
-   Layout auto-renders 300ms after any change (debounced).
-================================================================ */
-
-/* ================================================================
    PROJECT STATE — single source of truth
 ================================================================ */
 
@@ -84,6 +78,17 @@ const PROJECT_INPUT_IDS = [
   "panelCoverage",
   "ribSpacing"
 ]
+
+function getActiveWall() {
+  let wall = project.walls.find(w => w.id === project.activeWallId)
+
+  if (!wall && project.walls.length) {
+    wall = project.walls[0]
+    project.activeWallId = wall.id
+  }
+
+  return wall || null
+}
 
 /* ================================================================
    PERSISTENCE — localStorage + URL hash
