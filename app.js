@@ -134,6 +134,37 @@ function deleteWall(id = project.activeWallId) {
   scheduleRender(true)
 }
 
+function setActiveWall(id) {
+  const numericId = Number(id)
+  const exists = project.walls.some(w => w.id === numericId)
+  if (!exists) return
+
+  project.activeWallId = numericId
+  persistState()
+  populateInputs()
+  scheduleRender(true)
+}
+
+function renderWallSelector() {
+  const select = document.getElementById("wallSelect")
+  const profileNameEl = document.getElementById("profileName")
+  if (!select) return
+
+  select.innerHTML = ""
+
+  project.walls.forEach((wall, index) => {
+    const option = document.createElement("option")
+    option.value = String(wall.id)
+    option.textContent = wall.name || `Wall ${index + 1}`
+    if (wall.id === project.activeWallId) option.selected = true
+    select.appendChild(option)
+  })
+
+  if (profileNameEl) {
+    profileNameEl.value = project.profileName || "PBR"
+  }
+}
+
 /* ================================================================
    PERSISTENCE — localStorage + URL hash
 ================================================================ */
@@ -262,8 +293,13 @@ function populateInputs() {
   const activeWall = getActiveWall()
   if (!activeWall) return
 
+  renderWallSelector()
+
   const wallTypeEl = document.getElementById("wallType")
   if (wallTypeEl) wallTypeEl.value = activeWall.wallType
+
+  const profileNameEl = document.getElementById("profileName")
+  if (profileNameEl) profileNameEl.value = project.profileName || "PBR"
 
   PROJECT_INPUT_IDS.forEach(id => {
     const el = document.getElementById(id)
@@ -544,6 +580,38 @@ function syncModeUI() {
   }
 }
 
+
+/*--WALL SELECTOR--*/
+function setupWallManager() {
+  const wallSelect = document.getElementById("wallSelect")
+  const addWallBtn = document.getElementById("addWallBtn")
+  const duplicateWallBtn = document.getElementById("duplicateWallBtn")
+  const deleteWallBtn = document.getElementById("deleteWallBtn")
+
+  if (wallSelect) {
+    wallSelect.addEventListener("change", () => {
+      setActiveWall(wallSelect.value)
+    })
+  }
+
+  if (addWallBtn) {
+    addWallBtn.addEventListener("click", () => {
+      addWall()
+    })
+  }
+
+  if (duplicateWallBtn) {
+    duplicateWallBtn.addEventListener("click", () => {
+      duplicateWall()
+    })
+  }
+
+  if (deleteWallBtn) {
+    deleteWallBtn.addEventListener("click", () => {
+      deleteWall()
+    })
+  }
+}
 /* ================================================================
    SHARE BUTTON
 ================================================================ */
@@ -808,6 +876,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupMeasurementKeyboard()
   setupShareButton()
   setupCopyTextButton()
+  setupWallManager()
 
   const addBtn = document.getElementById("addOpeningBtn")
   if (addBtn) addBtn.addEventListener("click", addOpening)
