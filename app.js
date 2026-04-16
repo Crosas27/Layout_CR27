@@ -12,108 +12,78 @@ import { buildTextSummary }    from "./js/utils/textExport.js"
    Layout auto-renders 300ms after any change (debounced).
 ================================================================ */
 
-const STORAGE_KEY = "layout_cr27_v2"
+/* ================================================================
+   PROJECT STATE — single source of truth
+================================================================ */
 
-const DEFAULT_STATE = {
-  wallType:             "sidewall",
-  wallLength:           "",
-  wallHeight:           "",
-  panelStopHeight:      "",
-  panelCoverage:        '36"',
-  ribSpacing:           '12"',
-  startOffset:          '0"',
-  leftEaveHeight:       "",
-  leftPanelStopHeight:  "",
-  ridgeHeight:          "",
+const STORAGE_KEY = "layout_cr27_project_v1"
+
+const DEFAULT_WALL = () => ({
+  id: Date.now(),
+  name: "Wall 1",
+  wallType: "sidewall",
+  wallLength: "",
+  wallHeight: "",
+  panelStopHeight: "",
+  startOffset: '0"',
+  leftEaveHeight: "",
+  leftPanelStopHeight: "",
+  ridgeHeight: "",
   ridgePanelStopHeight: "",
-  ridgePosition:        "",
-  rightEaveHeight:      "",
+  ridgePosition: "",
+  rightEaveHeight: "",
   rightPanelStopHeight: "",
-  openings:             []
+  openings: []
+})
+
+const DEFAULT_PROJECT = {
+  profileName: "PBR",
+  panelCoverage: '36"',
+  ribSpacing: '12"',
+  activeWallId: 1,
+  walls: [
+    {
+      id: 1,
+      name: "Wall 1",
+      wallType: "sidewall",
+      wallLength: "",
+      wallHeight: "",
+      panelStopHeight: "",
+      startOffset: '0"',
+      leftEaveHeight: "",
+      leftPanelStopHeight: "",
+      ridgeHeight: "",
+      ridgePanelStopHeight: "",
+      ridgePosition: "",
+      rightEaveHeight: "",
+      rightPanelStopHeight: "",
+      openings: []
+    }
+  ]
 }
 
-let state       = { ...DEFAULT_STATE }
-let lastModel   = null
+let project = structuredClone(DEFAULT_PROJECT)
+let lastModel = null
 let renderTimer = null
 
-const CONFIG_INPUT_IDS = [
-  "wallLength", "wallHeight", "panelStopHeight", "panelCoverage",
-  "ribSpacing", "startOffset",
-  "leftEaveHeight", "leftPanelStopHeight",
-  "ridgeHeight", "ridgePanelStopHeight",
-  "ridgePosition", "rightEaveHeight", "rightPanelStopHeight"
+const WALL_INPUT_IDS = [
+  "wallLength",
+  "wallHeight",
+  "panelStopHeight",
+  "startOffset",
+  "leftEaveHeight",
+  "leftPanelStopHeight",
+  "ridgeHeight",
+  "ridgePanelStopHeight",
+  "ridgePosition",
+  "rightEaveHeight",
+  "rightPanelStopHeight"
 ]
 
-function getActiveWall() {
-  let wall = project.walls.find(w => w.id === project.activeWallId)
-
-  if (!wall && project.walls.length) {
-    wall = project.walls[0]
-    project.activeWallId = wall.id
-  }
-
-  return wall || null
-}
-
-function updateActiveWallField(field, value) {
-  const wall = getActiveWall()
-  if (!wall) return
-  wall[field] = value
-}
-
-function updateProjectField(field, value) {
-  project[field] = value
-}
-
-function addWall() {
-  const nextIndex = project.walls.length + 1
-  const wall = {
-    ...DEFAULT_WALL(),
-    id: Date.now(),
-    name: `Wall ${nextIndex}`
-  }
-
-  project.walls.push(wall)
-  project.activeWallId = wall.id
-
-  persistState()
-  populateInputs()
-  scheduleRender(true)
-}
-
-function duplicateWall(id = project.activeWallId) {
-  const source = project.walls.find(w => w.id === id)
-  if (!source) return
-
-  const clone = {
-    ...structuredClone(source),
-    id: Date.now(),
-    name: `${source.name} Copy`
-  }
-
-  project.walls.push(clone)
-  project.activeWallId = clone.id
-
-  persistState()
-  populateInputs()
-  scheduleRender(true)
-}
-
-function deleteWall(id = project.activeWallId) {
-  if (project.walls.length <= 1) return
-
-  const idx = project.walls.findIndex(w => w.id === id)
-  if (idx < 0) return
-
-  project.walls.splice(idx, 1)
-
-  const nextWall = project.walls[Math.max(0, idx - 1)] || project.walls[0]
-  project.activeWallId = nextWall.id
-
-  persistState()
-  populateInputs()
-  scheduleRender(true)
-}
+const PROJECT_INPUT_IDS = [
+  "panelCoverage",
+  "ribSpacing"
+]
 
 /* ================================================================
    PERSISTENCE — localStorage + URL hash
