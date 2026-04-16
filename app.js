@@ -11,10 +11,11 @@ import { buildTextSummary }    from "./js/utils/textExport.js"
 ================================================================ */
 
 const STORAGE_KEY = "layout_cr27_project_v1"
+const LEGACY_STORAGE_KEY = "layout_cr27_v2"
 
-const DEFAULT_WALL = () => ({
-  id: Date.now(),
-  name: "Wall 1",
+const DEFAULT_WALL = (id = 1, name = "Wall 1") => ({
+  id,
+  name,
   wallType: "sidewall",
   wallLength: "",
   wallHeight: "",
@@ -35,30 +36,13 @@ const DEFAULT_PROJECT = {
   panelCoverage: '36"',
   ribSpacing: '12"',
   activeWallId: 1,
-  walls: [
-    {
-      id: 1,
-      name: "Wall 1",
-      wallType: "sidewall",
-      wallLength: "",
-      wallHeight: "",
-      panelStopHeight: "",
-      startOffset: '0"',
-      leftEaveHeight: "",
-      leftPanelStopHeight: "",
-      ridgeHeight: "",
-      ridgePanelStopHeight: "",
-      ridgePosition: "",
-      rightEaveHeight: "",
-      rightPanelStopHeight: "",
-      openings: []
-    }
-  ]
+  walls: [DEFAULT_WALL(1, "Wall 1")]
 }
 
 let project = structuredClone(DEFAULT_PROJECT)
 let lastModel = null
 let renderTimer = null
+let activeInput = null
 
 const WALL_INPUT_IDS = [
   "wallLength",
@@ -79,6 +63,10 @@ const PROJECT_INPUT_IDS = [
   "ribSpacing"
 ]
 
+/* ================================================================
+   WALL / PROJECT HELPERS
+================================================================ */
+
 function getActiveWall() {
   let wall = project.walls.find(w => w.id === project.activeWallId)
 
@@ -89,6 +77,7 @@ function getActiveWall() {
 
   return wall || null
 }
+
 function updateActiveWallField(field, value) {
   const wall = getActiveWall()
   if (!wall) return
@@ -101,11 +90,7 @@ function updateProjectField(field, value) {
 
 function addWall() {
   const nextIndex = project.walls.length + 1
-  const wall = {
-    ...DEFAULT_WALL(),
-    id: Date.now(),
-    name: `Wall ${nextIndex}`
-  }
+  const wall = DEFAULT_WALL(Date.now(), `Wall ${nextIndex}`)
 
   project.walls.push(wall)
   project.activeWallId = wall.id
@@ -144,59 +129,130 @@ function deleteWall(id = project.activeWallId) {
   const nextWall = project.walls[Math.max(0, idx - 1)] || project.walls[0]
   project.activeWallId = nextWall.id
 
-function clearOutputs() {
-  const svg = document.getElementById("wallSvg")
-  if (svg) svg.innerHTML = ""
-
-  const summary = document.getElementById("summary")
-  if (summary) summary.innerHTML = ""
-
-  const report = document.getElementById("openingReport")
-  if (report) report.innerHTML = ""
-}
-
   persistState()
   populateInputs()
   scheduleRender(true)
 }
+
 /* ================================================================
    PERSISTENCE — localStorage + URL hash
 ================================================================ */
 
 function persistState() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(project))
   } catch (_) {}
+
   updateHash()
 }
 
 function updateHash() {
-  // Only encode config fields — openings can be too long for a URL
-  const { openings, ...config } = state
   try {
-    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(config))))
+    const activeWall = getActiveWall()
+    if (!activeWall) return
+
+    const sharePayload = {
+      profileName: project.profileName,
+      panelCoverage: project.panelCoverage,
+      ribSpacing: project.ribSpacing,
+      wall: activeWall
+    }
+
+    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(sharePayload))))
     history.replaceState(null, "", "#" + encoded)
   } catch (_) {}
 }
 
 function loadState() {
-  // URL hash first (shared links)
+  // 1) Shared hash first
   if (location.hash.length > 1) {
     try {
-      const decoded = JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(1)))))
+      const decoded = JSON.parse(
+        decodeURIComponent(escape(atob(location.hash.slice(1))))
+      )
+
       if (decoded && typeof decoded === "object") {
-        state = { ...DEFAULT_STATE, ...decoded, openings: [] }
+        // New share format
+        if (decoded.wall) {
+          const wall = {
+            ...DEFAULT_WALL(decoded.wall.id || 1, decoded.wall.name || "Wall 1"),
+            ...decoded.wall,
+            openings: Array.isArray(decoded.wall.openings) ? decoded.wall.openings : []
+          }
+
+          project = {
+            ...structuredClone(DEFAULT_PROJECT),
+            profileName: decoded.profileName || DEFAULT_PROJECT.profileName,
+            panelCoverage: decoded.panelCoverage || DEFAULT_PROJECT.panelCoverage,
+            ribSpacing: decoded.ribSpacing || DEFAULT_PROJECT.ribSpacing,
+            activeWallId: wall.id,
+            walls: [wall]
+          }
+
+          populateInputs()
+          return
+        }
+
+        // Legacy share format: flat config with no openings
+        const wall = {
+          ...DEFAULT_WALL(1, "Wall 1"),
+          ...decoded,
+          openings: []
+        }
+
+        project = {
+          ...structuredClone(DEFAULT_PROJECT),
+          activeWallId: wall.id,
+          walls: [wall]
+        }
+
         populateInputs()
         return
       }
     } catch (_) {}
   }
 
-  // Fall back to localStorage
+  // 2) New project storage
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY))
     if (saved && typeof saved === "object") {
-      state = { ...DEFAULT_STATE, ...saved }
+      project = {
+        ...structuredClone(DEFAULT_PROJECT),
+        ...saved,
+        walls: Array.isArray(saved.walls) && saved.walls.length
+          ? saved.walls.map((wall, i) => ({
+              ...DEFAULT_WALL(wall.id || i + 1, wall.name || `Wall ${i + 1}`),
+              ...wall,
+              openings: Array.isArray(wall.openings) ? wall.openings : []
+            }))
+          : [DEFAULT_WALL(1, "Wall 1")]
+      }
+
+      if (!project.walls.some(w => w.id === project.activeWallId)) {
+        project.activeWallId = project.walls[0].id
+      }
+
+      populateInputs()
+      return
+    }
+  } catch (_) {}
+
+  // 3) Legacy single-wall storage fallback
+  try {
+    const legacy = JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY))
+    if (legacy && typeof legacy === "object") {
+      const wall = {
+        ...DEFAULT_WALL(1, "Wall 1"),
+        ...legacy,
+        openings: Array.isArray(legacy.openings) ? legacy.openings : []
+      }
+
+      project = {
+        ...structuredClone(DEFAULT_PROJECT),
+        activeWallId: wall.id,
+        walls: [wall]
+      }
+
       populateInputs()
     }
   } catch (_) {}
@@ -265,7 +321,7 @@ function bindInputs() {
 }
 
 /* ================================================================
-   RENDER SCHEDULING — 300ms debounce, or immediate
+   RENDER SCHEDULING
 ================================================================ */
 
 function scheduleRender(immediate = false) {
@@ -325,6 +381,18 @@ function updateLayout() {
   renderOpeningReport(lastModel)
   renderSummary(lastModel)
 }
+
+function clearOutputs() {
+  const svg = document.getElementById("wallSvg")
+  if (svg) svg.innerHTML = ""
+
+  const summary = document.getElementById("panelSummary")
+  if (summary) summary.innerHTML = ""
+
+  const report = document.getElementById("openingReport")
+  if (report) report.innerHTML = ""
+}
+
 /* ================================================================
    ERROR DISPLAY
 ================================================================ */
@@ -346,6 +414,9 @@ function clearError() {
 ================================================================ */
 
 function addOpening() {
+  const activeWall = getActiveWall()
+  if (!activeWall) return
+
   const startEl = document.getElementById("openingStart")
   const widthEl = document.getElementById("openingWidth")
   const bottomEl = document.getElementById("openingBottom")
@@ -378,7 +449,7 @@ function addOpening() {
     return
   }
 
-  const wallLength = parseMeasurement(state.wallLength)
+  const wallLength = parseMeasurement(activeWall.wallLength)
   if (Number.isFinite(wallLength) && start + width > wallLength) {
     showError(
       `Opening end (${formatToField(start + width)}) exceeds wall width (${formatToField(wallLength)}).`
@@ -386,8 +457,8 @@ function addOpening() {
     return
   }
 
-  if (state.wallType === "sidewall") {
-    const wallHeight = parseMeasurement(state.wallHeight)
+  if (activeWall.wallType === "sidewall") {
+    const wallHeight = parseMeasurement(activeWall.wallHeight)
     if (Number.isFinite(wallHeight) && bottom + height > wallHeight) {
       showError(
         `Opening top (${formatToField(bottom + height)}) exceeds wall height (${formatToField(wallHeight)}).`
@@ -398,8 +469,8 @@ function addOpening() {
 
   clearError()
 
-  state.openings = [
-    ...state.openings,
+  activeWall.openings = [
+    ...activeWall.openings,
     { start, width, bottom, height }
   ]
 
@@ -411,15 +482,23 @@ function addOpening() {
   widthEl.value = ""
   bottomEl.value = ""
   heightEl.value = ""
+
+  updateAllMeasureHelpers()
 }
 
 function renderOpeningsList() {
   const list = document.getElementById("openingsList")
   if (!list) return
 
+  const activeWall = getActiveWall()
+  if (!activeWall) {
+    list.innerHTML = ""
+    return
+  }
+
   list.innerHTML = ""
 
-  state.openings.forEach((op, index) => {
+  activeWall.openings.forEach((op, index) => {
     const div = document.createElement("div")
     div.className = "opening-item"
 
@@ -433,7 +512,7 @@ function renderOpeningsList() {
     btn.textContent = "✕"
     btn.className = "delete-btn"
     btn.onclick = () => {
-      state.openings = state.openings.filter((_, i) => i !== index)
+      activeWall.openings = activeWall.openings.filter((_, i) => i !== index)
       persistState()
       renderOpeningsList()
       scheduleRender(true)
@@ -444,7 +523,6 @@ function renderOpeningsList() {
     list.appendChild(div)
   })
 }
-
 
 /* ================================================================
    MODE UI
@@ -467,7 +545,7 @@ function syncModeUI() {
 }
 
 /* ================================================================
-   SHARE BUTTON — copies URL with encoded state to clipboard
+   SHARE BUTTON
 ================================================================ */
 
 function setupShareButton() {
@@ -478,22 +556,19 @@ function setupShareButton() {
     updateHash()
     const url = location.href
 
-    const copy = () => {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(url).then(() => {
-          btn.textContent = "Link Copied!"
-          setTimeout(() => { btn.textContent = "Share Layout" }, 2500)
-        }).catch(() => prompt("Copy this link:", url))
-      } else {
-        prompt("Copy this link:", url)
-      }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        btn.textContent = "Link Copied!"
+        setTimeout(() => { btn.textContent = "Share Layout" }, 2500)
+      }).catch(() => prompt("Copy this link:", url))
+    } else {
+      prompt("Copy this link:", url)
     }
-    copy()
   })
 }
 
 /* ================================================================
-   COPY CUT LIST — plain-text summary to clipboard
+   COPY CUT LIST
 ================================================================ */
 
 function setupCopyTextButton() {
@@ -520,7 +595,7 @@ function setupCopyTextButton() {
 }
 
 /* ================================================================
-   MEASUREMENT HELPERS (inches-only under fields)
+   MEASUREMENT HELPERS
 ================================================================ */
 
 function initMeasurementHelpers() {
@@ -532,6 +607,8 @@ function initMeasurementHelpers() {
       helper.className = "measure-helper empty"
       input.insertAdjacentElement("afterend", helper)
     }
+
+    updateMeasureHelper(input)
   })
 }
 
@@ -587,14 +664,13 @@ function formatTotalInches(inches) {
   if (fracText) return `${fracText}"`
   return `${whole}"`
 }
+
 /* ================================================================
    MEASUREMENT KEYBOARD
 ================================================================ */
 
-let activeInput = null
-
 function updateMeasurementDisplay() {
-  const rawEl  = document.getElementById("measurementRaw")
+  const rawEl = document.getElementById("measurementRaw")
   const dispEl = document.getElementById("measurementDisplay")
   if (!rawEl || !dispEl) return
 
@@ -605,6 +681,7 @@ function updateMeasurementDisplay() {
     dispEl.textContent = ""
     return
   }
+
   const inches = parseMeasurement(raw)
   dispEl.textContent = inches > 0 ? formatToField(inches) : ""
 }
@@ -619,6 +696,7 @@ function setupMeasurementKeyboard() {
       keyboard.classList.remove("hidden")
       updateMeasurementDisplay()
     })
+
     input.addEventListener("click", () => {
       activeInput = input
       keyboard.classList.remove("hidden")
@@ -636,12 +714,14 @@ function setupMeasurementKeyboard() {
       updateMeasurementDisplay()
       return
     }
+
     if (target.dataset.action === "confirm") {
       keyboard.classList.add("hidden")
       activeInput = null
       scheduleRender(true)
       return
     }
+
     if (target.dataset.key) {
       insertAtCursor(target.dataset.key)
       fireStateSync()
@@ -652,6 +732,7 @@ function setupMeasurementKeyboard() {
   document.addEventListener("click", e => {
     const t = e.target
     if (!(t instanceof Element)) return
+
     if (!t.closest(".measure-input") && !t.closest("#measurementKeyboard")) {
       keyboard.classList.add("hidden")
       activeInput = null
@@ -663,8 +744,6 @@ function fireStateSync() {
   if (!activeInput) return
 
   const id = activeInput.id
-  const activeWall = getActiveWall()
-  if (!activeWall) return
 
   if (PROJECT_INPUT_IDS.includes(id)) {
     updateProjectField(id, activeInput.value)
@@ -681,9 +760,15 @@ function fireStateSync() {
 
 function insertAtCursor(char) {
   if (!activeInput) return
+
   const s = activeInput.selectionStart ?? activeInput.value.length
-  const e = activeInput.selectionEnd   ?? activeInput.value.length
-  activeInput.value = activeInput.value.slice(0, s) + char + activeInput.value.slice(e)
+  const e = activeInput.selectionEnd ?? activeInput.value.length
+
+  activeInput.value =
+    activeInput.value.slice(0, s) +
+    char +
+    activeInput.value.slice(e)
+
   const pos = s + char.length
   activeInput.setSelectionRange(pos, pos)
   activeInput.focus()
@@ -691,21 +776,30 @@ function insertAtCursor(char) {
 
 function handleBackspace() {
   if (!activeInput) return
+
   const s = activeInput.selectionStart ?? activeInput.value.length
-  const e = activeInput.selectionEnd   ?? activeInput.value.length
+  const e = activeInput.selectionEnd ?? activeInput.value.length
 
   if (s !== e) {
-    activeInput.value = activeInput.value.slice(0, s) + activeInput.value.slice(e)
+    activeInput.value =
+      activeInput.value.slice(0, s) +
+      activeInput.value.slice(e)
+
     activeInput.setSelectionRange(s, s)
   } else if (s > 0) {
-    activeInput.value = activeInput.value.slice(0, s - 1) + activeInput.value.slice(e)
+    activeInput.value =
+      activeInput.value.slice(0, s - 1) +
+      activeInput.value.slice(e)
+
     activeInput.setSelectionRange(s - 1, s - 1)
   }
+
   activeInput.focus()
 }
 
-
-/* === INIT === */
+/* ================================================================
+   INIT
+================================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
   loadState()
