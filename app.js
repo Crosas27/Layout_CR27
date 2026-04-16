@@ -43,6 +43,7 @@ let project = structuredClone(DEFAULT_PROJECT)
 let lastModel = null
 let renderTimer = null
 let activeInput = null
+let editingOpeningIndex = null
 
 const WALL_INPUT_IDS = [
   "wallLength",
@@ -448,6 +449,53 @@ function clearError() {
 /* ================================================================
    OPENINGS MANAGEMENT
 ================================================================ */
+function beginEditOpening(index) {
+  const activeWall = getActiveWall()
+  if (!activeWall) return
+
+  const opening = activeWall.openings[index]
+  if (!opening) return
+
+  editingOpeningIndex = index
+
+  const startEl = document.getElementById("openingStart")
+  const widthEl = document.getElementById("openingWidth")
+  const bottomEl = document.getElementById("openingBottom")
+  const heightEl = document.getElementById("openingHeight")
+  const addBtn = document.getElementById("addOpeningBtn")
+  const cancelBtn = document.getElementById("cancelOpeningEditBtn")
+
+  if (startEl) startEl.value = formatToField(opening.start)
+  if (widthEl) widthEl.value = formatToField(opening.width)
+  if (bottomEl) bottomEl.value = formatToField(opening.bottom || 0)
+  if (heightEl) heightEl.value = formatToField(opening.height || 0)
+
+  updateAllMeasureHelpers()
+
+  if (addBtn) addBtn.textContent = "Update Opening"
+  if (cancelBtn) cancelBtn.classList.remove("hidden")
+}
+
+function cancelEditOpening() {
+  editingOpeningIndex = null
+
+  const startEl = document.getElementById("openingStart")
+  const widthEl = document.getElementById("openingWidth")
+  const bottomEl = document.getElementById("openingBottom")
+  const heightEl = document.getElementById("openingHeight")
+  const addBtn = document.getElementById("addOpeningBtn")
+  const cancelBtn = document.getElementById("cancelOpeningEditBtn")
+
+  if (startEl) startEl.value = ""
+  if (widthEl) widthEl.value = ""
+  if (bottomEl) bottomEl.value = ""
+  if (heightEl) heightEl.value = ""
+
+  updateAllMeasureHelpers()
+
+  if (addBtn) addBtn.textContent = "Add Opening"
+  if (cancelBtn) cancelBtn.classList.add("hidden")
+}
 
 function addOpening() {
   const activeWall = getActiveWall()
@@ -505,21 +553,19 @@ function addOpening() {
 
   clearError()
 
-  activeWall.openings = [
-    ...activeWall.openings,
-    { start, width, bottom, height }
-  ]
+  const nextOpening = { start, width, bottom, height }
+
+  if (editingOpeningIndex !== null) {
+    activeWall.openings[editingOpeningIndex] = nextOpening
+  } else {
+    activeWall.openings = [...activeWall.openings, nextOpening]
+  }
 
   persistState()
   renderOpeningsList()
   scheduleRender(true)
 
-  startEl.value = ""
-  widthEl.value = ""
-  bottomEl.value = ""
-  heightEl.value = ""
-
-  updateAllMeasureHelpers()
+  cancelEditOpening()
 }
 
 function renderOpeningsList() {
@@ -538,24 +584,58 @@ function renderOpeningsList() {
     const div = document.createElement("div")
     div.className = "opening-item"
 
+    if (editingOpeningIndex === index) {
+      div.classList.add("editing")
+    }
+
     const label = document.createElement("span")
     label.textContent =
       `${formatToField(op.start)} → ${formatToField(op.start + op.width)} • ` +
       `bottom ${formatToField(op.bottom || 0)} • ` +
       `height ${formatToField(op.height || 0)}`
 
+    label.style.cursor = "pointer"
+    label.onclick = () => {
+      beginEditOpening(index)
+      renderOpeningsList()
+    }
+
+    const actions = document.createElement("div")
+    actions.style.display = "flex"
+    actions.style.gap = "8px"
+    actions.style.flexShrink = "0"
+
+    const editBtn = document.createElement("button")
+    editBtn.textContent = "Edit"
+    editBtn.className = "btn-secondary"
+    editBtn.style.width = "auto"
+    editBtn.onclick = () => {
+      beginEditOpening(index)
+      renderOpeningsList()
+    }
+
     const btn = document.createElement("button")
     btn.textContent = "✕"
     btn.className = "delete-btn"
     btn.onclick = () => {
       activeWall.openings = activeWall.openings.filter((_, i) => i !== index)
+
+      if (editingOpeningIndex === index) {
+        cancelEditOpening()
+      } else if (editingOpeningIndex !== null && editingOpeningIndex > index) {
+        editingOpeningIndex -= 1
+      }
+
       persistState()
       renderOpeningsList()
       scheduleRender(true)
     }
 
+    actions.appendChild(editBtn)
+    actions.appendChild(btn)
+
     div.appendChild(label)
-    div.appendChild(btn)
+    div.appendChild(actions)
     list.appendChild(div)
   })
 }
