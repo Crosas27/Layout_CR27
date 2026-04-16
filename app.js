@@ -89,7 +89,76 @@ function getActiveWall() {
 
   return wall || null
 }
+function updateActiveWallField(field, value) {
+  const wall = getActiveWall()
+  if (!wall) return
+  wall[field] = value
+}
 
+function updateProjectField(field, value) {
+  project[field] = value
+}
+
+function addWall() {
+  const nextIndex = project.walls.length + 1
+  const wall = {
+    ...DEFAULT_WALL(),
+    id: Date.now(),
+    name: `Wall ${nextIndex}`
+  }
+
+  project.walls.push(wall)
+  project.activeWallId = wall.id
+
+  persistState()
+  populateInputs()
+  scheduleRender(true)
+}
+
+function duplicateWall(id = project.activeWallId) {
+  const source = project.walls.find(w => w.id === id)
+  if (!source) return
+
+  const clone = {
+    ...structuredClone(source),
+    id: Date.now(),
+    name: `${source.name} Copy`
+  }
+
+  project.walls.push(clone)
+  project.activeWallId = clone.id
+
+  persistState()
+  populateInputs()
+  scheduleRender(true)
+}
+
+function deleteWall(id = project.activeWallId) {
+  if (project.walls.length <= 1) return
+
+  const idx = project.walls.findIndex(w => w.id === id)
+  if (idx < 0) return
+
+  project.walls.splice(idx, 1)
+
+  const nextWall = project.walls[Math.max(0, idx - 1)] || project.walls[0]
+  project.activeWallId = nextWall.id
+
+function clearOutputs() {
+  const svg = document.getElementById("wallSvg")
+  if (svg) svg.innerHTML = ""
+
+  const summary = document.getElementById("summary")
+  if (summary) summary.innerHTML = ""
+
+  const report = document.getElementById("openingReport")
+  if (report) report.innerHTML = ""
+}
+
+  persistState()
+  populateInputs()
+  scheduleRender(true)
+}
 /* ================================================================
    PERSISTENCE — localStorage + URL hash
 ================================================================ */
