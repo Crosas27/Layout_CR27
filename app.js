@@ -636,9 +636,23 @@ function handleBackspace() {
   activeInput.focus()
 }
 
-/* ================================================================
-   INIT
-================================================================ */
+/* ===MEASUREMENT HELPERS=== */ 
+
+function updateMeasureHelper(input) {
+  const helper = input?.nextElementSibling
+  if (!helper) return
+
+  const inches = parseMeasurement(input.value)
+  helper.textContent = inches > 0 ? formatToField(inches) : ""
+}
+
+function updateAllMeasureHelpers() {
+  document.querySelectorAll(".measure-input").forEach(input => {
+    updateMeasureHelper(input)
+  })
+}
+
+/* === INIT === */
 
 document.addEventListener("DOMContentLoaded", () => {
   loadState()
