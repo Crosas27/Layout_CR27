@@ -217,32 +217,38 @@ function scheduleRender(immediate = false) {
 function updateLayout() {
   clearError()
 
-  const wallLength = parseMeasurement(state.wallLength)
+  const activeWall = getActiveWall()
+  if (!activeWall) {
+    clearOutputs()
+    return
+  }
+
+  const wallLength = parseMeasurement(activeWall.wallLength)
   if (!wallLength || wallLength <= 0) {
     clearOutputs()
     return
   }
 
   const config = {
-    wallType:        state.wallType,
+    wallType: activeWall.wallType,
     wallLength,
-    wallHeight:      parseMeasurement(state.wallHeight),
-    panelStopHeight: parseMeasurement(state.panelStopHeight),
-    panelCoverage:   parseMeasurement(state.panelCoverage) || 36,
-    ribSpacing:      parseMeasurement(state.ribSpacing)    || 12,
-    startOffset:     parseMeasurement(state.startOffset)   || 0,
-    openings:        state.openings
+    wallHeight: parseMeasurement(activeWall.wallHeight),
+    panelStopHeight: parseMeasurement(activeWall.panelStopHeight),
+    panelCoverage: parseMeasurement(project.panelCoverage) || 36,
+    ribSpacing: parseMeasurement(project.ribSpacing) || 12,
+    startOffset: parseMeasurement(activeWall.startOffset) || 0,
+    openings: activeWall.openings
   }
 
-  if (state.wallType === "gable") {
+  if (activeWall.wallType === "gable") {
     Object.assign(config, {
-      leftEaveHeight:       parseMeasurement(state.leftEaveHeight),
-      leftPanelStopHeight:  parseMeasurement(state.leftPanelStopHeight),
-      ridgeHeight:          parseMeasurement(state.ridgeHeight),
-      ridgePanelStopHeight: parseMeasurement(state.ridgePanelStopHeight),
-      ridgePosition:        parseMeasurement(state.ridgePosition),
-      rightEaveHeight:      parseMeasurement(state.rightEaveHeight),
-      rightPanelStopHeight: parseMeasurement(state.rightPanelStopHeight)
+      leftEaveHeight: parseMeasurement(activeWall.leftEaveHeight),
+      leftPanelStopHeight: parseMeasurement(activeWall.leftPanelStopHeight),
+      ridgeHeight: parseMeasurement(activeWall.ridgeHeight),
+      ridgePanelStopHeight: parseMeasurement(activeWall.ridgePanelStopHeight),
+      ridgePosition: parseMeasurement(activeWall.ridgePosition),
+      rightEaveHeight: parseMeasurement(activeWall.rightEaveHeight),
+      rightPanelStopHeight: parseMeasurement(activeWall.rightPanelStopHeight)
     })
   }
 
@@ -252,16 +258,6 @@ function updateLayout() {
   renderOpeningReport(lastModel)
   renderSummary(lastModel)
 }
-
-function clearOutputs() {
-  const svg     = document.getElementById("wallSvg")
-  const summary = document.getElementById("panelSummary")
-  const report  = document.getElementById("openingReport")
-  if (svg)     svg.innerHTML     = ""
-  if (summary) summary.innerHTML = ""
-  if (report)  report.innerHTML  = ""
-}
-
 /* ================================================================
    ERROR DISPLAY
 ================================================================ */
@@ -386,13 +382,24 @@ function renderOpeningsList() {
    MODE UI — show/hide gable vs sidewall fields
 ================================================================ */
 
-function syncModeUI() {
-  const isGable     = state.wallType === "gable"
-  const gableFields = document.getElementById("gableFields")
-  const sideFields  = document.getElementById("sidewallFields")
+/* ================================================================
+   MODE UI
+================================================================ */
 
-  if (gableFields) gableFields.style.display = isGable ? "block" : "none"
-  if (sideFields)  sideFields.style.display  = isGable ? "none"  : "block"
+function syncModeUI() {
+  const activeWall = getActiveWall()
+  const isGable = activeWall?.wallType === "gable"
+
+  const gableFields = document.getElementById("gableFields")
+  const sideFields = document.getElementById("sidewallFields")
+
+  if (gableFields) {
+    gableFields.style.display = isGable ? "" : "none"
+  }
+
+  if (sideFields) {
+    sideFields.style.display = isGable ? "none" : ""
+  }
 }
 
 /* ================================================================
