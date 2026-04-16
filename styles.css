@@ -271,6 +271,18 @@ body {
   touch-action: manipulation;
   -webkit-text-size-adjust: 100%;
 }
+
+.wall-manager-actions {
+  margin-top: 10px;
+}
+
+#wallSelect {
+  margin-bottom: 0;
+}
+
+#profileName[readonly] {
+  opacity: 0.9;
+}
 /* ---------------- FIELD LAYOUT ---------------- */
 
 .field-grid-2 {
