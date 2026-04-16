@@ -961,6 +961,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const addBtn = document.getElementById("addOpeningBtn")
   if (addBtn) addBtn.addEventListener("click", addOpening)
 
+   const cancelOpeningEditBtn = document.getElementById("cancelOpeningEditBtn")
+if (cancelOpeningEditBtn) {
+  cancelOpeningEditBtn.addEventListener("click", () => {
+    cancelEditOpening()
+    renderOpeningsList()
+  })
+}
+
   document.querySelectorAll(".collapsible .card-header").forEach(header => {
     header.addEventListener("click", () => {
       header.closest(".collapsible").classList.toggle("open")
