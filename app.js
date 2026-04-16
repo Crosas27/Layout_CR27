@@ -499,6 +499,21 @@ function setupMeasurementKeyboard() {
 
 function fireStateSync() {
   if (!activeInput) return
+
+  const id = activeInput.id
+  const activeWall = getActiveWall()
+  if (!activeWall) return
+
+  if (PROJECT_INPUT_IDS.includes(id)) {
+    updateProjectField(id, activeInput.value)
+    persistState()
+    scheduleRender()
+  } else if (WALL_INPUT_IDS.includes(id)) {
+    updateActiveWallField(id, activeInput.value)
+    persistState()
+    scheduleRender()
+  }
+
   activeInput.dispatchEvent(new Event("input", { bubbles: true }))
 }
 
