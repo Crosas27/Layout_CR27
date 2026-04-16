@@ -520,6 +520,76 @@ function setupCopyTextButton() {
 }
 
 /* ================================================================
+   MEASUREMENT HELPERS (inches-only under fields)
+================================================================ */
+
+function initMeasurementHelpers() {
+  document.querySelectorAll(".measure-input").forEach(input => {
+    let helper = input.nextElementSibling
+
+    if (!helper || !helper.classList.contains("measure-helper")) {
+      helper = document.createElement("div")
+      helper.className = "measure-helper empty"
+      input.insertAdjacentElement("afterend", helper)
+    }
+
+    updateMeasureHelper(input)
+  })
+}
+
+function updateAllMeasureHelpers() {
+  document.querySelectorAll(".measure-input").forEach(updateMeasureHelper)
+}
+
+function updateMeasureHelper(input) {
+  if (!input) return
+
+  const helper = input.nextElementSibling
+  if (!helper || !helper.classList.contains("measure-helper")) return
+
+  const raw = input.value ? input.value.trim() : ""
+  if (!raw) {
+    helper.textContent = ""
+    helper.classList.add("empty")
+    return
+  }
+
+  const inches = parseMeasurement(raw)
+
+  if (Number.isFinite(inches) && inches > 0) {
+    helper.textContent = formatTotalInches(inches)
+    helper.classList.remove("empty")
+  } else if (raw === "0" || raw === '0"' || raw === "0'") {
+    helper.textContent = '0"'
+    helper.classList.remove("empty")
+  } else {
+    helper.textContent = "..."
+    helper.classList.remove("empty")
+  }
+}
+
+function formatTotalInches(inches) {
+  const rounded = Math.round(inches * 8) / 8
+  const whole = Math.floor(rounded)
+  const frac = rounded - whole
+
+  const map = {
+    0.125: "1/8",
+    0.25: "1/4",
+    0.375: "3/8",
+    0.5: "1/2",
+    0.625: "5/8",
+    0.75: "3/4",
+    0.875: "7/8"
+  }
+
+  const fracText = map[Number(frac.toFixed(3))] || ""
+
+  if (fracText && whole > 0) return `${whole} ${fracText}"`
+  if (fracText) return `${fracText}"`
+  return `${whole}"`
+}
+/* ================================================================
    MEASUREMENT KEYBOARD
 ================================================================ */
 
@@ -657,6 +727,7 @@ function updateAllMeasureHelpers() {
 document.addEventListener("DOMContentLoaded", () => {
   loadState()
   bindInputs()
+  initMeasurementHelpers()
   setupMeasurementKeyboard()
   setupShareButton()
   setupCopyTextButton()
