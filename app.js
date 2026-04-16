@@ -129,16 +129,25 @@ function loadState() {
 }
 
 function populateInputs() {
-  const wallTypeEl = document.getElementById("wallType")
-  if (wallTypeEl) wallTypeEl.value = state.wallType
+  const activeWall = getActiveWall()
+  if (!activeWall) return
 
-  CONFIG_INPUT_IDS.forEach(id => {
+  const wallTypeEl = document.getElementById("wallType")
+  if (wallTypeEl) wallTypeEl.value = activeWall.wallType
+
+  PROJECT_INPUT_IDS.forEach(id => {
     const el = document.getElementById(id)
-    if (el && state[id] !== undefined) el.value = state[id]
+    if (el && project[id] !== undefined) el.value = project[id]
+  })
+
+  WALL_INPUT_IDS.forEach(id => {
+    const el = document.getElementById(id)
+    if (el && activeWall[id] !== undefined) el.value = activeWall[id]
   })
 
   syncModeUI()
   renderOpeningsList()
+  updateAllMeasureHelpers()
 }
 
 /* ================================================================
@@ -149,18 +158,32 @@ function bindInputs() {
   const wallTypeEl = document.getElementById("wallType")
   if (wallTypeEl) {
     wallTypeEl.addEventListener("change", () => {
-      state.wallType = wallTypeEl.value
+      updateActiveWallField("wallType", wallTypeEl.value)
       syncModeUI()
       persistState()
       scheduleRender()
     })
   }
 
-  CONFIG_INPUT_IDS.forEach(id => {
+  PROJECT_INPUT_IDS.forEach(id => {
     const el = document.getElementById(id)
     if (!el) return
+
     el.addEventListener("input", () => {
-      state[id] = el.value
+      updateProjectField(id, el.value)
+      updateMeasureHelper(el)
+      persistState()
+      scheduleRender()
+    })
+  })
+
+  WALL_INPUT_IDS.forEach(id => {
+    const el = document.getElementById(id)
+    if (!el) return
+
+    el.addEventListener("input", () => {
+      updateActiveWallField(id, el.value)
+      updateMeasureHelper(el)
       persistState()
       scheduleRender()
     })
@@ -348,9 +371,6 @@ function renderOpeningsList() {
   })
 }
 
-/* ================================================================
-   MODE UI — show/hide gable vs sidewall fields
-================================================================ */
 
 /* ================================================================
    MODE UI
