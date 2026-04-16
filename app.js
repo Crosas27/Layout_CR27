@@ -532,8 +532,6 @@ function initMeasurementHelpers() {
       helper.className = "measure-helper empty"
       input.insertAdjacentElement("afterend", helper)
     }
-
-    updateMeasureHelper(input)
   })
 }
 
