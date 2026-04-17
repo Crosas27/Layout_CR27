@@ -156,7 +156,7 @@ function renderWallSelector() {
   project.walls.forEach((wall, index) => {
     const option = document.createElement("option")
     option.value = String(wall.id)
-    option.textContent = wall.name || `Wall ${index + 1}`
+    option.textContent = wall.name?.trim() || `Wall ${index + 1}`
     if (wall.id === project.activeWallId) option.selected = true
     select.appendChild(option)
   })
@@ -301,6 +301,9 @@ function populateInputs() {
 
   const profileNameEl = document.getElementById("profileName")
   if (profileNameEl) profileNameEl.value = project.profileName || "PBR"
+
+  const wallNameEl = document.getElementById("wallName")
+  if (wallNameEl) wallNameEl.value = activeWall.name || ""
 
   PROJECT_INPUT_IDS.forEach(id => {
     const el = document.getElementById(id)
@@ -692,6 +695,21 @@ function setupWallManager() {
     })
   }
 }
+
+function setupWallRename() {
+  const wallNameEl = document.getElementById("wallName")
+  if (!wallNameEl) return
+
+  wallNameEl.addEventListener("input", () => {
+    const activeWall = getActiveWall()
+    if (!activeWall) return
+
+    activeWall.name = wallNameEl.value.trim() || "Unnamed Wall"
+    persistState()
+    renderWallSelector()
+  })
+}
+
 /* ================================================================
    SHARE BUTTON
 ================================================================ */
@@ -957,6 +975,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupShareButton()
   setupCopyTextButton()
   setupWallManager()
+  setupWallRename()
 
   const addBtn = document.getElementById("addOpeningBtn")
   if (addBtn) addBtn.addEventListener("click", addOpening)
