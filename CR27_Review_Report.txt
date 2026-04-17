@@ -1,0 +1,579 @@
+================================================================================
+  CR27-Layout — Codebase Review Report
+  Generated: 2026-04-17
+================================================================================
+
+SCOPE
+-----
+Full review of the Layout_CR27 vanilla-JS construction panel layout calculator,
+excluding the Docs folder. The app is a browser-only SPA (no build tool, no
+framework) that calculates wall panel cuts, generates SVG visualizations, and
+exports cut lists.
+
+================================================================================
+  SECTION 1 — CODE QUALITY: BUGS & IMPROVEMENTS
+================================================================================
+
+1a. Dead Code
+-------------
+js/utils/svgUtils.js is never imported anywhere. wallRenderer.js already has
+its own local rect(), line(), text(), and polygon() helpers (lines 8-28).
+Action: Either remove svgUtils.js entirely, or consolidate by replacing the
+inline helpers in wallRenderer.js with imports from svgUtils.js.
+
+
+1b. Duplicated Fraction-Formatting Logic (DRY Violation)
+---------------------------------------------------------
+Three independent copies of the same "inches -> whole + fraction string" logic:
+
+  - js/utils/formatter.js          getFraction() / formatToField()
+  - app.js lines 812-832           formatTotalInches() (measure-helper display)
+  - js/core/layoutEngine.js 612-629  fmtIn() (used in warning messages)
+
+Recommendation: Export a single formatInches(n) function from formatter.js
+and delete the other two implementations.
+
+
+1c. Deprecated Encoding Pattern
+--------------------------------
+app.js lines 193-195 uses the deprecated unescape/escape globals:
+
+  btoa(unescape(encodeURIComponent(...)))
+  decodeURIComponent(escape(atob(...)))
+
+These are removed from strict mode and flagged by modern browsers.
+
+Better alternative:
+  // encode
+  const encoded = btoa(String.fromCharCode(...new TextEncoder().encode(json)))
+  // decode
+  const json = new TextDecoder().decode(
+    Uint8Array.from(atob(hash), c => c.charCodeAt(0))
+  )
+
+Or simpler: use encodeURIComponent directly in the hash without base64,
+which avoids the issue entirely.
+
+
+1d. DEFAULT_WALL Naming Convention
+------------------------------------
+app.js line 16 — DEFAULT_WALL is a factory function but named like a constant.
+Rename to createDefaultWall() to match its semantics and prevent misuse.
+
+
+1e. Inline Styles in JS Should Be CSS Classes
+----------------------------------------------
+app.js lines 607-609 — Opening list action buttons use element.style.*
+assignments directly in JavaScript:
+
+  actions.style.display = "flex"
+  actions.style.gap = "8px"
+  actions.style.flexShrink = "0"
+
+Move these to a CSS class (e.g. .opening-actions) in styles.css.
+
+
+1f. Mixed Event Handler Patterns
+---------------------------------
+app.js line 601 — label.onclick = () => {...} mixes property assignment with
+addEventListener used everywhere else in the file. Use addEventListener
+consistently throughout.
+
+
+1g. wallRenderer.js Re-computes Heights Already in the Model
+-------------------------------------------------------------
+wallRenderer.js lines 307-316, 330-339, 410-434 — Calls getGableHeightAtX()
+at render time for seams, ribs, and opening cuts, even though model.gableCuts
+already contains all leftHeight/rightHeight per panel. This re-does engine
+math inside the renderer, creating tight coupling between layers.
+
+Recommendation: Precompute seam and rib heights inside layoutEngine.js and
+store them on the model:
+  model.seamHeights: [{ pos, height }, ...]
+  model.ribHeights:  [{ pos, height }, ...]
+The renderer should read data, not recompute geometry.
+
+
+1h. No Validation for Overlapping Openings
+-------------------------------------------
+app.js lines 503-572 — addOpening() validates wall boundaries and dimensions
+but never checks whether the new opening overlaps an existing one. Overlapping
+openings produce silently incorrect cut lists.
+
+Recommended overlap check (add before inserting):
+  const overlaps = activeWall.openings.some((o, i) => {
+    if (i === editingOpeningIndex) return false
+    return start < o.start + o.width && start + width > o.start
+  })
+  if (overlaps) { showError("Opening overlaps an existing opening."); return }
+
+
+1i. eruda Debugger Shipped to Production
+-----------------------------------------
+index.html lines 273-274 — The Eruda mobile console is loaded unconditionally:
+
+  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+  <script>eruda.init();</script>
+
+This adds an external CDN dependency (~130 KB) and a visible debug panel to
+ALL users. Remove before any public deployment. If needed for dev only, gate
+it behind a query param: if (location.search.includes('debug=1')) eruda.init()
+
+
+1j. Manual Cache-Busting (?v=3, ?v=4)
+----------------------------------------
+index.html lines 12, 275 — Version suffixes on asset URLs must be bumped
+manually, which is error-prone. A build tool handles this automatically via
+content hashes.
+
+
+1k. localStorage Quota Not Handled
+-------------------------------------
+app.js lines 173-178 — persistState() silently swallows all errors:
+
+  try { localStorage.setItem(...) } catch (_) {}
+
+If storage is full (common on iOS), data is silently lost with no warning.
+
+Recommendation: Catch QuotaExceededError specifically and show a visible
+user warning so they know their data was not saved.
+
+
+================================================================================
+  SECTION 2 — ARCHITECTURE / SCALABILITY IMPROVEMENTS
+================================================================================
+
+2a. app.js is a God File (890 lines)
+--------------------------------------
+app.js combines: state management, persistence, DOM binding, UI rendering,
+virtual keyboard handling, export, and wall management — all in one file.
+As features grow this will become very difficult to maintain.
+
+Recommended module split:
+  js/
+    state/
+      project.js        project object, createDefaultWall, wall CRUD
+      persist.js        localStorage + URL hash logic
+    ui/
+      wallManager.js    wall selector, add/duplicate/delete
+      openingsForm.js   opening CRUD, form binding
+      keyboard.js       virtual measurement keyboard
+      measureHelpers.js
+    app.js              DOMContentLoaded init only (~50 lines)
+
+
+2b. No Build Pipeline
+-----------------------
+The current approach (raw ES modules, manual versioning) works for now but
+does not scale:
+  - No tree-shaking for dead code removal
+  - No bundling (one HTTP request per module file)
+  - No TypeScript support
+  - No automated cache invalidation
+
+Minimal upgrade path: Add Vite (vitejs.dev) — zero-config, handles bundling,
+content-hash cache busting, and HMR. The existing ES module structure
+drops in with almost no changes needed.
+
+
+2c. No TypeScript
+------------------
+The domain model is complex (panels, segments, opening cuts, gable geometry).
+Typos in field names (e.g. leftStopHeight vs leftPanelStopHeight) are
+currently silent runtime errors.
+
+Recommendation: Migrate to TypeScript, or add JSDoc @typedef type annotations
+as a zero-migration alternative. With Vite, TypeScript is a one-flag change.
+
+
+2d. No Undo/Redo
+-----------------
+All state mutations persist immediately to localStorage. A user who
+accidentally deletes a wall or clears the opening list has no recovery path.
+
+Recommendation: Store a shallow history stack (last 10 states) in memory.
+Add Ctrl+Z support to pop the previous state.
+
+
+2e. No File-Based Project Export/Import
+-----------------------------------------
+Projects live only in localStorage or a URL hash. On a new device, or after
+clearing browser storage, all data is lost.
+
+Recommendation: Add "Export Project (JSON)" and "Import Project" buttons.
+Use Blob + <a download> for export and <input type="file"> for import.
+No server required.
+
+
+2f. URL Hash Grows Unbounded
+------------------------------
+Sharing encodes the entire active wall as base64 JSON in the URL. A complex
+gable wall with many openings produces a very long URL. Some platforms
+truncate URLs around 2000 characters.
+
+Recommendation: Add a character-count warning when the URL exceeds 1800
+characters. If server infrastructure is ever added, replace hash sharing
+with short-link IDs.
+
+
+================================================================================
+  SECTION 3 — UI / UX REDESIGN RECOMMENDATIONS
+================================================================================
+
+3a. App Title and Branding
+---------------------------
+- <title>CR27</title> is not descriptive for bookmarks or browser tabs.
+  Change to something like "CR27 Layout Planner".
+- The <h2>CR27-Layout</h2> heading would benefit from a favicon/app icon
+  (<link rel="icon">) to aid recognition.
+
+
+3b. Profile Name Field is Readonly but Looks Editable
+------------------------------------------------------
+index.html line 28 — The profileName input has the readonly attribute but
+visually looks like an interactive text field. Either:
+  - Make it truly editable (remove readonly, wire it like wallName)
+  - Replace with static display text or a non-interactive badge element
+
+
+3c. Delete Wall Has No Confirmation
+-------------------------------------
+Clicking "Delete Wall" immediately destroys the wall and all its data.
+Add a confirm() dialog or an inline undo toast before executing the delete.
+
+
+3d. Opening Form Position
+--------------------------
+The add/edit opening form sits below the existing openings list. When editing
+an existing opening, users must scroll past all openings to reach the form.
+
+Recommendation: Move the form above the list, or show an inline edit drawer
+adjacent to the item being edited.
+
+
+3e. No Interactive SVG
+------------------------
+The SVG visualization is entirely static. Adding hover tooltips on panels
+(showing panel number, exact width, cut type) and on openings (showing all
+dimensions) would significantly improve usability.
+
+Implementation: Use <title> elements inside SVG <g> groups, or a CSS
+data-tooltip pattern over group wrappers. No framework required.
+
+
+3f. Gable Mode Has Too Many Fields Visible at Once
+----------------------------------------------------
+Gable mode exposes 7 measurement inputs simultaneously, which feels
+overwhelming. Group them visually with sub-headings or dividers:
+
+  Group 1 - Eave Heights:   Left Eave, Right Eave
+  Group 2 - Panel Stops:    Left Stop, Ridge Stop, Right Stop
+  Group 3 - Ridge:          Ridge Height, Ridge Position
+
+
+3g. No Print / PDF Support
+---------------------------
+Add a @media print stylesheet that:
+  - Hides the input form, virtual keyboard, and export buttons
+  - Expands the SVG to full page width
+  - Shows the cut list table below the diagram
+Zero infrastructure required — very useful on a job site.
+
+
+3h. Physical Keyboard Enter Key Should Confirm Measurement
+-----------------------------------------------------------
+The virtual keyboard's Enter (↵) button closes it and fires render. But
+pressing Enter on a physical keyboard while a measure-input is focused
+does nothing.
+
+Recommendation: Add to each measure-input:
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      keyboard.classList.add("hidden")
+      scheduleRender(true)
+    }
+  })
+
+
+3i. No Accessibility (a11y)
+-----------------------------
+Current gaps:
+  - Inputs lack aria-label or aria-describedby linking to their helper text
+  - The virtual keyboard has no role="dialog" or focus trap
+  - The error box (#errorBox) lacks role="alert" — screen readers won't
+    announce errors automatically
+
+Minimum fixes:
+  <div id="errorBox" role="alert" class="error-box hidden"></div>
+  <div id="measurementKeyboard" role="dialog" aria-modal="true"
+       aria-label="Measurement input">
+
+
+3j. SVG Visualization Height is Fixed
+---------------------------------------
+wallRenderer.js lines 93 and 101 — Heights are hardcoded:
+  500px for gable walls
+  340px for sidewalls
+
+On tall-narrow mobile screens the gable diagram can be too small to read.
+
+Recommendation: Compute height dynamically based on the wall's aspect ratio
+and the container's current width, with a minimum floor value.
+
+
+================================================================================
+  SECTION 3 (EXTENDED) — UI STYLES, COLOR PALETTE & VISUAL DESIGN
+================================================================================
+
+3k. Color Palette — Current State & Issues
+-------------------------------------------
+Current palette is a deep-navy dark theme built on Slate-family colors.
+
+  Token                 Value       Role
+  --color-bg            #020617     Page background
+  --color-surface       #020617     Card background (SAME as bg — no lift)
+  --color-surface-alt   #081226     SVG container
+  --color-primary       #0ea5e9     Primary action (sky-500)
+  --color-success       #86efac     OK state in warnings
+  --color-warning       #f59e0b     Cut notes, arrow
+  --color-danger        #ef4444     Errors, delete button
+
+Problems identified:
+
+  1. --color-bg and --color-surface are identical (#020617). Cards have no
+     visual elevation and disappear into the page. Only the border separates
+     them.
+
+  2. SVG panel colors (panel-full: #1e293b, panel-cut: #172033) are very
+     close in luminance. On lower-brightness screens they are indistinguishable.
+
+  3. Hex values are hardcoded inside SVG CSS classes (styles.css lines 449-551),
+     bypassing the token system entirely. They cannot be overridden by
+     changing a token.
+
+  4. --color-success-soft: #a9cbb5 is defined but never used in the stylesheet.
+
+  5. --color-primary (#0ea5e9, sky) and --color-primary-strong (#5b8af0, indigo)
+     are used on different buttons with no clear rule for which to use when.
+
+Recommended palette refinements:
+  /* Cards now lift off the page */
+  --color-bg:              #020617    (unchanged)
+  --color-surface:         #0b1526    (was same as bg; now one step lighter)
+  --color-surface-raised:  #111f35    (modal / active card level)
+
+  /* Full panel: cool steel blue */
+  --color-panel-full:        #1a3050
+  --color-panel-full-stroke: #4a7fa8
+
+  /* Cut panel: warm amber tint signals "action needed" */
+  --color-panel-cut:        #2a1f0e
+  --color-panel-cut-stroke: #f59e0b   (matches --color-warning already)
+
+  /* Openings: keep sky blue, bump alpha slightly */
+  --color-opening-fill:   rgba(14, 165, 233, 0.22)
+  --color-opening-stroke: #38bdf8
+
+  /* Rib lines: slightly brighter green */
+  --color-rib-line: #4ade80           (opacity stays at 0.3)
+
+
+3l. Typography — Issues & Improvements
+----------------------------------------
+1. Type scale minimum is 10px (--text-xs). At 10px on high-DPI mobile,
+   labels and cut notes are difficult to read.
+
+   Recommendation: Raise the floor to 11px and use rem units for
+   accessibility (respects browser zoom settings):
+
+     --text-xs:  0.6875rem   (11px)
+     --text-sm:  0.75rem     (12px)
+     --text-md:  0.875rem    (14px)
+     --text-lg:  1rem        (16px)
+     --text-xl:  1.125rem    (18px)
+
+2. SVG text sizes are hardcoded (10px, 11px, 12px) in SVG CSS classes.
+   They cannot be overridden by changing a token.
+
+   Recommendation: Add SVG-specific tokens:
+     --svg-text-xs: 9px
+     --svg-text-sm: 10px
+     --svg-text-md: 11px
+     --svg-text-lg: 12px
+
+3. Fira Code is loaded from Google Fonts over the network. On an offline
+   job site or behind a VPN, the fallback "monospace" renders at a different
+   character width, which breaks the virtual keyboard grid alignment.
+
+   Recommendation: Self-host a woff2 subset limited to numbers and
+   punctuation (~8 KB), or ensure font-display: swap is explicitly set.
+
+
+3m. Card & Layout — Issues & Improvements
+------------------------------------------
+1. Cards are visually flat against the page because --color-surface equals
+   --color-bg. Use the already-defined --color-surface-soft (#0f172a):
+
+     .card { background: var(--color-surface-soft); }
+
+2. No focus ring on active cards. When tabbing through the form, there is
+   no indication of which card section is active.
+
+   Recommendation:
+     .card:focus-within {
+       border-color: var(--color-primary);
+       box-shadow: 0 0 0 1px rgba(14, 165, 233, 0.2);
+     }
+
+3. padding-bottom: 240px on body is a magic number to clear the virtual
+   keyboard. The keyboard is not 240px on all devices.
+
+   Recommendation:
+     body { padding-bottom: env(keyboard-inset-height, var(--layout-bottom-pad)); }
+   Or compute it dynamically in JS after the keyboard renders.
+
+4. On a 390px mobile screen, .app { padding: 16px } gives only 16px side
+   margins for a field-heavy form — this feels cramped.
+
+   Recommendation: Increase side padding on small screens:
+     @media (max-width: 430px) {
+       .app { padding: 24px 16px; }
+     }
+
+
+3n. Buttons — Issues & Improvements
+--------------------------------------
+1. The primary button (button) has no :hover state — only :active has a
+   transform. Add:
+     button:hover { background: var(--color-primary-hover); }
+
+2. All <button> elements default to width: 100% (styles.css line 255).
+   This forces .btn-secondary and .delete-btn to override with width: auto,
+   creating specificity conflicts.
+
+   Better default:
+     button { width: auto; }
+     #addOpeningBtn { width: 100%; }   /* explicit full-width only where needed */
+
+3. The delete button is solid red with no hover state. Destructive actions
+   should have lower initial visual weight to reduce accidental taps.
+
+   Recommended style:
+     .delete-btn {
+       background: transparent;
+       border: 1px solid var(--color-danger);
+       color: var(--color-danger);
+     }
+     .delete-btn:hover {
+       background: var(--color-danger);
+       color: white;
+     }
+
+
+3o. SVG Visualization — Style Improvements
+-------------------------------------------
+1. SVG CSS classes hardcode hex values instead of referencing CSS tokens.
+   Changing the color scheme requires editing two files.
+
+   Replace all SVG hex literals with token references. Example:
+     /* Before */
+     .panel-full { fill: #1e293b; stroke: #475569; }
+     /* After */
+     .panel-full { fill: var(--color-panel-full); stroke: var(--color-panel-full-stroke); }
+
+2. Rib lines at 30% opacity are nearly invisible on the dark panel
+   background, despite being useful for clearance analysis.
+
+   Recommendation:
+     .rib-line { opacity: 0.45; stroke-dasharray: 3 5; }
+
+3. Panel width labels below panel numbers use color #94a3b8 on background
+   #1e293b — approximately 3.5:1 contrast ratio. This is borderline for
+   small monospace text at 10px. Bump to #cbd5e1 for better legibility.
+
+4. Every input event fires a full innerHTML replacement on the SVG, which
+   causes a visible flash. Soften this with a CSS transition:
+
+     #wallSvg { transition: opacity 0.1s ease; }
+     /* Add .rendering class during update, remove after assignment */
+
+
+3p. Virtual Keyboard — Style Improvements
+------------------------------------------
+1. Key buttons have font-size: 22px and padding: 14px 0. On small devices
+   this creates oversized keys that take up too much screen space.
+
+   Responsive fix:
+     .key-btn {
+       font-size: clamp(16px, 4vw, 22px);
+       padding: clamp(10px, 2.5vh, 14px) 0;
+     }
+
+2. No color feedback on key press — only transform: scale(0.98) fires.
+   Add a background color change:
+     .key-btn:active { background: #1e3a5f; transform: scale(0.97); }
+
+3. The confirm key (Enter/↵) uses the same sky-blue as the primary CTA
+   button, creating visual competition. Use green to clearly signal "done":
+
+     .key-confirm { background: #16a34a; }
+     .key-confirm:active { background: #15803d; }
+
+4. The keyboard backdrop (rgba(2, 6, 23, 0.98)) is nearly fully opaque,
+   making it feel like a blocking modal. Reduce opacity to let context show:
+
+     background: rgba(2, 6, 23, 0.92);
+     backdrop-filter: blur(12px);
+
+
+================================================================================
+  SECTION 4 — PRIORITY SUMMARY
+================================================================================
+
+Priority  Item
+--------  ------------------------------------------------------------
+P0        Remove eruda debugger from production HTML
+P0        Fix deprecated unescape/escape URL encoding
+P1        Deduplicate fraction-formatting into one exported function
+P1        Add overlapping-opening validation in addOpening()
+P1        Handle QuotaExceededError in persistState()
+P1        Add delete confirmation for wall deletion
+P2        Move gable height lookups out of renderer into model
+P2        Remove svgUtils.js dead code
+P2        Replace inline JS styles with .opening-actions CSS class
+P2        Add Enter key support on physical keyboard for measure inputs
+P2        Add role="alert" to error box element
+P3        Split app.js into domain modules
+P3        Add Vite build pipeline
+P3        JSON project export/import (file-based)
+P3        Undo/redo history stack
+P3        Interactive SVG tooltips on panels and openings
+P3        Print/PDF @media stylesheet
+P3        Dynamic SVG height calculation for mobile
+
+
+================================================================================
+  SECTION 5 — FILES TO MODIFY
+================================================================================
+
+File                            Changes
+------------------------------  -----------------------------------------------
+index.html                      Remove eruda, update title, add role="alert",
+                                 add favicon link
+app.js                          Fix encoding, remove formatTotalInches(),
+                                 add overlap validation, delete confirm dialog,
+                                 Enter key handler, QuotaExceededError handling
+js/utils/formatter.js           Export single formatInches() replacing all
+                                 three duplicate implementations
+js/core/layoutEngine.js         Remove fmtIn(), add seam/rib heights to model
+js/renderer/wallRenderer.js     Remove getGableHeightAtX() calls, read heights
+                                 from model instead
+js/utils/svgUtils.js            Delete file (dead code, never imported)
+styles.css                      Add .opening-actions class, replace SVG hex
+                                 literals with token references, add hover
+                                 states, fix card background, responsive
+                                 keyboard sizing
+
+================================================================================
+  END OF REPORT
+================================================================================
