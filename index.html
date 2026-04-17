@@ -19,19 +19,32 @@
 
 <!-- Wall Selector -->
 		<div class="card" id="wallManagerCard">
-  <h3>Project / Wall Manager</h3>
+  
+<h3>Project / Wall Manager</h3>
 
-  <div class="field-grid-2">
-    <div class="field-group">
-      <label for="profileName">Profile Name</label>
-      <input id="profileName" type="text" value="PBR" readonly />
-    </div>
-
-    <div class="field-group">
-      <label for="wallSelect">Active Wall</label>
-      <select id="wallSelect"></select>
-    </div>
+<div class="field-grid-2">
+  <div class="field-group">
+    <label for="profileName">Profile Name</label>
+    <input id="profileName" type="text" value="PBR" readonly />
   </div>
+
+  <div class="field-group">
+    <label for="wallName">Wall Name</label>
+    <input id="wallName" type="text" placeholder="e.g. Front Wall" />
+  </div>
+</div>
+
+<div class="field-grid-2">
+  <div class="field-group">
+    <label for="wallSelect">Active Wall</label>
+    <select id="wallSelect"></select>
+  </div>
+
+  <div class="field-group">
+    <label>&nbsp;</label>
+    <div></div>
+  </div>
+</div>
 
   <div class="export-row wall-manager-actions">
     <button id="addWallBtn" class="btn-secondary" type="button">Add Wall</button>
