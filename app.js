@@ -184,7 +184,7 @@ function renderWallSelector() {
   })
 
   if (profileNameEl) {
-    profileNameEl.value = project.profileName || "PBR"
+    profileNameEl.value = project.profile.Name || "PBR"
   }
 }
 
