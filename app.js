@@ -97,6 +97,12 @@ function getActiveWall() {
   return wall || null
 }
 
+function updateProjectDetailField(field, value) {
+  if (!project.details) project.details = {}
+
+  project.details[field] = value
+}
+
 function updateActiveWallField(field, value) {
   const wall = getActiveWall()
   if (!wall) return
@@ -104,6 +110,8 @@ function updateActiveWallField(field, value) {
 }
 
 function updateProfileField(field, value) {
+  if (!project.profile) project.profile = {}
+
   if (field === "profileName") {
     project.profile.name = value
   } else {
