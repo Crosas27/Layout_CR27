@@ -32,9 +32,19 @@ const DEFAULT_WALL = (id = 1, name = "Wall 1") => ({
 })
 
 const DEFAULT_PROJECT = {
-  profileName: "PBR",
-  panelCoverage: '36"',
-  ribSpacing: '12"',
+  details: {
+    jobName: "",
+    location: "",
+    dateStart: "",
+    dateEnd: ""
+  },
+
+  profile: {
+    name: "PBR",
+    panelCoverage: '36"',
+    ribSpacing: '12"'
+  },
+
   activeWallId: 1,
   walls: [DEFAULT_WALL(1, "Wall 1")]
 }
@@ -59,7 +69,15 @@ const WALL_INPUT_IDS = [
   "rightPanelStopHeight"
 ]
 
-const PROJECT_INPUT_IDS = [
+const PROJECT_DETAIL_INPUT_IDS = [
+  "jobName",
+  "location",
+  "dateStart",
+  "dateEnd"
+]
+
+const PROFILE_INPUT_IDS = [
+  "profileName",
   "panelCoverage",
   "ribSpacing"
 ]
@@ -85,8 +103,12 @@ function updateActiveWallField(field, value) {
   wall[field] = value
 }
 
-function updateProjectField(field, value) {
-  project[field] = value
+function updateProfileField(field, value) {
+  if (field === "profileName") {
+    project.profile.name = value
+  } else {
+    project.profile[field] = value
+  }
 }
 
 function addWall() {
@@ -184,11 +206,10 @@ function updateHash() {
     if (!activeWall) return
 
     const sharePayload = {
-      profileName: project.profileName,
-      panelCoverage: project.panelCoverage,
-      ribSpacing: project.ribSpacing,
+      details: project.details,
+      profile: project.profile,
       wall: activeWall
-    }
+}
 
     const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(sharePayload))))
     history.replaceState(null, "", "#" + encoded)
@@ -212,14 +233,19 @@ function loadState() {
             openings: Array.isArray(decoded.wall.openings) ? decoded.wall.openings : []
           }
 
-          project = {
+  project = {
             ...structuredClone(DEFAULT_PROJECT),
-            profileName: decoded.profileName || DEFAULT_PROJECT.profileName,
-            panelCoverage: decoded.panelCoverage || DEFAULT_PROJECT.panelCoverage,
-            ribSpacing: decoded.ribSpacing || DEFAULT_PROJECT.ribSpacing,
-            activeWallId: wall.id,
-            walls: [wall]
-          }
+  details: {
+    ...structuredClone(DEFAULT_PROJECT.details),
+    ...(decoded.details || {})
+  },
+  profile: {
+    ...structuredClone(DEFAULT_PROJECT.profile),
+    ...(decoded.profile || {})
+  },
+  activeWallId: wall.id,
+  walls: [wall]
+}
 
           populateInputs()
           return
@@ -251,7 +277,12 @@ function loadState() {
       project = {
         ...structuredClone(DEFAULT_PROJECT),
         ...saved,
-        walls: Array.isArray(saved.walls) && saved.walls.length
+      },
+      profile: {
+        ...structuredClone(DEFAULT_PROJECT.profile),
+        ...(saved.profile || {})
+      },  
+      walls: Array.isArray(saved.walls) && saved.walls.length
           ? saved.walls.map((wall, i) => ({
               ...DEFAULT_WALL(wall.id || i + 1, wall.name || `Wall ${i + 1}`),
               ...wall,
@@ -296,19 +327,31 @@ function populateInputs() {
 
   renderWallSelector()
 
-  const wallTypeEl = document.getElementById("wallType")
-  if (wallTypeEl) wallTypeEl.value = activeWall.wallType
-
   const profileNameEl = document.getElementById("profileName")
-  if (profileNameEl) profileNameEl.value = project.profileName || "PBR"
+  if (profileNameEl) profileNameEl.value = project.profile.name || "PBR"
+
+  PROJECT_DETAIL_INPUT_IDS.forEach(id => {
+    const el = document.getElementById(id)
+    if (!el) return
+    if (project.details[id] !== undefined) el.value = project.details[id]
+  })
+
+  PROFILE_INPUT_IDS.forEach(id => {
+    const el = document.getElementById(id)
+    if (!el) return
+
+    if (id === "profileName") {
+      el.value = project.profile.name || ""
+    } else if (project.profile[id] !== undefined) {
+      el.value = project.profile[id]
+    }
+  })
 
   const wallNameEl = document.getElementById("wallName")
   if (wallNameEl) wallNameEl.value = activeWall.name || ""
 
-  PROJECT_INPUT_IDS.forEach(id => {
-    const el = document.getElementById(id)
-    if (el && project[id] !== undefined) el.value = project[id]
-  })
+  const wallTypeEl = document.getElementById("wallType")
+  if (wallTypeEl) wallTypeEl.value = activeWall.wallType
 
   WALL_INPUT_IDS.forEach(id => {
     const el = document.getElementById(id)
@@ -335,15 +378,26 @@ function bindInputs() {
     })
   }
 
-  PROJECT_INPUT_IDS.forEach(id => {
+  PROJECT_DETAIL_INPUT_IDS.forEach(id => {
     const el = document.getElementById(id)
     if (!el) return
 
     el.addEventListener("input", () => {
-      updateProjectField(id, el.value)
+      updateProjectDetailField(id, el.value)
+      persistState()
+    })
+  })
+
+  PROFILE_INPUT_IDS.forEach(id => {
+    const el = document.getElementById(id)
+    if (!el) return
+
+    el.addEventListener("input", () => {
+      updateProfileField(id, el.value)
       updateMeasureHelper(el)
       persistState()
       scheduleRender()
+      renderWallSelector()
     })
   })
 
@@ -397,8 +451,8 @@ function updateLayout() {
     wallLength,
     wallHeight: parseMeasurement(activeWall.wallHeight),
     panelStopHeight: parseMeasurement(activeWall.panelStopHeight),
-    panelCoverage: parseMeasurement(project.panelCoverage) || 36,
-    ribSpacing: parseMeasurement(project.ribSpacing) || 12,
+    panelCoverage: parseMeasurement(project.profile.panelCoverage) || 36,
+    ribSpacing: parseMeasurement(project.profile.ribSpacing) || 12,
     startOffset: parseMeasurement(activeWall.startOffset) || 0,
     openings: activeWall.openings
   }
@@ -911,10 +965,14 @@ function fireStateSync() {
 
   const id = activeInput.id
 
-  if (PROJECT_INPUT_IDS.includes(id)) {
-    updateProjectField(id, activeInput.value)
+  if (PROJECT_DETAIL_INPUT_IDS.includes(id)) {
+    updateProjectDetailField(id, activeInput.value)
+    persistState()
+  } else if (PROFILE_INPUT_IDS.includes(id)) {
+    updateProfileField(id, activeInput.value)
     persistState()
     scheduleRender()
+    renderWallSelector()
   } else if (WALL_INPUT_IDS.includes(id)) {
     updateActiveWallField(id, activeInput.value)
     persistState()
