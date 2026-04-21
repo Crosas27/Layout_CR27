@@ -16,9 +16,67 @@
     <h2>CR27-Layout</h2>
 
     <div id="errorBox" class="error-box hidden"></div>
+    
+<!--Project Details -->
+<div class="card" id="projectDetailsCard">
+  <h3>Project Details</h3>
+
+  <div class="field-grid-2">
+    <div class="field-group">
+      <label for="jobName">Job Name</label>
+      <input id="jobName" type="text" placeholder="e.g. Smith Shop" />
+    </div>
+
+    <div class="field-group">
+      <label for="location">Location</label>
+      <input id="location" type="text" placeholder="e.g. Mesa, AZ" />
+    </div>
+  </div>
+
+  <div class="field-grid-2">
+    <div class="field-group">
+      <label for="dateStart">Date Start</label>
+      <input id="dateStart" type="date" />
+    </div>
+
+    <div class="field-group">
+      <label for="dateEnd">Date End</label>
+      <input id="dateEnd" type="date" />
+    </div>
+  </div>
+</div> 
+
+<!-- Profile Management -->
+<div class="card" id="panelProfileCard">
+  <h3>Panel Profile</h3>
+
+  <div class="field-grid-2">
+    <div class="field-group">
+      <label for="profileName">Profile Name</label>
+      <input id="profileName" type="text" value="PBR" readonly />
+    </div>
+
+    <div class="field-group">
+      <label for="panelCoverage">Panel Coverage</label>
+      <input id="panelCoverage" class="measure-input" type="text" inputmode="none" value='36"' />
+    </div>
+  </div>
+
+  <div class="field-grid-2">
+    <div class="field-group">
+      <label for="ribSpacing">Rib Spacing</label>
+      <input id="ribSpacing" class="measure-input" type="text" inputmode="none" value='12"' />
+    </div>
+
+    <div class="field-group">
+      <label>&nbsp;</label>
+      <div></div>
+    </div>
+  </div>
+</div>
 
 <!-- Wall Selector -->
-		<div class="card" id="wallManagerCard">
+<div class="card" id="wallManagerCard">
   
 <h3>Project / Wall Manager</h3>
 
@@ -129,33 +187,6 @@
         <label for="ridgePanelStopHeight">Ridge Panel Stop Height</label>
         <input id="ridgePanelStopHeight" class="measure-input" type="text" inputmode="none" placeholder='defaults to ridge height' />
       </div>
-    </div>
-  </div>
-</div>
-
-<!-- Panel Profile -->
-<div class="card collapsible">
-  <div class="card-header">
-    <span>Panel Profile</span>
-    <span class="chevron">▼</span>
-  </div>
-
-  <div class="card-body">
-    <div class="field-grid-2">
-      <div class="field-group">
-        <label for="panelCoverage">Panel Coverage</label>
-        <input id="panelCoverage" class="measure-input" type="text" inputmode="none" value='36"' />
-      </div>
-
-      <div class="field-group">
-        <label for="ribSpacing">Rib Spacing</label>
-        <input id="ribSpacing" class="measure-input" type="text" inputmode="none" value='12"' />
-      </div>
-    </div>
-
-    <div class="field-group">
-      <label for="startOffset">Start Offset</label>
-      <input id="startOffset" class="measure-input" type="text" inputmode="none" value='0"' />
     </div>
   </div>
 </div>
