@@ -826,6 +826,120 @@ function setupCopyTextButton() {
 }
 
 /* ================================================================
+   IMPORT AND EXPORT
+================================================================ */
+function sanitizeImportedProject(data) {
+  if (!data || typeof data !== "object") {
+    throw new Error("Invalid project file.")
+  }
+
+  const rawWalls = Array.isArray(data.walls) && data.walls.length
+    ? data.walls
+    : [DEFAULT_WALL(1, "Wall 1")]
+
+  const walls = rawWalls.map((wall, i) => ({
+    ...DEFAULT_WALL(
+      Number.isFinite(Number(wall?.id)) ? Number(wall.id) : Date.now() + i,
+      wall?.name || `Wall ${i + 1}`
+    ),
+    ...wall,
+    id: Number.isFinite(Number(wall?.id)) ? Number(wall.id) : Date.now() + i,
+    name: wall?.name || `Wall ${i + 1}`,
+    openings: Array.isArray(wall?.openings) ? wall.openings : []
+  }))
+
+  const nextProject = {
+    ...structuredClone(DEFAULT_PROJECT),
+    ...data,
+    details: {
+      ...structuredClone(DEFAULT_PROJECT.details),
+      ...(data.details || {})
+    },
+    profile: {
+      ...structuredClone(DEFAULT_PROJECT.profile),
+      ...(data.profile || {})
+    },
+    walls
+  }
+
+  if (!walls.some(w => w.id === nextProject.activeWallId)) {
+    nextProject.activeWallId = walls[0].id
+  }
+
+  return nextProject
+}
+
+function getProjectExportFileName() {
+  const rawName = project.details?.jobName?.trim() || "CR27_Project"
+  const safeName = rawName.replace(/[^\w\-]+/g, "_")
+  return `${safeName}.json`
+}
+
+function exportProject() {
+  try {
+    const payload = JSON.stringify(project, null, 2)
+    const blob = new Blob([payload], { type: "application/json" })
+    const url = URL.createObjectURL(blob)
+
+    const a = document.createElement("a")
+    a.href = url
+    a.download = getProjectExportFileName()
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+
+    URL.revokeObjectURL(url)
+  } catch (err) {
+    console.error("Export failed:", err)
+    showError("Could not export project.")
+  }
+}
+
+async function importProjectFile(file) {
+  if (!file) return
+
+  try {
+    const text = await file.text()
+    const parsed = JSON.parse(text)
+    const imported = sanitizeImportedProject(parsed)
+
+    project = imported
+    persistState()
+    populateInputs()
+    cancelEditOpening()
+    scheduleRender(true)
+    clearError()
+  } catch (err) {
+    console.error("Import failed:", err)
+    showError("Invalid project file. Please import a valid CR27 project JSON.")
+  }
+}
+
+function setupProjectFileActions() {
+  const exportBtn = document.getElementById("exportProjectBtn")
+  const importBtn = document.getElementById("importProjectBtn")
+  const importInput = document.getElementById("importProjectInput")
+
+  if (exportBtn) {
+    exportBtn.addEventListener("click", () => {
+      exportProject()
+    })
+  }
+
+  if (importBtn && importInput) {
+    importBtn.addEventListener("click", () => {
+      importInput.click()
+    })
+
+    importInput.addEventListener("change", async () => {
+      const file = importInput.files?.[0]
+      await importProjectFile(file || null)
+      importInput.value = ""
+    })
+  }
+}
+
+/* ================================================================
    MEASUREMENT HELPERS
 ================================================================ */
 
@@ -1045,6 +1159,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupCopyTextButton()
   setupWallManager()
   setupWallRename()
+  setupProjectFileActions()
 
   const addBtn = document.getElementById("addOpeningBtn")
   if (addBtn) addBtn.addEventListener("click", addOpening)
