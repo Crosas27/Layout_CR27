@@ -271,34 +271,37 @@ function loadState() {
   }
 
   // 2) New project storage
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY))
-    if (saved && typeof saved === "object") {
-      project = {
-        ...structuredClone(DEFAULT_PROJECT),
-        ...saved,
+try {
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY))
+  if (saved && typeof saved === "object") {
+    project = {
+      ...structuredClone(DEFAULT_PROJECT),
+      ...saved,
+      details: {
+        ...structuredClone(DEFAULT_PROJECT.details),
+        ...(saved.details || {})
       },
       profile: {
         ...structuredClone(DEFAULT_PROJECT.profile),
         ...(saved.profile || {})
-      },  
+      },
       walls: Array.isArray(saved.walls) && saved.walls.length
-          ? saved.walls.map((wall, i) => ({
-              ...DEFAULT_WALL(wall.id || i + 1, wall.name || `Wall ${i + 1}`),
-              ...wall,
-              openings: Array.isArray(wall.openings) ? wall.openings : []
-            }))
-          : [DEFAULT_WALL(1, "Wall 1")]
-      }
-
-      if (!project.walls.some(w => w.id === project.activeWallId)) {
-        project.activeWallId = project.walls[0].id
-      }
-
-      populateInputs()
-      return
+        ? saved.walls.map((wall, i) => ({
+            ...DEFAULT_WALL(wall.id || i + 1, wall.name || `Wall ${i + 1}`),
+            ...wall,
+            openings: Array.isArray(wall.openings) ? wall.openings : []
+          }))
+        : [DEFAULT_WALL(1, "Wall 1")]
     }
-  } catch (_) {}
+
+    if (!project.walls.some(w => w.id === project.activeWallId)) {
+      project.activeWallId = project.walls[0].id
+    }
+
+    populateInputs()
+    return
+  }
+} catch (_) {}
 
   // 3) Legacy single-wall storage fallback
   try {
