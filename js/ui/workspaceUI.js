@@ -50,10 +50,12 @@ export function renderProject(project) {
       const result = results[i],
         c = wallConfig(w, project.profile)
       const geometry =
-        w.wallType === 'gable'
-          ? `${fmt(c.wallLength)} · ridge ${fmt(c.ridgeHeight)}`
-          : `${fmt(c.wallLength)} × ${fmt(c.wallHeight)}`
-      return `<button class="object-card" data-wall="${esc(w.id)}"><span class="card-number">${String(i + 1).padStart(2, '0')}</span><span class="card-content"><p class="eyebrow">${w.wallType === 'gable' ? 'GABLE / ENDWALL' : 'SIDEWALL'}</p><h3>${esc(w.name)}</h3><p class="muted">${geometry}</p><span class="card-bottom"><span>${result.model ? result.model.panels.length + ' panels' : 'Review dimensions'}</span><span>${w.openings.length} openings</span></span></span><span class="card-arrow">›</span></button>`
+        w.wallType === 'singleSlope'
+          ? `${fmt(c.wallLength)} wide · ${fmt(c.leftEaveHeight)} → ${fmt(c.rightEaveHeight)}`
+          : w.wallType === 'gable'
+            ? `${fmt(c.wallLength)} · ridge ${fmt(c.ridgeHeight)}`
+            : `${fmt(c.wallLength)} × ${fmt(c.wallHeight)}`
+      return `<button class="object-card" data-wall="${esc(w.id)}"><span class="card-number">${String(i + 1).padStart(2, '0')}</span><span class="card-content"><p class="eyebrow">${w.wallType === 'singleSlope' ? 'SINGLE SLOPE / ENDWALL' : w.wallType === 'gable' ? 'GABLE / ENDWALL' : 'SIDEWALL'}</p><h3>${esc(w.name)}</h3><p class="muted">${geometry}</p><span class="card-bottom"><span>${result.model ? result.model.panels.length + ' panels' : 'Review dimensions'}</span><span>${w.openings.length} openings</span></span></span><span class="card-arrow">›</span></button>`
     })
     .join('')
   $('archiveProjectBtn').textContent = project.archived ? 'Restore project' : 'Archive project'
@@ -63,12 +65,27 @@ export function renderProject(project) {
 export function renderWorkspace(project, wall, history) {
   $('backProjectBtn').textContent = `‹ ${project.details.jobName || 'Project'}`
   $('wallTitle').textContent = wall.name
-  $('wallTypeBadge').textContent = wall.wallType === 'gable' ? 'GABLE / ENDWALL' : 'SIDEWALL'
+  $('wallTypeBadge').textContent =
+    wall.wallType === 'singleSlope'
+      ? 'SINGLE SLOPE / ENDWALL'
+      : wall.wallType === 'gable'
+        ? 'GABLE / ENDWALL'
+        : 'SIDEWALL'
   const config = wallConfig(wall, project.profile),
     result = safeModel(wall, project.profile),
     model = result.model
   $('wallMeta').textContent =
     `${fmt(config.wallLength)} · ${project.profile.name} · ${project.profile.panelCoverage} coverage`
+  if (
+    wall.wallType === 'singleSlope' &&
+    [config.leftEaveHeight, config.rightEaveHeight, config.wallLength].every(Number.isFinite) &&
+    config.wallLength > 0
+  ) {
+    const pitch =
+      (Math.abs(config.rightEaveHeight - config.leftEaveHeight) * 12) / config.wallLength
+    $('wallMeta').textContent +=
+      ` · ${fmt(config.leftEaveHeight)} → ${fmt(config.rightEaveHeight)} · ${Number(pitch.toFixed(3))}:12`
+  }
   $('openingCount').textContent = wall.openings.length
   $('undoBtn').disabled = !history.canUndo
   $('redoBtn').disabled = !history.canRedo

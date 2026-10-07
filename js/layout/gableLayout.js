@@ -52,7 +52,7 @@ export function generateGableLayout(config) {
   const rightSlopeDeg = getSlopeAngleDeg(ridgeHeight, rightEaveHeight, wallLength - ridgePosition)
 
   return {
-    wallType: 'gable',
+    wallType: config.wallType,
     wallLength,
     panelCoverage,
     ribSpacing,

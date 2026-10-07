@@ -153,3 +153,55 @@ test('openings above a shorter panel stop block unreliable fabrication output', 
     /panel stop/,
   )
 })
+
+test('explicit single-slope walls rise or fall using endpoint heights without ridge fields', () => {
+  for (const [left, right] of [
+    [256, 156],
+    [156, 256],
+  ]) {
+    const model = generateLayout({
+      wallType: 'singleSlope',
+      wallLength: 600,
+      leftEaveHeight: left,
+      rightEaveHeight: right,
+    })
+    assert.equal(model.wallType, 'singleSlope')
+    assert.equal(model.panels.length, 17)
+    assert.equal(model.gableCuts[0].leftStopHeight, left)
+    assert.equal(model.gableCuts.at(-1).rightStopHeight, right)
+    assert.ok(model.gableCuts.every((p) => !p.ridgePanel && p.segments.length === 1))
+    assert.match(buildTextSummary(model), /SINGLE SLOPE/)
+    assert.doesNotMatch(buildTextSummary(model), /RIDGE/)
+  }
+})
+test('single slopes ignore old hidden ridge values and validate the actual roofline and stops', () => {
+  const config = wallConfig(
+    {
+      ...createWall(),
+      wallType: 'singleSlope',
+      wallLength: "50'",
+      leftEaveHeight: '21\' 4"',
+      rightEaveHeight: "13'",
+      ridgeHeight: 'potato',
+      ridgePosition: 'potato',
+      ridgePanelStopHeight: 'potato',
+    },
+    profile,
+  )
+  assert.equal(generateLayout(config).gableCuts.at(-1).rightStopHeight, 156)
+  assert.throws(
+    () =>
+      generateLayout({ ...config, openings: [{ start: 564, width: 36, bottom: 100, height: 80 }] }),
+    /roofline/,
+  )
+  assert.throws(
+    () =>
+      generateLayout({
+        ...config,
+        leftPanelStopHeight: 200,
+        rightPanelStopHeight: 120,
+        openings: [{ start: 564, width: 36, bottom: 48, height: 84 }],
+      }),
+    /panel stop/,
+  )
+})

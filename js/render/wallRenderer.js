@@ -86,7 +86,7 @@ export function renderWall(model) {
   const width = 960
   const parts = [svgDefs()]
 
-  if (model.wallType === 'gable') {
+  if (model.wallType === 'gable' || model.wallType === 'singleSlope') {
     const height = 500
     buildGable(parts, model, width, height)
     buildLegend(parts, 24, height - 24)
@@ -104,7 +104,12 @@ export function renderWall(model) {
     svg.setAttribute('height', height)
   }
 
-  addObjectTargets(parts, model, width, model.wallType === 'gable' ? 500 : 340)
+  addObjectTargets(
+    parts,
+    model,
+    width,
+    model.wallType === 'gable' || model.wallType === 'singleSlope' ? 500 : 340,
+  )
   svg.innerHTML = parts.join('')
 }
 
@@ -453,15 +458,17 @@ function buildGable(parts, model, width, height) {
     })
   }
 
-  parts.push(line(ridgeX, ridgeY - 4, ridgeX, ridgeY - 24, 'tick'))
-  parts.push(
-    text(
-      ridgeX,
-      ridgeY - 34,
-      `RIDGE  ${formatToField(model.ridgeHeight)}`,
-      'dimension-text ridge-label',
-    ),
-  )
+  if (model.wallType === 'gable') {
+    parts.push(line(ridgeX, ridgeY - 4, ridgeX, ridgeY - 24, 'tick'))
+    parts.push(
+      text(
+        ridgeX,
+        ridgeY - 34,
+        `RIDGE  ${formatToField(model.ridgeHeight)}`,
+        'dimension-text ridge-label',
+      ),
+    )
+  }
 
   parts.push(
     text(wallX - 4, leftEaveY, formatToField(model.leftEaveHeight), 'dimension-text', 'end'),
@@ -525,7 +532,7 @@ function buildTopLabels(parts, model, wallX, wallRight, markLineY, scale) {
 
 /* DRAWING OBJECT TARGETS — panel bodies and openings are navigable controls. */
 function addObjectTargets(parts, model, width, height) {
-  const gable = model.wallType === 'gable'
+  const gable = model.wallType === 'gable' || model.wallType === 'singleSlope'
   const bottom = height - (gable ? 70 : 80)
   const maxH = gable
     ? Math.max(model.leftEaveHeight, model.ridgeHeight, model.rightEaveHeight)

@@ -189,3 +189,44 @@ test('corrupt old storage is preserved and temporary edits never overwrite it', 
   app.storage.close()
   dom.window.close()
 })
+
+test('single slope is available in both wall selectors, renders without a ridge and survives reload', async () => {
+  const db = new IDBFactory(),
+    dom = setup(db)
+  localStorage.setItem(OLD_PROJECT_KEY, JSON.stringify(saved))
+  const app = await initApp()
+  document.querySelector('[data-project]').click()
+  click('addWallBtn')
+  assert.ok(document.querySelector('#newWallType option[value="singleSlope"]'))
+  click('cancelEditorBtn')
+  document.querySelector('[data-wall]').click()
+  click('editWallBtn')
+  $('wallType').value = 'singleSlope'
+  $('wallType').dispatchEvent(new Event('change'))
+  assert.ok($('gableFields').classList.contains('hidden'))
+  assert.ok($('sidewallFields').classList.contains('hidden'))
+  assert.ok(!$('slopedFields').classList.contains('hidden'))
+  assert.ok($('ridgePanelStopHeight').closest('.field-group').classList.contains('hidden'))
+  $('wallLength').value = "50'"
+  $('leftEaveHeight').value = '21\' 4"'
+  $('rightEaveHeight').value = "13'"
+  $('ridgeHeight').value = 'potato'
+  save()
+  assert.equal(app.getWorkspace().projects[0].walls[0].wallType, 'singleSlope')
+  assert.match($('wallMeta').textContent, /2:12/)
+  assert.equal(document.querySelectorAll('.cut-row').length, 17)
+  assert.equal(document.querySelectorAll('.ridge-label').length, 0)
+  assert.equal(document.querySelectorAll('.svg-hit[data-panel]').length, 17)
+  await app.whenSaved()
+  app.storage.close()
+  dom.window.close()
+  const reopened = setup(db),
+    reloaded = await initApp()
+  document.querySelector('[data-project]').click()
+  assert.match($('wallCards').textContent, /SINGLE SLOPE/)
+  document.querySelector('[data-wall]').click()
+  assert.equal(document.querySelectorAll('.cut-row').length, 17)
+  await reloaded.whenSaved()
+  reloaded.storage.close()
+  reopened.window.close()
+})

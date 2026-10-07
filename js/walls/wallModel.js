@@ -1,3 +1,4 @@
+import { singleSlopeGeometry } from '../layout/singleSlopeGeometry.js'
 import { parseMeasurement } from '../utils/measurementParser.js'
 /* NEW WALL DEFAULTS */
 export const createWall = (name = 'New wall') => ({
@@ -40,5 +41,5 @@ export function wallConfig(wall, profile) {
     ['ridgePanelStopHeight', 'ridgeHeight'],
   ])
     c[k] = measure(wall[k], c[top])
-  return c
+  return singleSlopeGeometry(c)
 }

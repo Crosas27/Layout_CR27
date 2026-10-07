@@ -7,6 +7,7 @@ See [CODE_MAP.md](CODE_MAP.md) to find the code for a specific feature.
 ## What changed
 
 - Project list with search, duplication, archive/restore and job notes.
+- Explicit Sidewall, Gable and Single-slope endwall types. Single slopes use left/right heights and have no ridge input.
 - Wall cards, drawing-first workspace, tappable SVG panels/openings, Layout/Openings/Cuts tabs.
 - Draft editors, wall templates, panel profile settings, undo/redo and light/dark field themes.
 - IndexedDB storage with migration from the old project and single-wall localStorage formats. Old keys remain intact. Another tab cannot silently overwrite a newer database revision.

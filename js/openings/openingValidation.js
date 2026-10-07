@@ -9,7 +9,7 @@ export function validateOpening(o, c) {
     errors.push('Start and sill cannot be negative; width and height must be positive.')
   if (o.start + o.width > c.wallLength + 0.001) errors.push('Opening extends past the wall end.')
   let top = c.wallHeight
-  if (c.wallType === 'gable') {
+  if (c.wallType === 'gable' || c.wallType === 'singleSlope') {
     const at = (x) =>
       getGableHeightAtX(
         x,
@@ -26,7 +26,7 @@ export function validateOpening(o, c) {
   }
   if (o.bottom + o.height > top + 0.001) errors.push('Opening extends above the wall roofline.')
   let panelTop = c.panelStopHeight ?? c.wallHeight
-  if (c.wallType === 'gable') {
+  if (c.wallType === 'gable' || c.wallType === 'singleSlope') {
     const atStop = (x) =>
       getGableHeightAtX(
         x,

@@ -23,6 +23,7 @@ Start with **what you want to change**, then open the matching drawer.
 | Rib centers and offset origin                      | `js/layout/ribLayout.js`                          |
 | Sidewall panel lengths                             | `js/layout/sidewallLayout.js`                     |
 | Gable segments and ridge-panel cuts                | `js/layout/gableLayout.js`                        |
+| Single-slope endpoints and derived roof geometry   | `js/layout/singleSlopeGeometry.js`                |
 | Height at an X position / roof slope               | `js/layout/gableGeometry.js`                      |
 | Panel counts and start / end rips                  | `js/layout/layoutSummary.js`                      |
 | Shared numeric helpers                             | `js/layout/layoutMath.js`                         |

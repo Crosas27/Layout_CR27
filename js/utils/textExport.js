@@ -6,7 +6,7 @@ export function buildTextSummary(model, jobName = '', wallName = '') {
     'CR27 FABRICATION SHEET',
     jobName,
     wallName,
-    `${model.wallType.toUpperCase()} · ${fmt(model.wallLength)}`,
+    `${model.wallType === 'singleSlope' ? 'SINGLE SLOPE' : model.wallType.toUpperCase()} · ${fmt(model.wallLength)}`,
     `Coverage ${formatInches(model.panelCoverage)} · ribs ${formatInches(model.ribSpacing)} · offset ${fmt(model.startOffset)}`,
     `${model.summary.totalPanels} panels · ${model.summary.fullPanels} full coverage`,
     '',
