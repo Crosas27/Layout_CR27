@@ -1,137 +1,35 @@
-import { formatToField } from "./formatter.js"
-
-export function buildTextSummary(model) {
-  const lines = []
-
-  lines.push("PANEL LAYOUT CUT LIST")
-  lines.push(`Generated: ${new Date().toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric"
-  })}`)
-  lines.push("====================================================")
-  lines.push("")
-
-  lines.push(`WALL TYPE: ${formatWallType(model.wallType)}`)
-  lines.push("")
-
-  lines.push("INPUTS")
-  lines.push("------------------------------------")
-  lines.push(`  Wall Width:         ${formatToField(model.wallLength)}`)
-  addIfValue(lines, "  Wall Height:        ", model.wallHeight)
-  addIfValue(lines, "  Panel Stop Height:  ", model.panelStopHeight)
-  addIfValue(lines, "  Left Eave Height:   ", model.leftEaveHeight)
-  addIfValue(lines, "  Ridge Height:       ", model.ridgeHeight)
-  addIfValue(lines, "  Right Eave Height:  ", model.rightEaveHeight)
-  addIfValue(lines, "  Panel Coverage:     ", model.panelCoverage)
-  addIfValue(lines, "  Rib Spacing:        ", model.ribSpacing)
-  addIfValue(lines, "  Start Offset:       ", model.startOffset)
-  lines.push("")
-
-  if (model.summary) {
-    lines.push("PANEL SUMMARY")
-    lines.push("------------------------------------")
-    lines.push(`  Total Panels:        ${model.summary.totalPanels}`)
-
-    if (model.summary.fullPanels != null) {
-      const fullWidth = model.panelCoverage || model.summary.coverage
+import { formatToField as fmt, formatInches } from './formatter.js'
+import { panelNote } from '../render/cutListRenderer.js'
+/* PORTABLE FABRICATION SHEET — includes ridge point and opening marks. */
+export function buildTextSummary(model, jobName = '', wallName = '') {
+  const lines = [
+    'CR27 FABRICATION SHEET',
+    jobName,
+    wallName,
+    `${model.wallType.toUpperCase()} · ${fmt(model.wallLength)}`,
+    `Coverage ${formatInches(model.panelCoverage)} · ribs ${formatInches(model.ribSpacing)} · offset ${fmt(model.startOffset)}`,
+    `${model.summary.totalPanels} panels · ${model.summary.fullPanels} full coverage`,
+    '',
+    'PANEL HEIGHTS (PANEL STOPS)',
+  ]
+  for (const p of model.gableCuts || model.panelCuts) {
+    lines.push(
+      `${String(p.panel).padStart(2, '0')}  ${fmt(p.leftStopHeight)} → ${fmt(p.rightStopHeight)} · width ${fmt(p.width)}`,
+      `    ${panelNote(p)}`,
+    )
+    for (const s of p.segments)
+      lines.push(`    ${s.side}: run ${fmt(s.width)} · ${s.stopCutAngleDeg.toFixed(2)}° off square`)
+    for (const c of p.openingCuts)
       lines.push(
-        `  Full Panels:         ${model.summary.fullPanels} × ${formatToField(fullWidth)}`
+        `    Opening ${c.openingId}: finished left edge ${fmt(c.cutFromLeft)} · cut width ${fmt(c.cutWidth)} · remaining right ${fmt(c.cutToRight)} · sill ${fmt(c.bottom)} · height ${fmt(c.height)}`,
       )
-    }
-
-    if (model.summary.startPanel != null) {
-      lines.push(`  Start Panel Width:   ${formatToField(model.summary.startPanel)}`)
-    }
-
-    if (model.summary.endPanel != null) {
-      lines.push(`  End Panel Width:     ${formatToField(model.summary.endPanel)}`)
-    }
-
-    lines.push("")
   }
-
-  lines.push("OPENINGS & CUT INSTRUCTIONS")
-  lines.push("------------------------------------")
-
-  const openings = Array.isArray(model.openingAnalysis) ? model.openingAnalysis : []
-
-  if (!openings.length) {
-    lines.push("  No openings.")
-    lines.push("")
-  } else {
-    openings.forEach(opening => {
-      lines.push(`  Opening ${opening.id}`)
-      lines.push(`    Start: ${formatToField(opening.start)}`)
-      lines.push(`    End:   ${formatToField(opening.end)}`)
-      lines.push(`    Size:  ${formatToField(opening.width)} × ${formatToField(opening.height || 0)}`)
-      lines.push(`    Sill:  ${formatToField(opening.bottom || 0)}`)
-      lines.push(`    Top:   ${formatToField(opening.top || 0)}`)
-      lines.push("")
-
-      if (opening.intersectingPanels?.length) {
-        opening.intersectingPanels.forEach(cut => {
-          lines.push(`    Panel ${cut.panel} — ${formatCutType(cut.cutType)}`)
-
-          if (cut.cutType === "left-notch") {
-            lines.push(`      From right seam:  ${formatToField(cut.cutWidth)}`)
-          } else if (cut.cutType === "right-notch") {
-            lines.push(`      From left seam:   ${formatToField(cut.cutFromLeft)}`)
-          } else if (cut.cutType === "full-width") {
-            lines.push(`      Full panel width: ${formatToField(cut.panelWidth)}`)
-          } else {
-            lines.push(`      From left seam:   ${formatToField(cut.cutFromLeft)}`)
-            lines.push(`      From right seam:  ${formatToField(cut.cutToRight)}`)
-          }
-
-          lines.push(`      Opening height:   ${formatToField(cut.height || 0)}`)
-          lines.push(`      Sill:             ${formatToField(cut.bottom || 0)}`)
-          lines.push("")
-        })
-      } else {
-        lines.push("    No panel cuts.")
-        lines.push("")
-      }
-
-      if (opening.warnings?.length) {
-        lines.push("    WARNINGS:")
-        opening.warnings.forEach(w => {
-          lines.push(`      ⚠ ${w}`)
-        })
-        lines.push("")
-      } else {
-        lines.push("    No warnings.")
-        lines.push("")
-      }
-    })
+  lines.push('', 'OPENINGS')
+  for (const o of model.openingAnalysis) {
+    lines.push(
+      `${o.id}: start ${fmt(o.start)} · ${fmt(o.width)} × ${fmt(o.height)} · sill ${fmt(o.bottom)}`,
+    )
+    lines.push(...o.warnings.map((w) => `WARNING: ${w}`))
   }
-
-  lines.push("====================================================")
-  return lines.join("\n")
-}
-
-function addIfValue(lines, label, value) {
-  if (value == null) return
-  if (!Number.isFinite(Number(value))) return
-  lines.push(`${label}${formatToField(value)}`)
-}
-
-function formatWallType(type) {
-  if (type === "gable") return "Gable"
-  return "Sidewall"
-}
-
-function formatCutType(type) {
-  switch (type) {
-    case "left-notch":
-      return "Left Notch"
-    case "right-notch":
-      return "Right Notch"
-    case "full-width":
-      return "Full-Width Cut"
-    case "interior-notch":
-      return "Interior Notch"
-    default:
-      return "Cut"
-  }
+  return lines.filter((x) => x !== undefined).join('\n')
 }

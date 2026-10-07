@@ -1,325 +1,247 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>CR27</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
-
- <link rel="stylesheet" href="styles.css?v=3" />
-</head>
-<body>
-  <div class="app">
-    <h2>CR27-Layout</h2>
-
-    <div id="errorBox" class="error-box hidden"></div>
-    
-<!--Project Details -->
-<div class="card" id="projectDetailsCard">
-  <h3>Project Details</h3>
-
-  <div class="field-grid-2">
-    <div class="field-group">
-      <label for="jobName">Job Name</label>
-      <input id="jobName" type="text" placeholder="e.g. Smith Shop" />
-    </div>
-
-    <div class="field-group">
-      <label for="location">Location</label>
-      <input id="location" type="text" placeholder="e.g. Mesa, AZ" />
-    </div>
-  </div>
-
-  <div class="field-grid-2">
-    <div class="field-group">
-      <label for="dateStart">Date Start</label>
-      <input id="dateStart" type="date" />
-    </div>
-
-    <div class="field-group">
-      <label for="dateEnd">Date End</label>
-      <input id="dateEnd" type="date" />
-    </div>
-  </div>
-</div> 
-
-<!-- Import/export -->
-<div class="card" id="projectFileCard">
-  <h3>Project File</h3>
-
-  <div class="export-row">
-    <button id="exportProjectBtn" class="btn-secondary" type="button">Export Project</button>
-    <button id="importProjectBtn" class="btn-secondary" type="button">Import Project</button>
-  </div>
-
-  <input id="importProjectInput" type="file" accept=".json,application/json" class="hidden" />
-</div>
-
-<!-- Profile Management -->
-<div class="card" id="panelProfileCard">
-  <h3>Panel Profile</h3>
-
-  <div class="field-grid-2">
-    <div class="field-group">
-      <label for="profileName">Profile Name</label>
-      <input id="profileName" type="text" value="PBR" readonly />
-    </div>
-
-    <div class="field-group">
-      <label for="panelCoverage">Panel Coverage</label>
-      <input id="panelCoverage" class="measure-input" type="text" inputmode="none" value='36"' />
-    </div>
-  </div>
-
-  <div class="field-grid-2">
-    <div class="field-group">
-      <label for="ribSpacing">Rib Spacing</label>
-      <input id="ribSpacing" class="measure-input" type="text" inputmode="none" value='12"' />
-    </div>
-
-    <div class="field-group">
-      <label>&nbsp;</label>
-      <div></div>
-    </div>
-  </div>
-</div>
-
-<!-- Wall Selector -->
-<div class="card" id="wallManagerCard">
-  
-<h3>Project / Wall Manager</h3>
-
-<div class="field-grid-2">
-  <div class="field-group">
-    <label for="profileName">Profile Name</label>
-    <input id="profileName" type="text" value="PBR" readonly />
-  </div>
-
-  <div class="field-group">
-    <label for="wallName">Wall Name</label>
-    <input id="wallName" type="text" placeholder="e.g. Front Wall" />
-  </div>
-</div>
-
-<div class="field-grid-2">
-  <div class="field-group">
-    <label for="wallSelect">Active Wall</label>
-    <select id="wallSelect"></select>
-  </div>
-
-  <div class="field-group">
-    <label>&nbsp;</label>
-    <div></div>
-  </div>
-</div>
-
-  <div class="export-row wall-manager-actions">
-    <button id="addWallBtn" class="btn-secondary" type="button">Add Wall</button>
-    <button id="duplicateWallBtn" class="btn-secondary" type="button">Duplicate Wall</button>
-    <button id="deleteWallBtn" class="btn-secondary" type="button">Delete Wall</button>
-  </div>
-</div>
-		
- <!-- Wall Setup -->
-<div class="card collapsible open">
-  <div class="card-header">
-    <span>Wall Setup</span>
-    <span class="chevron">▼</span>
-  </div>
-
-  <div class="card-body">
-    <div class="field-grid-2">
-      <div class="field-group">
-        <label for="wallType">Wall Type</label>
-        <select id="wallType">
-          <option value="sidewall">Sidewall</option>
-          <option value="gable">Gable Endwall</option>
-        </select>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#192823" />
+    <meta
+      name="description"
+      content="CR27 — personal metal building panel layout and fabrication tool."
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="CR27" />
+    <title>CR27 · Panel workspace</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="assets/icon-192.png" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <button id="homeBtn" class="brand" aria-label="CR27 projects">
+        <span class="brand-mark">CR<span>27</span></span
+        ><span class="brand-caption">PANEL WORKSPACE</span>
+      </button>
+      <div class="save-indicator">
+        <span id="connectionStatus">Online</span><span id="saveStatus" role="status">Ready</span>
       </div>
-
-      <div class="field-group">
-        <label for="wallLength">Wall Width</label>
-        <input id="wallLength" class="measure-input" type="text" inputmode="none" placeholder='e.g. 42&apos; or 504"' />
+      <button
+        id="themeBtn"
+        class="icon-btn"
+        aria-label="Switch color theme"
+        title="Switch color theme"
+      >
+        ◐
+      </button>
+    </header>
+    <main class="app">
+      <div id="errorBox" class="notice error hidden" role="alert"></div>
+      <div id="toast" class="notice hidden" role="status"></div>
+      <div id="updateNotice" class="notice hidden">
+        An update is ready. <button id="updateBtn">Save &amp; reload</button>
       </div>
-    </div>
-    
-<div class="field-group">
-  <label for="startOffset">Start Offset</label>
-  <input id="startOffset" class="measure-input" type="text" inputmode="none" value='0"' />
-</div>
-
-    <div id="sidewallFields" class="field-grid-2">
-      <div class="field-group">
-        <label for="wallHeight">Wall Height</label>
-        <input id="wallHeight" class="measure-input" type="text" inputmode="none" placeholder='e.g. 16&apos; or 192"' />
-      </div>
-
-      <div class="field-group">
-        <label for="panelStopHeight">Panel Stop Height</label>
-        <input id="panelStopHeight" class="measure-input" type="text" inputmode="none" placeholder='defaults to wall height' />
-      </div>
-    </div>
-
-    <div id="gableFields" style="display: none;">
-      <div class="field-grid-2">
-        <div class="field-group">
-          <label for="leftEaveHeight">Left Eave Height</label>
-          <input id="leftEaveHeight" class="measure-input" type="text" inputmode="none" placeholder='e.g. 16&apos; or 192"' />
+      <section id="projectsView">
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">YOUR JOBS / YOUR LAYOUTS</p>
+            <h1>Projects</h1>
+            <p class="muted">Pick a building. Get to work.</p>
+          </div>
+          <button id="newProjectBtn" class="primary">＋ New project</button>
         </div>
-
-        <div class="field-group">
-          <label for="rightEaveHeight">Right Eave Height</label>
-          <input id="rightEaveHeight" class="measure-input" type="text" inputmode="none" placeholder='e.g. 10&apos; 6"' />
+        <div class="search-row">
+          <label class="sr-only" for="projectSearch">Search projects</label
+          ><input
+            id="projectSearch"
+            type="search"
+            placeholder="Find a project or location…"
+          /><label class="check-label"><input id="showArchived" type="checkbox" /> Archived</label
+          ><button id="importProjectBtn">Import JSON</button>
         </div>
-      </div>
-
-      <div class="field-grid-2">
-        <div class="field-group">
-          <label for="leftPanelStopHeight">Left Panel Stop Height</label>
-          <input id="leftPanelStopHeight" class="measure-input" type="text" inputmode="none" placeholder='defaults to left eave' />
+        <div id="projectCards" class="card-grid"></div>
+        <p class="footnote">Projects save on this device. Export JSON for a portable backup.</p>
+      </section>
+      <section id="projectView" class="hidden">
+        <button id="backProjectsBtn" class="back-btn">‹ All projects</button>
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">PROJECT</p>
+            <h1 id="projectTitle"></h1>
+            <p id="projectLocation" class="muted"></p>
+          </div>
+          <button id="projectSettingsBtn">Project settings</button>
         </div>
-
-        <div class="field-group">
-          <label for="rightPanelStopHeight">Right Panel Stop Height</label>
-          <input id="rightPanelStopHeight" class="measure-input" type="text" inputmode="none" placeholder='defaults to right eave' />
+        <div class="project-strip">
+          <span id="profileBadge"></span><span id="projectTotals"></span>
         </div>
-      </div>
-
-      <div class="field-grid-2">
-        <div class="field-group">
-          <label for="ridgeHeight">Ridge Height</label>
-          <input id="ridgeHeight" class="measure-input" type="text" inputmode="none" placeholder='e.g. 18&apos; 6"' />
+        <div class="section-heading">
+          <h2>Walls</h2>
+          <button id="addWallBtn" class="primary">＋ Add wall</button>
         </div>
-
-        <div class="field-group">
-          <label for="ridgePosition">Ridge Position from Left</label>
-          <input id="ridgePosition" class="measure-input" type="text" inputmode="none" placeholder='e.g. 10&apos; or 120"' />
+        <div id="wallCards" class="card-grid"></div>
+        <div id="projectNotes" class="notes-display"></div>
+        <div class="action-bar">
+          <button id="exportProjectBtn">Export project</button
+          ><button id="duplicateProjectBtn">Duplicate project</button
+          ><button id="archiveProjectBtn">Archive</button
+          ><button id="shareProjectBtn">Share project link</button>
         </div>
+      </section>
+      <section id="wallView" class="hidden">
+        <button id="backProjectBtn" class="back-btn"></button>
+        <div class="page-heading wall-heading">
+          <div>
+            <p class="eyebrow" id="wallTypeBadge">WALL</p>
+            <h1 id="wallTitle"></h1>
+            <p id="wallMeta" class="muted"></p>
+          </div>
+          <button id="editWallBtn">Edit wall</button>
+        </div>
+        <div class="wall-toolbar">
+          <div class="history-buttons">
+            <button id="undoBtn" aria-label="Undo last change">↶ Undo</button
+            ><button id="redoBtn" aria-label="Redo last change">↷ Redo</button>
+          </div>
+          <button id="duplicateWallBtn">Duplicate</button
+          ><button id="deleteWallBtn" class="danger">Delete wall</button>
+        </div>
+        <div class="drawing-card">
+          <div class="drawing-heading">
+            <span class="eyebrow">WALL LAYOUT</span
+            ><span class="muted">Tap a panel or opening</span>
+          </div>
+          <div id="drawingEmpty" class="empty-state">Set wall dimensions to see your layout.</div>
+          <div class="drawing-scroll">
+            <svg
+              id="wallSvg"
+              xmlns="http://www.w3.org/2000/svg"
+              role="group"
+              aria-label="Wall layout with interactive panels and openings"
+            ></svg>
+          </div>
+          <p class="drawing-hint">
+            Measurements start at the outside corner. Swipe the drawing on small screens.
+          </p>
+        </div>
+        <div id="wallWarnings" class="hidden"></div>
+        <nav class="tabs" role="tablist" aria-label="Wall workspace">
+          <button
+            data-tab="layout"
+            role="tab"
+            id="layoutTabButton"
+            aria-controls="layoutTab"
+            aria-selected="true"
+          >
+            Layout</button
+          ><button
+            data-tab="openings"
+            role="tab"
+            id="openingsTabButton"
+            aria-controls="openingsTab"
+            aria-selected="false"
+          >
+            Openings <span id="openingCount"></span></button
+          ><button
+            data-tab="cuts"
+            role="tab"
+            id="cutsTabButton"
+            aria-controls="cutsTab"
+            aria-selected="false"
+          >
+            Cuts
+          </button>
+        </nav>
+        <section role="tabpanel" aria-labelledby="layoutTabButton" id="layoutTab">
+          <div id="panelSummary"></div>
+          <div id="wallNotes" class="notes-display"></div>
+        </section>
+        <section
+          role="tabpanel"
+          aria-labelledby="openingsTabButton"
+          id="openingsTab"
+          class="hidden"
+        >
+          <div class="section-heading">
+            <h2>Openings</h2>
+            <button id="addOpeningBtn" class="primary">＋ Add opening</button>
+          </div>
+          <div id="openingsList" class="opening-grid"></div>
+        </section>
+        <section role="tabpanel" aria-labelledby="cutsTabButton" id="cutsTab" class="hidden">
+          <div class="section-heading">
+            <div>
+              <h2>Fabrication sheet</h2>
+              <p class="muted">Numbered from start to end. Heights use panel stops.</p>
+            </div>
+            <div class="action-bar">
+              <button id="copyTextBtn">Copy cuts</button
+              ><button id="downloadCutsBtn">Save text</button
+              ><button id="printBtn">Print / PDF</button>
+            </div>
+          </div>
+          <div id="cutList"></div>
+          <div id="openingReport"></div>
+        </section>
+      </section>
+      <input id="importProjectInput" class="hidden" type="file" accept=".json,application/json" />
+    </main>
+    <dialog id="editorDialog" aria-labelledby="editorTitle">
+      <form id="editorForm">
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow" id="editorEyebrow">EDIT</p>
+            <h2 id="editorTitle"></h2>
+          </div>
+          <button id="closeEditorBtn" type="button" class="icon-btn" aria-label="Close editor">
+            ✕
+          </button>
+        </div>
+        <div id="editorFields"></div>
+        <div id="editorError" class="notice error hidden" role="alert"></div>
+        <div class="dialog-actions">
+          <button id="cancelEditorBtn" type="button">Cancel</button
+          ><button type="submit" class="primary">Save</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="inspectorDialog" aria-labelledby="inspectorTitle">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">FABRICATION</p>
+          <h2 id="inspectorTitle"></h2>
+        </div>
+        <button id="closeInspectorBtn" class="icon-btn" aria-label="Close panel details">✕</button>
       </div>
-
-      <div class="field-group">
-        <label for="ridgePanelStopHeight">Ridge Panel Stop Height</label>
-        <input id="ridgePanelStopHeight" class="measure-input" type="text" inputmode="none" placeholder='defaults to ridge height' />
+      <div id="inspectorBody"></div>
+    </dialog>
+    <div
+      id="measurementKeyboard"
+      class="measurement-keyboard hidden"
+      role="group"
+      aria-label="Measurement keypad"
+    >
+      <div class="keypad-heading">
+        <span id="measurementLabel"></span><span id="measurementDisplay"></span>
+      </div>
+      <div class="keyboard-grid">
+        <button type="button" data-key="1">1</button><button type="button" data-key="2">2</button
+        ><button type="button" data-key="3">3</button
+        ><button type="button" data-key="'">ft ′</button>
+        <button type="button" data-key="4">4</button><button type="button" data-key="5">5</button
+        ><button type="button" data-key="6">6</button
+        ><button type="button" data-key='"'>in ″</button>
+        <button type="button" data-key="7">7</button><button type="button" data-key="8">8</button
+        ><button type="button" data-key="9">9</button><button type="button" data-key="/">/</button>
+        <button type="button" data-key=" ">space</button
+        ><button type="button" data-key="0">0</button><button type="button" data-key=".">.</button
+        ><button type="button" data-action="backspace" aria-label="Backspace">⌫</button>
+        <button type="button" data-key="-">−</button
+        ><button type="button" data-action="confirm" class="key-confirm">Done ✓</button>
       </div>
     </div>
-  </div>
-</div>
-
-    <!-- Export Actions -->
-    <div class="card">
-      <div class="export-row">
-        <button id="shareBtn" class="btn-secondary">Share Layout</button>
-        <button id="copyTextBtn" class="btn-secondary">Copy Cut List</button>
-      </div>
-    </div>
-
-    <!-- Openings -->
-<div class="card" id="openingsCard">
-  <h3>Openings</h3>
-
-  <div id="openingsList"></div>
-
-  <div class="field-grid-2">
-    <div class="field-group">
-      <label for="openingStart">Start From Left</label>
-      <input
-        id="openingStart"
-        class="measure-input"
-        type="text"
-        inputmode="none"
-        placeholder='e.g. 2&apos; 8"'
-      />
-    </div>
-
-    <div class="field-group">
-      <label for="openingWidth">Opening Width</label>
-      <input
-        id="openingWidth"
-        class="measure-input"
-        type="text"
-        inputmode="none"
-        placeholder='e.g. 3&apos; or 36"'
-      />
-    </div>
-  </div>
-
-  <div class="field-grid-2">
-    <div class="field-group">
-      <label for="openingBottom">Bottom Height</label>
-      <input
-        id="openingBottom"
-        class="measure-input"
-        type="text"
-        inputmode="none"
-        placeholder='e.g. 0" or 3&apos;'
-      />
-    </div>
-
-    <div class="field-group">
-      <label for="openingHeight">Opening Height</label>
-      <input
-        id="openingHeight"
-        class="measure-input"
-        type="text"
-        inputmode="none"
-        placeholder='e.g. 7&apos; or 84"'
-      />
-    </div>
-  </div>
-
-  <button id="cancelOpeningEditBtn" class="btn-secondary hidden" type="button">Cancel Edit</button>
-  <button id="addOpeningBtn">Add Opening</button>
-</div>
-
-    <!-- SVG -->
-    <div class="card">
-      <svg id="wallSvg"></svg>
-    </div>
-
-    <!-- Reports -->
-    <div class="card" id="panelSummary"></div>
-    <div class="card" id="openingReport"></div>
-  </div>
-
-  <!-- Measurement Keyboard -->
-  <div id="measurementKeyboard" class="measurement-keyboard hidden">
-
-  <!-- DISPLAY BAR -->
-  <div class="measurement-display-row">
-    <div id="measurementRaw" class="measurement-raw"></div>
-    <div id="measurementDisplay" class="measurement-display"></div>
-  </div>
-
-  <!-- KEYPAD -->
-  <div class="keyboard-grid">
-    <button type="button" class="key-btn" data-key="1">1</button>
-    <button type="button" class="key-btn" data-key="2">2</button>
-    <button type="button" class="key-btn" data-key="3">3</button>
-
-    <button type="button" class="key-btn" data-key="4">4</button>
-    <button type="button" class="key-btn" data-key="5">5</button>
-    <button type="button" class="key-btn" data-key="6">6</button>
-
-    <button type="button" class="key-btn" data-key="7">7</button>
-    <button type="button" class="key-btn" data-key="8">8</button>
-    <button type="button" class="key-btn" data-key="9">9</button>
-
-    <button type="button" class="key-btn" data-key="'">'</button>
-    <button type="button" class="key-btn" data-key="0">0</button>
-    <button type="button" class="key-btn" data-key='"'>"</button>
-
-    <button type="button" class="key-btn" data-key="/">/</button>
-    <button type="button" class="key-btn" data-key="-">-</button>
-    <button type="button" class="key-btn key-backspace" data-action="backspace">⌫</button>
-    <button type="button" class="key-btn key-confirm" data-action="confirm">↵</button>
-  </div>
-
-</div>
-  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-  <script>eruda.init();</script>
-  <script type="module" src="app.js?v=4"></script>
-</body>
+    <footer class="app-footer">
+      <span>CR27 / BUILT FOR THE FIELD</span><span id="appVersion">WEB · v2.0</span>
+    </footer>
+    <script type="module" src="app.js"></script>
+  </body>
 </html>
