@@ -15,6 +15,8 @@ See [CODE_MAP.md](CODE_MAP.md) to find the code for a specific feature.
 - Consistent offset/panel/rib origins; strict measurement parsing; roofline/panel-stop opening validation.
 - Fabrication sheets include all panel stop heights, ridge points, segment angles and opening cut marks from the finished panel edge.
 - Text export and print layout. Use the browser's Print/Save PDF action for a PDF.
+- Tap a panel in the drawing or cut sheet for an opening-cut diagram. Measurements reference the finished panel edge; diagrams show only that panel's cut portion and are marked not to scale.
+- Compact spacing with light-gray/blue and charcoal/blue themes; primary touch targets and body text sizes remain unchanged.
 - Offline shell, local icons, Home Screen manifest and explicit version updates. Online access is needed for the first successful cache installation.
 
 ## Run locally

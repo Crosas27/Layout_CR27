@@ -1,5 +1,5 @@
 /* Generated with node scripts/update-cache.mjs after shell changes. */
-const CACHE = "cr27-a6a75166ffb5"
+const CACHE = "cr27-4d01a4252fb8"
 const SHELL = [
   "./app.js",
   "./assets/icon-192.png",
@@ -28,6 +28,7 @@ const SHELL = [
   "./js/project/projectStorage.js",
   "./js/render/cutListRenderer.js",
   "./js/render/openingReportRenderer.js",
+  "./js/render/panelCutDiagram.js",
   "./js/render/summaryRenderer.js",
   "./js/render/wallRenderer.js",
   "./js/ui/dom.js",

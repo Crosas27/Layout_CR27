@@ -72,6 +72,11 @@ test('migrate → open wall → edit opening → delete → undo → reload; mul
   $('openingStart').value = '6"'
   save()
   assert.equal(app.getWorkspace().projects[0].walls[0].openings.length, 1)
+  document.querySelector('.cut-row[data-panel="1"]').click()
+  assert.ok($('inspectorDialog').hasAttribute('open'))
+  assert.equal($('inspectorBody').querySelectorAll('.cut-diagram').length, 1)
+  assert.match($('inspectorBody').querySelector('desc').textContent, /cut width 30"/)
+  click('closeInspectorBtn')
   document.querySelector('[data-edit-opening]').click()
   assert.equal($('openingStart').value, '6"')
   save()

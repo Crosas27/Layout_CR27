@@ -37,6 +37,7 @@ Start with **what you want to change**, then open the matching drawer.
 | SVG drawing and clickable object targets           | `js/render/wallRenderer.js`                       |
 | Layout statistics                                  | `js/render/summaryRenderer.js`                    |
 | Panel cut sheet and panel inspector                | `js/render/cutListRenderer.js`                    |
+| Selected-panel opening diagram and dimension lines | `js/render/panelCutDiagram.js`                    |
 | Opening fabrication instructions                   | `js/render/openingReportRenderer.js`              |
 | Feet / inches / fractions parser                   | `js/utils/measurementParser.js`                   |
 | Measurement display and eighth-inch rounding       | `js/utils/formatter.js`                           |
