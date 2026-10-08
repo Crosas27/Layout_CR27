@@ -6,6 +6,17 @@ import { formatToField, formatInches } from '../utils/formatter.js'
 export function setupMeasurementKeyboard() {
   const keyboard = $('measurementKeyboard')
   let active = null
+  const viewport = window.visualViewport
+  const resize = () => {
+    $('editorDialog').style.setProperty(
+      '--editor-viewport-height',
+      `${viewport?.height ?? window.innerHeight}px`,
+    )
+    active?.scrollIntoView?.({ block: 'nearest' })
+  }
+  viewport?.addEventListener('resize', resize)
+  window.addEventListener('resize', resize)
+  resize()
   const update = () => {
     if (!active) return
     const n = parseMeasurement(active.value)
@@ -28,7 +39,10 @@ export function setupMeasurementKeyboard() {
     active = null
   }
   document.addEventListener('focusin', (e) => {
-    if (!e.target.matches('.measure-input')) return
+    if (!e.target.matches('.measure-input')) {
+      if (!keyboard.contains(e.target)) hide()
+      return
+    }
     active = e.target
     const dialog = active.closest('dialog')
     // Keep the keypad in the modal's top layer so it stays interactive.
@@ -39,6 +53,7 @@ export function setupMeasurementKeyboard() {
     $('measurementLabel').textContent =
       document.querySelector(`label[for="${active.id}"]`)?.textContent || 'Measurement'
     show(keyboard, true)
+    resize()
     update()
     active.scrollIntoView?.({ block: 'nearest' })
   })

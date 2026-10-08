@@ -777,8 +777,33 @@ summary {
   grid-column: 2/5;
   background: var(--blue-soft);
 }
+/* Keep every keypad row inside the modal, not fixed behind its clipped edge. */
 dialog.keypad-open {
-  padding-bottom: 335px;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  padding: 0;
+  overflow: hidden;
+  height: min(85dvh, calc(var(--editor-viewport-height, 100dvh) - 24px));
+  max-height: calc(var(--editor-viewport-height, 100dvh) - 24px);
+}
+dialog.keypad-open > form {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 20px;
+  scroll-padding-block: 16px;
+}
+dialog.keypad-open > .measurement-keyboard {
+  position: static;
+  transform: none;
+  width: 100%;
+  min-height: 0;
+  max-height: calc(var(--editor-viewport-height, 100dvh) * 0.6);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: 0;
+  border-width: 1px 0 0;
+  padding-bottom: max(14px, env(safe-area-inset-bottom));
 }
 .app-footer {
   max-width: 1120px;
