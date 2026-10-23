@@ -7,6 +7,7 @@ See [CODE_MAP.md](CODE_MAP.md) to find the code for a specific feature.
 ## What changed
 
 - Project list with search, duplication, archive/restore and job notes.
+- Quick Layout beside New project: wall length + arbitrary panel coverage → live count, full/ripped panel breakdown, first/last widths and tappable panel positions. Optional start offset; no job, height or rib profile required. Uses the shared panel calculator and never writes project state. Scratch values last until the tab reloads; counts exclude spare sheets and offcut reuse. Offset is trimmed width from the first sheet's left edge, from zero up to (but not including) coverage.
 - Explicit Sidewall, Gable and Single-slope endwall types. Single slopes use left/right heights and have no ridge input.
 - Wall cards, drawing-first workspace, tappable SVG panels/openings, Layout/Openings/Cuts tabs.
 - Draft editors, wall templates, panel profile settings, undo/redo and light/dark field themes.
@@ -63,6 +64,6 @@ Openings may overlap intentionally, with a visible warning. Deleting walls/openi
 
 ## Before merging / field use
 
-Check on an actual iPhone: touch targets and keypad, modal scrolling, SVG scrolling, Safari → Home Screen installation, offline reload after a first online visit, cached-version update, JSON import/export, and Print/Save PDF. No live browser or iPhone visual QA was available during this change.
+Check on an actual iPhone: touch targets and keypad, modal scrolling, SVG scrolling, Safari → Home Screen installation, offline reload after a first online visit, cached-version update, JSON import/export, and Print/Save PDF. Quick Layout was checked in Chromium using 393×780, 320×540 and 1050×800 viewport fixtures, including keypad clearance, panel selection, custom coverage, offset and light/dark themes. The isolated HTTP preview used a test-only UUID shim; production code was unchanged for that accommodation. Actual iPhone/Safari and production offline behavior still need device verification.
 
 Deployments should retain the existing app origin so migration can read its old storage. The original reports and anchor documents in `Docs/` describe earlier versions; this code map and README describe the current workspace.

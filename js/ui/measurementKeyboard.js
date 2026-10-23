@@ -8,15 +8,20 @@ export function setupMeasurementKeyboard() {
   let active = null
   const viewport = window.visualViewport
   const resize = () => {
-    $('editorDialog').style.setProperty(
-      '--editor-viewport-height',
-      `${viewport?.height ?? window.innerHeight}px`,
-    )
+    const height = `${viewport?.height ?? window.innerHeight}px`
+    document.documentElement.style.setProperty('--measurement-viewport-height', height)
+    $('editorDialog').style.setProperty('--editor-viewport-height', height)
+    if (active && !active.closest('dialog'))
+      document.documentElement.style.setProperty(
+        '--measurement-keyboard-space',
+        `${keyboard.getBoundingClientRect().height + 24}px`,
+      )
     active?.scrollIntoView?.({ block: 'nearest' })
   }
   viewport?.addEventListener('resize', resize)
   window.addEventListener('resize', resize)
   resize()
+  if (window.ResizeObserver) new window.ResizeObserver(resize).observe(keyboard)
   const update = () => {
     if (!active) return
     const n = parseMeasurement(active.value)
@@ -36,7 +41,11 @@ export function setupMeasurementKeyboard() {
   const hide = () => {
     show(keyboard, false)
     active?.closest('dialog')?.classList.remove('keypad-open')
+    document.documentElement.classList.remove('page-keypad-open')
+    // Done must let a second tap on the same input reopen the keypad.
+    const previous = active
     active = null
+    if (document.activeElement === previous) previous?.blur()
   }
   document.addEventListener('focusin', (e) => {
     if (!e.target.matches('.measure-input')) {
@@ -49,7 +58,8 @@ export function setupMeasurementKeyboard() {
     if (dialog) {
       dialog.append(keyboard)
       dialog.classList.add('keypad-open')
-    }
+    } else document.body.append(keyboard)
+    document.documentElement.classList.toggle('page-keypad-open', !dialog)
     $('measurementLabel').textContent =
       document.querySelector(`label[for="${active.id}"]`)?.textContent || 'Measurement'
     show(keyboard, true)
@@ -81,6 +91,9 @@ export function setupMeasurementKeyboard() {
   })
   document.addEventListener('pointerdown', (e) => {
     if (!e.target.closest('.measure-input') && !e.target.closest('#measurementKeyboard')) hide()
+  })
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && active && !active.closest('dialog')) hide()
   })
   $('editorDialog').addEventListener('close', () => {
     hide()

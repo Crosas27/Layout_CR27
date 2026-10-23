@@ -223,6 +223,137 @@ h3 {
   gap: 16px;
   margin-bottom: 28px;
 }
+.project-entry-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+/* QUICK LAYOUT — two inputs, independent of project setup. */
+#quickView {
+  max-width: 760px;
+  margin: 0 auto;
+}
+.quick-inputs,
+.quick-drawing {
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.quick-inputs .field-grid {
+  margin-bottom: 4px;
+}
+.quick-inputs details {
+  margin: 10px 0 0;
+  padding-top: 8px;
+}
+.quick-inputs details .quick-hint {
+  margin-bottom: 10px;
+}
+.quick-hint {
+  font-size: 13px;
+  color: var(--muted);
+}
+.quick-summary {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin: 16px 0 10px;
+}
+.quick-count {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  color: var(--blue);
+}
+.quick-count strong {
+  font-size: 42px;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+#quickBreakdown {
+  font-weight: 700;
+}
+.quick-edges {
+  display: flex;
+  gap: 12px;
+  margin: 14px 0;
+}
+.quick-edges > div {
+  flex: 1;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 14px;
+  background: var(--surface);
+}
+.quick-edges span,
+.quick-edges strong {
+  display: block;
+}
+.quick-edges span {
+  font-size: 13px;
+  color: var(--muted);
+}
+.quick-edges strong {
+  font:
+    700 22px/1.6 ui-monospace,
+    monospace;
+}
+.quick-panel-strip {
+  display: flex;
+  gap: 3px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding: 8px 4px 12px;
+  margin: 10px -4px 0;
+}
+.quick-panel {
+  flex: 0 0 var(--panel-size);
+  height: 92px;
+  border-radius: 4px;
+  padding: 8px 4px;
+  background: var(--blue-soft);
+  font:
+    700 19px/1.5 ui-monospace,
+    monospace;
+}
+.quick-panel small {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--muted);
+}
+.quick-panel.is-rip {
+  background: var(--warn-bg);
+  border-color: var(--warn);
+}
+.quick-panel[aria-pressed='true'] {
+  outline: 3px solid var(--blue);
+  outline-offset: 0;
+}
+.quick-panel-detail {
+  padding: 12px 0;
+}
+.quick-panel-detail dl {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 8px 0 0;
+}
+.quick-panel-detail dt {
+  font-size: 13px;
+  color: var(--muted);
+}
+.quick-panel-detail dd {
+  margin: 2px 0 0;
+  font:
+    700 20px/1.5 ui-monospace,
+    monospace;
+  overflow-wrap: anywhere;
+}
+.quick-scratch-note {
+  margin-top: 16px;
+}
 input,
 select,
 textarea {
@@ -752,6 +883,14 @@ summary {
   padding: 14px;
   width: min(480px, calc(100vw - 16px));
   box-shadow: 0 -8px 40px #0002;
+  max-height: calc(var(--measurement-viewport-height, 100dvh) - 16px);
+  overflow-y: auto;
+}
+html.page-keypad-open {
+  scroll-padding-bottom: var(--measurement-keyboard-space, 340px);
+}
+.page-keypad-open body {
+  padding-bottom: var(--measurement-keyboard-space, 340px);
 }
 .keypad-heading {
   display: flex;
@@ -944,6 +1083,13 @@ svg text {
   .page-heading button {
     font-size: 13px;
     padding: 10px 12px;
+  }
+  #projectsView > .page-heading {
+    flex-wrap: wrap;
+  }
+  .quick-summary {
+    flex-wrap: wrap;
+    gap: 8px 16px;
   }
   .search-row {
     flex-wrap: wrap;

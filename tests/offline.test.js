@@ -70,6 +70,8 @@ test('offline install caches the entire local shell and serves navigation/module
   await w.lifecycle('install')
   assert.equal((await w.fetch('./?from=home', 'navigate')).body, './index.html')
   assert.equal((await w.fetch('./js/layout/layoutEngine.js')).body, './js/layout/layoutEngine.js')
+  assert.equal((await w.fetch('./js/layout/quickLayout.js')).body, './js/layout/quickLayout.js')
+  assert.equal((await w.fetch('./js/ui/quickLayoutUI.js')).body, './js/ui/quickLayoutUI.js')
   assert.equal((await w.fetch('./assets/icon-192.png')).body, './assets/icon-192.png')
   assert.equal(w.calls.network, 0)
 })

@@ -12,6 +12,7 @@ import { wallEditor, wallChoiceEditor } from '../ui/wallManagerUI.js'
 import { openingEditor } from '../ui/openingsUI.js'
 import { createEditor } from '../ui/editor.js'
 import { setupMeasurementKeyboard } from '../ui/measurementKeyboard.js'
+import { setupQuickLayout } from '../ui/quickLayoutUI.js'
 import {
   renderProjects,
   renderProject,
@@ -34,7 +35,8 @@ export async function initApp() {
     model = null
   const history = createHistory(),
     editor = createEditor()
-  setupMeasurementKeyboard()
+  const keypad = setupMeasurementKeyboard()
+  setupQuickLayout()
   const error = (message) => {
     $('errorBox').textContent = message
     show($('errorBox'), true)
@@ -93,9 +95,10 @@ export async function initApp() {
     setView(view)
     if (view === 'projects') renderProjects(workspace)
     else if (view === 'project') renderProject(project())
-    else model = renderWorkspace(project(), wall(), history)
+    else if (view === 'wall') model = renderWorkspace(project(), wall(), history)
   }
   const navigate = (next) => {
+    keypad.hide()
     view = next
     render()
     window.scrollTo?.({ top: 0, behavior: 'instant' })
@@ -225,6 +228,11 @@ export async function initApp() {
 
   /* PROJECT NAVIGATION / ACTIONS */
   $('homeBtn').onclick = $('backProjectsBtn').onclick = () => navigate('projects')
+  $('backQuickBtn').onclick = () => navigate('projects')
+  $('quickLayoutBtn').onclick = () => {
+    navigate('quick')
+    $('quickTitle').focus({ preventScroll: true })
+  }
   $('backProjectBtn').onclick = () => navigate('project')
   $('projectSearch').oninput = $('showArchived').onchange = render
   $('newProjectBtn').onclick = () => {

@@ -1,5 +1,5 @@
 /* Generated with node scripts/update-cache.mjs after shell changes. */
-const CACHE = "cr27-87d8d979ce31"
+const CACHE = "cr27-5c6263546cd0"
 const SHELL = [
   "./app.js",
   "./assets/icon-192.png",
@@ -16,6 +16,7 @@ const SHELL = [
   "./js/layout/layoutMath.js",
   "./js/layout/layoutSummary.js",
   "./js/layout/panelLayout.js",
+  "./js/layout/quickLayout.js",
   "./js/layout/ribLayout.js",
   "./js/layout/sidewallLayout.js",
   "./js/layout/singleSlopeGeometry.js",
@@ -36,6 +37,7 @@ const SHELL = [
   "./js/ui/measurementKeyboard.js",
   "./js/ui/openingsUI.js",
   "./js/ui/projectDetailsUI.js",
+  "./js/ui/quickLayoutUI.js",
   "./js/ui/wallManagerUI.js",
   "./js/ui/workspaceUI.js",
   "./js/utils/formatter.js",

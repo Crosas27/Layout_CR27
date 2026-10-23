@@ -47,7 +47,10 @@
             <h1>Projects</h1>
             <p class="muted">Pick a building. Get to work.</p>
           </div>
-          <button id="newProjectBtn" class="primary">＋ New project</button>
+          <div class="project-entry-actions">
+            <button id="quickLayoutBtn">Quick layout</button>
+            <button id="newProjectBtn" class="primary">＋ New project</button>
+          </div>
         </div>
         <div class="search-row">
           <label class="sr-only" for="projectSearch">Search projects</label
@@ -60,6 +63,72 @@
         </div>
         <div id="projectCards" class="card-grid"></div>
         <p class="footnote">Projects save on this device. Export JSON for a portable backup.</p>
+      </section>
+      <section id="quickView" class="hidden" aria-labelledby="quickTitle">
+        <button id="backQuickBtn" class="back-btn">‹ All projects</button>
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">NO JOB SETUP</p>
+            <h1 id="quickTitle" tabindex="-1">Quick layout</h1>
+          </div>
+        </div>
+        <div id="quickSummary" class="quick-summary hidden" role="status" aria-atomic="true">
+          <div class="quick-count">
+            <strong id="quickTotal"></strong><span id="quickCountLabel">panels</span>
+          </div>
+          <p id="quickBreakdown"></p>
+        </div>
+        <form id="quickInputs" class="quick-inputs">
+          <div id="quickFields" class="field-grid"></div>
+          <p class="quick-hint">
+            Coverage excludes overlap. Bare numbers = inches; use ′ for feet.
+          </p>
+          <details id="quickOffsetOptions">
+            <summary>Adjust offset</summary>
+            <p class="quick-hint">
+              Amount trimmed from the first sheet’s left edge. Zero starts with a full panel.
+            </p>
+            <div id="quickOffsetField"></div>
+          </details>
+        </form>
+        <p id="quickMessage" class="notice" role="status"></p>
+        <div id="quickResults" class="hidden">
+          <div class="quick-edges">
+            <div>
+              <span id="quickFirstLabel">First panel</span><strong id="quickFirstWidth"></strong>
+            </div>
+            <div id="quickLastStat">
+              <span>Last panel</span><strong id="quickLastWidth"></strong>
+            </div>
+          </div>
+          <div class="quick-drawing">
+            <h2>Panel layout</h2>
+            <p class="quick-hint">Outside corner → · Swipe to see more · Shaded = rip</p>
+            <div
+              id="quickPanelStrip"
+              class="quick-panel-strip"
+              role="group"
+              aria-label="Panel positions"
+            ></div>
+            <div class="quick-panel-detail" aria-live="polite" aria-atomic="true">
+              <h3 id="quickPanelTitle"></h3>
+              <dl>
+                <div>
+                  <dt>Start from corner</dt>
+                  <dd id="quickPanelStart"></dd>
+                </div>
+                <div>
+                  <dt>End from corner</dt>
+                  <dd id="quickPanelEnd"></dd>
+                </div>
+              </dl>
+            </div>
+            <p class="quick-hint">Tap a panel · strip not to scale · dimensions rounded to ⅛″.</p>
+          </div>
+        </div>
+        <p class="quick-hint quick-scratch-note">
+          Scratchpad only · clears on reload. Count excludes spares and offcut reuse.
+        </p>
       </section>
       <section id="projectView" class="hidden">
         <button id="backProjectsBtn" class="back-btn">‹ All projects</button>

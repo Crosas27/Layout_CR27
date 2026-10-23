@@ -124,7 +124,7 @@ export function renderWorkspace(project, wall, history) {
   return model
 }
 export function setView(view) {
-  for (const name of ['projects', 'project', 'wall']) show($(name + 'View'), name === view)
+  for (const name of ['projects', 'project', 'wall', 'quick']) show($(name + 'View'), name === view)
 }
 export function setTab(tab) {
   for (const name of ['layout', 'openings', 'cuts']) show($(name + 'Tab'), name === tab)
