@@ -1,9 +1,9 @@
-import { formatToField } from "../utils/formatter.js"
-import { getGableHeightAtX } from "../core/layoutEngine.js"
+import { formatToField } from '../utils/formatter.js'
+import { getGableHeightAtX } from '../layout/layoutEngine.js'
 
 // ---- SVG element builders ----
 
-const f = n => Math.round(n * 100) / 100
+const f = (n) => Math.round(n * 100) / 100
 
 function rect(x, y, w, h, cls) {
   return `<rect x="${f(x)}" y="${f(y)}" width="${f(w)}" height="${f(h)}" class="${cls}"/>`
@@ -13,17 +13,14 @@ function line(x1, y1, x2, y2, cls) {
   return `<line x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}" class="${cls}"/>`
 }
 
-function text(x, y, content, cls, anchor = "middle") {
-  const safe = String(content)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
+function text(x, y, content, cls, anchor = 'middle') {
+  const safe = String(content).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
   return `<text x="${f(x)}" y="${f(y)}" text-anchor="${anchor}" class="${cls}">${safe}</text>`
 }
 
 function polygon(points, cls) {
-  const pts = points.map(([x, y]) => `${f(x)},${f(y)}`).join(" ")
+  const pts = points.map(([x, y]) => `${f(x)},${f(y)}`).join(' ')
   return `<polygon points="${pts}" class="${cls}"/>`
 }
 
@@ -43,24 +40,24 @@ function buildLegend(parts, x, y) {
   const gap = 6
   let cx = x
 
-  parts.push(rect(cx, y, sw, sw, "panel-full"))
+  parts.push(rect(cx, y, sw, sw, 'panel-full'))
   cx += sw + gap
-  parts.push(text(cx, y + 12, "Full Panel", "legend-text", "start"))
+  parts.push(text(cx, y + 12, 'Full Panel', 'legend-text', 'start'))
   cx += 68
 
-  parts.push(rect(cx, y, sw, sw, "panel-cut"))
+  parts.push(rect(cx, y, sw, sw, 'panel-cut'))
   cx += sw + gap
-  parts.push(text(cx, y + 12, "Cut Panel", "legend-text", "start"))
+  parts.push(text(cx, y + 12, 'Cut Panel', 'legend-text', 'start'))
   cx += 62
 
-  parts.push(rect(cx, y, sw, sw, "opening-box"))
+  parts.push(rect(cx, y, sw, sw, 'opening-box'))
   cx += sw + gap
-  parts.push(text(cx, y + 12, "Opening", "legend-text", "start"))
+  parts.push(text(cx, y + 12, 'Opening', 'legend-text', 'start'))
   cx += 58
 
-  parts.push(rect(cx, y, sw, sw, "panel-cut-zone"))
+  parts.push(rect(cx, y, sw, sw, 'panel-cut-zone'))
   cx += sw + gap
-  parts.push(text(cx, y + 12, "Cut Zone", "legend-text", "start"))
+  parts.push(text(cx, y + 12, 'Cut Zone', 'legend-text', 'start'))
 }
 
 // ---- Direction indicator ----
@@ -71,49 +68,55 @@ function buildDirectionArrow(parts, wallX, wallRight, y) {
   const aLeft = mid - arrowLen / 2
   const aRight = mid + arrowLen / 2
 
-  parts.push(line(aLeft, y, aRight, y, "direction-arrow"))
+  parts.push(line(aLeft, y, aRight, y, 'direction-arrow'))
   parts.push(
-    `<polygon points="${f(aRight)},${f(y)} ${f(aRight - 6)},${f(y - 4)} ${f(aRight - 6)},${f(y + 4)}" class="direction-arrow-head"/>`
+    `<polygon points="${f(aRight)},${f(y)} ${f(aRight - 6)},${f(y - 4)} ${f(aRight - 6)},${f(y + 4)}" class="direction-arrow-head"/>`,
   )
 
-  parts.push(text(aLeft - 4, y + 4, "START", "direction-text", "end"))
-  parts.push(text(aRight + 4, y + 4, "END", "direction-text", "start"))
+  parts.push(text(aLeft - 4, y + 4, 'START', 'direction-text', 'end'))
+  parts.push(text(aRight + 4, y + 4, 'END', 'direction-text', 'start'))
 }
 
 // ---- Public entry point ----
 
 export function renderWall(model) {
-  const svg = document.getElementById("wallSvg")
+  const svg = document.getElementById('wallSvg')
   if (!svg || !model?.wallLength) return
 
-  const width = svg.clientWidth || 900
+  const width = 960
   const parts = [svgDefs()]
 
-  if (model.wallType === "gable") {
+  if (model.wallType === 'gable' || model.wallType === 'singleSlope') {
     const height = 500
     buildGable(parts, model, width, height)
     buildLegend(parts, 24, height - 24)
 
-    svg.setAttribute("viewBox", `0 0 ${width} ${height}`)
-    svg.setAttribute("width", "100%")
-    svg.setAttribute("height", height)
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`)
+    svg.setAttribute('width', '100%')
+    svg.setAttribute('height', height)
   } else {
     const height = 340
     buildSidewall(parts, model, width, height)
     buildLegend(parts, 24, height - 24)
 
-    svg.setAttribute("viewBox", `0 0 ${width} ${height}`)
-    svg.setAttribute("width", "100%")
-    svg.setAttribute("height", height)
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`)
+    svg.setAttribute('width', '100%')
+    svg.setAttribute('height', height)
   }
 
-  svg.innerHTML = parts.join("")
+  addObjectTargets(
+    parts,
+    model,
+    width,
+    model.wallType === 'gable' || model.wallType === 'singleSlope' ? 500 : 340,
+  )
+  svg.innerHTML = parts.join('')
 }
 
 // ---- Sidewall ----
 
 function buildSidewall(parts, model, width, height) {
-  const padX = 24
+  const padX = 70
   const topPad = 80
   const botPad = 80
   const drawWidth = width - padX * 2
@@ -135,42 +138,43 @@ function buildSidewall(parts, model, width, height) {
 
   buildDirectionArrow(parts, wallX, wallRight, topPad - 56)
 
-  parts.push(rect(wallX, wallY, wallW, wallH, "wall-outline"))
+  parts.push(rect(wallX, wallY, wallW, wallH, 'wall-outline'))
 
   model.panels.forEach((panel, i) => {
     const x = wallX + panel.start * scale
     const w = (panel.end - panel.start) * scale
     const cut = Math.abs(panel.width - model.panelCoverage) > 0.001
 
-    parts.push(rect(x, wallY, w, wallH, cut ? "panel-cut" : "panel-full"))
+    const panelHeight = model.panelStopHeight * scale
+    parts.push(rect(x, baseY - panelHeight, w, panelHeight, cut ? 'panel-cut' : 'panel-full'))
 
     if (w >= 22) {
-      parts.push(text(x + w / 2, wallY + wallH / 2, String(i + 1), "panel-label"))
+      parts.push(text(x + w / 2, wallY + wallH / 2, String(i + 1), 'panel-label'))
       parts.push(
         text(
           x + w / 2,
           wallY + wallH / 2 + 14,
           formatToField(panel.width),
-          "dimension-text panel-width"
-        )
+          'dimension-text panel-width',
+        ),
       )
     }
   })
 
-  model.seams.forEach(pos => {
+  model.seams.forEach((pos) => {
     const x = wallX + pos * scale
-    parts.push(line(x, wallY, x, baseY, "panel-seam"))
+    parts.push(line(x, baseY - model.panelStopHeight * scale, x, baseY, 'panel-seam'))
   })
 
-  model.ribs.forEach(rib => {
+  model.ribs.forEach((rib) => {
     const x = wallX + rib.position * scale
-    parts.push(line(x, wallY, x, baseY, "rib-line"))
+    parts.push(line(x, baseY - model.panelStopHeight * scale, x, baseY, 'rib-line'))
   })
 
   if (Array.isArray(model.openings) && model.wallHeight > 0) {
     const openingScaleY = wallH / model.wallHeight
 
-    model.openings.forEach(op => {
+    model.openings.forEach((op) => {
       const openingBottom = Number(op.bottom) || 0
       const openingHeight = Number(op.height) || 0
       const openingTop = openingBottom + openingHeight
@@ -178,17 +182,17 @@ function buildSidewall(parts, model, width, height) {
       const x = wallX + op.start * scale
       const w = op.width * scale
       const h = openingHeight * openingScaleY
-      const y = wallY + wallH - (openingTop * openingScaleY)
+      const y = wallY + wallH - openingTop * openingScaleY
 
       if (w > 0 && h > 0) {
-        parts.push(rect(x, y, w, h, "opening-box"))
+        parts.push(rect(x, y, w, h, 'opening-box'))
 
         const label = `${formatToField(op.width)} × ${formatToField(openingHeight)}`
-        parts.push(text(x + w / 2, y - 6, label, "dimension-text opening-label"))
+        parts.push(text(x + w / 2, y - 6, label, 'dimension-text opening-label'))
 
         if (openingBottom > 0) {
           const sillLabel = `${formatToField(openingBottom)} ↑`
-          parts.push(text(x + w / 2, y + h + 14, sillLabel, "dimension-text"))
+          parts.push(text(x + w / 2, y + h + 14, sillLabel, 'dimension-text'))
         }
       }
     })
@@ -198,59 +202,59 @@ function buildSidewall(parts, model, width, height) {
   if (Array.isArray(model.panelCuts) && model.wallHeight > 0) {
     const openingScaleY = wallH / model.wallHeight
 
-    model.panelCuts.forEach(panel => {
+    model.panelCuts.forEach((panel) => {
       const cuts = Array.isArray(panel.openingCuts) ? panel.openingCuts : []
 
-      cuts.forEach(cut => {
+      cuts.forEach((cut) => {
         const x = wallX + (panel.start + cut.cutStart) * scale
         const w = cut.cutWidth * scale
         const openingHeight = Number(cut.height) || 0
         const openingBottom = Number(cut.bottom) || 0
         const h = openingHeight * openingScaleY
-        const y = wallY + wallH - ((openingBottom + openingHeight) * openingScaleY)
+        const y = wallY + wallH - (openingBottom + openingHeight) * openingScaleY
 
         if (w > 0 && h > 0) {
-          parts.push(rect(x, y, w, h, "panel-cut-zone"))
+          parts.push(rect(x, y, w, h, 'panel-cut-zone'))
         }
       })
     })
   }
 
-  parts.push(line(wallX, markLineY, wallRight, markLineY, "dimension-line"))
-  model.seams.forEach(pos => {
+  parts.push(line(wallX, markLineY, wallRight, markLineY, 'dimension-line'))
+  model.seams.forEach((pos) => {
     const x = wallX + pos * scale
-    parts.push(line(x, markLineY - 6, x, markLineY + 6, "tick"))
+    parts.push(line(x, markLineY - 6, x, markLineY + 6, 'tick'))
   })
   buildTopLabels(parts, model, wallX, wallRight, markLineY, scale)
 
-  parts.push(line(wallX - 12, wallY, wallX - 12, baseY, "dimension-line"))
-  parts.push(line(wallX - 18, wallY, wallX - 6, wallY, "tick"))
-  parts.push(line(wallX - 18, baseY, wallX - 6, baseY, "tick"))
+  parts.push(line(wallX - 12, wallY, wallX - 12, baseY, 'dimension-line'))
+  parts.push(line(wallX - 18, wallY, wallX - 6, wallY, 'tick'))
+  parts.push(line(wallX - 18, baseY, wallX - 6, baseY, 'tick'))
   parts.push(
     text(
       wallX - 16,
       wallY + wallH / 2 + 4,
       formatToField(eaveH),
-      "dimension-text eave-label",
-      "end"
-    )
+      'dimension-text eave-label',
+      'end',
+    ),
   )
 
-  parts.push(line(wallX, totalLineY, wallRight, totalLineY, "dimension-line"))
+  parts.push(line(wallX, totalLineY, wallRight, totalLineY, 'dimension-line'))
   parts.push(
     text(
       wallX + wallW / 2,
       totalLineY - 8,
       formatToField(model.wallLength),
-      "dimension-text total-text"
-    )
+      'dimension-text total-text',
+    ),
   )
 }
 
 // ---- Gable ----
 
 function buildGable(parts, model, width, height) {
-  const padX = 24
+  const padX = 70
   const topPad = 90
   const botPad = 70
   const drawWidth = width - padX * 2
@@ -259,7 +263,7 @@ function buildGable(parts, model, width, height) {
   const maxH = Math.max(
     model.leftEaveHeight || 0,
     model.ridgeHeight || 0,
-    model.rightEaveHeight || 0
+    model.rightEaveHeight || 0,
   )
   if (!maxH) return
 
@@ -278,69 +282,76 @@ function buildGable(parts, model, width, height) {
 
   buildDirectionArrow(parts, wallX, wallRight, topPad - 56)
 
-  parts.push(line(wallX, markLineY, wallRight, markLineY, "dimension-line"))
-  model.seams.forEach(pos => {
+  parts.push(line(wallX, markLineY, wallRight, markLineY, 'dimension-line'))
+  model.seams.forEach((pos) => {
     const x = wallX + pos * scale
-    parts.push(line(x, markLineY - 6, x, markLineY + 6, "tick"))
+    parts.push(line(x, markLineY - 6, x, markLineY + 6, 'tick'))
   })
   buildTopLabels(parts, model, wallX, wallRight, markLineY, scale)
 
-  parts.push(line(wallX, baseY, wallRight, baseY, "dimension-line"))
+  parts.push(line(wallX, baseY, wallRight, baseY, 'dimension-line'))
 
-  parts.push(line(wallX, baseY, wallX, leftEaveY, "gable-outline"))
-  parts.push(line(wallX, leftEaveY, ridgeX, ridgeY, "gable-outline"))
-  parts.push(line(ridgeX, ridgeY, wallRight, rightEaveY, "gable-outline"))
-  parts.push(line(wallRight, rightEaveY, wallRight, baseY, "gable-outline"))
+  parts.push(line(wallX, baseY, wallX, leftEaveY, 'gable-outline'))
+  parts.push(line(wallX, leftEaveY, ridgeX, ridgeY, 'gable-outline'))
+  parts.push(line(ridgeX, ridgeY, wallRight, rightEaveY, 'gable-outline'))
+  parts.push(line(wallRight, rightEaveY, wallRight, baseY, 'gable-outline'))
 
-  model.gableCuts.forEach(panel => {
+  model.gableCuts.forEach((panel) => {
     const x = wallX + panel.start * scale
     const xr = wallX + panel.end * scale
-    const lY = baseY - panel.leftHeight * scale
-    const rY = baseY - panel.rightHeight * scale
-    const cls = panel.ridgePanel ? "panel-cut" : "panel-full"
+    const lY = baseY - panel.leftStopHeight * scale
+    const rY = baseY - panel.rightStopHeight * scale
+    const cls = panel.ridgePanel ? 'panel-cut' : 'panel-full'
 
-    parts.push(polygon([[x, baseY], [xr, baseY], [xr, rY], [x, lY]], cls))
+    const outline = [
+      [x, baseY],
+      [xr, baseY],
+      [xr, rY],
+    ]
+    if (panel.ridgePanel) outline.push([ridgeX, baseY - model.ridgePanelStopHeight * scale])
+    outline.push([x, lY])
+    parts.push(polygon(outline, cls))
   })
 
-  model.seams.forEach(pos => {
+  model.seams.forEach((pos) => {
     const x = wallX + pos * scale
     const ht = getGableHeightAtX(
       pos,
       model.wallLength,
-      model.leftEaveHeight,
-      model.ridgeHeight,
+      model.leftPanelStopHeight,
+      model.ridgePanelStopHeight,
       model.ridgePosition,
-      model.rightEaveHeight
+      model.rightPanelStopHeight,
     )
     const topY = baseY - ht * scale
-    parts.push(line(x, baseY, x, topY, "panel-seam"))
+    parts.push(line(x, baseY, x, topY, 'panel-seam'))
   })
 
-  model.gableCuts.forEach(panel => {
+  model.gableCuts.forEach((panel) => {
     const x = wallX + (panel.start + panel.width / 2) * scale
     const w = panel.width * scale
 
     if (w >= 22) {
-      parts.push(text(x, baseY - 14, String(panel.panel), "panel-label"))
-      parts.push(text(x, baseY - 2, formatToField(panel.width), "dimension-text panel-width"))
+      parts.push(text(x, baseY - 14, String(panel.panel), 'panel-label'))
+      parts.push(text(x, baseY - 2, formatToField(panel.width), 'dimension-text panel-width'))
     }
   })
 
-  model.ribs.forEach(rib => {
+  model.ribs.forEach((rib) => {
     const x = wallX + rib.position * scale
     const ht = getGableHeightAtX(
       rib.position,
       model.wallLength,
-      model.leftEaveHeight,
-      model.ridgeHeight,
+      model.leftPanelStopHeight,
+      model.ridgePanelStopHeight,
       model.ridgePosition,
-      model.rightEaveHeight
+      model.rightPanelStopHeight,
     )
-    parts.push(line(x, baseY, x, baseY - ht * scale, "rib-line"))
+    parts.push(line(x, baseY, x, baseY - ht * scale, 'rib-line'))
   })
 
   if (Array.isArray(model.openings)) {
-    model.openings.forEach(op => {
+    model.openings.forEach((op) => {
       const openingBottom = Number(op.bottom) || 0
       const openingHeight = Number(op.height) || 0
 
@@ -353,7 +364,7 @@ function buildGable(parts, model, width, height) {
         model.leftEaveHeight,
         model.ridgeHeight,
         model.ridgePosition,
-        model.rightEaveHeight
+        model.rightEaveHeight,
       )
 
       const centerRoofHeight = getGableHeightAtX(
@@ -362,7 +373,7 @@ function buildGable(parts, model, width, height) {
         model.leftEaveHeight,
         model.ridgeHeight,
         model.ridgePosition,
-        model.rightEaveHeight
+        model.rightEaveHeight,
       )
 
       const rightRoofHeight = getGableHeightAtX(
@@ -371,7 +382,7 @@ function buildGable(parts, model, width, height) {
         model.leftEaveHeight,
         model.ridgeHeight,
         model.ridgePosition,
-        model.rightEaveHeight
+        model.rightEaveHeight,
       )
 
       const allowableTop = Math.min(leftRoofHeight, centerRoofHeight, rightRoofHeight)
@@ -382,14 +393,14 @@ function buildGable(parts, model, width, height) {
         const y = baseY - actualTop * scale
         const h = actualHeight * scale
 
-        parts.push(rect(x, y, w, h, "opening-box"))
+        parts.push(rect(x, y, w, h, 'opening-box'))
 
         const label = `${formatToField(op.width)} × ${formatToField(actualHeight)}`
-        parts.push(text(x + w / 2, y - 6, label, "dimension-text opening-label"))
+        parts.push(text(x + w / 2, y - 6, label, 'dimension-text opening-label'))
 
         if (openingBottom > 0) {
           const sillLabel = `${formatToField(openingBottom)} ↑`
-          parts.push(text(x + w / 2, y + h + 14, sillLabel, "dimension-text"))
+          parts.push(text(x + w / 2, y + h + 14, sillLabel, 'dimension-text'))
         }
       }
     })
@@ -397,10 +408,10 @@ function buildGable(parts, model, width, height) {
 
   // fabrication overlay
   if (Array.isArray(model.gableCuts)) {
-    model.gableCuts.forEach(panel => {
+    model.gableCuts.forEach((panel) => {
       const cuts = Array.isArray(panel.openingCuts) ? panel.openingCuts : []
 
-      cuts.forEach(cut => {
+      cuts.forEach((cut) => {
         const x = wallX + (panel.start + cut.cutStart) * scale
         const w = cut.cutWidth * scale
 
@@ -413,7 +424,7 @@ function buildGable(parts, model, width, height) {
           model.leftEaveHeight,
           model.ridgeHeight,
           model.ridgePosition,
-          model.rightEaveHeight
+          model.rightEaveHeight,
         )
 
         const centerRoofHeight = getGableHeightAtX(
@@ -422,7 +433,7 @@ function buildGable(parts, model, width, height) {
           model.leftEaveHeight,
           model.ridgeHeight,
           model.ridgePosition,
-          model.rightEaveHeight
+          model.rightEaveHeight,
         )
 
         const rightRoofHeight = getGableHeightAtX(
@@ -431,7 +442,7 @@ function buildGable(parts, model, width, height) {
           model.leftEaveHeight,
           model.ridgeHeight,
           model.ridgePosition,
-          model.rightEaveHeight
+          model.rightEaveHeight,
         )
 
         const allowableTop = Math.min(leftRoofHeight, centerRoofHeight, rightRoofHeight)
@@ -441,31 +452,39 @@ function buildGable(parts, model, width, height) {
         if (w > 0 && actualHeight > 0) {
           const y = baseY - actualTop * scale
           const h = actualHeight * scale
-          parts.push(rect(x, y, w, h, "panel-cut-zone"))
+          parts.push(rect(x, y, w, h, 'panel-cut-zone'))
         }
       })
     })
   }
 
-  parts.push(line(ridgeX, ridgeY - 4, ridgeX, ridgeY - 24, "tick"))
-  parts.push(
-    text(
-      ridgeX,
-      ridgeY - 34,
-      `RIDGE  ${formatToField(model.ridgeHeight)}`,
-      "dimension-text ridge-label"
+  if (model.wallType === 'gable') {
+    parts.push(line(ridgeX, ridgeY - 4, ridgeX, ridgeY - 24, 'tick'))
+    parts.push(
+      text(
+        ridgeX,
+        ridgeY - 34,
+        `RIDGE  ${formatToField(model.ridgeHeight)}`,
+        'dimension-text ridge-label',
+      ),
     )
-  )
+  }
 
   parts.push(
-    text(wallX - 4, leftEaveY, formatToField(model.leftEaveHeight), "dimension-text", "end")
+    text(wallX - 4, leftEaveY, formatToField(model.leftEaveHeight), 'dimension-text', 'end'),
   )
   parts.push(
-    text(wallRight + 4, rightEaveY, formatToField(model.rightEaveHeight), "dimension-text", "start")
+    text(
+      wallRight + 4,
+      rightEaveY,
+      formatToField(model.rightEaveHeight),
+      'dimension-text',
+      'start',
+    ),
   )
 
   let lastLabelX = -Infinity
-  model.gableCuts.forEach(panel => {
+  model.gableCuts.forEach((panel) => {
     const midX = wallX + (panel.start + panel.width / 2) * scale
     const highH = Math.max(panel.leftHeight, panel.rightHeight)
     const topY = baseY - highH * scale
@@ -474,18 +493,18 @@ function buildGable(parts, model, width, height) {
 
     const offset = panel.ridgePanel ? 30 : 16
     const label = `${formatToField(panel.leftHeight)} → ${formatToField(panel.rightHeight)}`
-    parts.push(text(midX, topY - offset, label, "dimension-text"))
+    parts.push(text(midX, topY - offset, label, 'dimension-text'))
     lastLabelX = midX
   })
 
-  parts.push(line(wallX, baseY + 28, wallRight, baseY + 28, "dimension-line"))
+  parts.push(line(wallX, baseY + 28, wallRight, baseY + 28, 'dimension-line'))
   parts.push(
     text(
       wallX + (wallRight - wallX) / 2,
       baseY + 18,
       formatToField(model.wallLength),
-      "dimension-text total-text"
-    )
+      'dimension-text total-text',
+    ),
   )
 }
 
@@ -506,7 +525,53 @@ function buildTopLabels(parts, model, wallX, wallRight, markLineY, scale) {
       if (wallRight - x < minSpacing) return
     }
 
-    parts.push(text(x, markLineY - 10, formatToField(pos), "dimension-text"))
+    parts.push(text(x, markLineY - 10, formatToField(pos), 'dimension-text'))
     lastX = x
+  })
+}
+
+/* DRAWING OBJECT TARGETS — panel bodies and openings are navigable controls. */
+function addObjectTargets(parts, model, width, height) {
+  const gable = model.wallType === 'gable' || model.wallType === 'singleSlope'
+  const bottom = height - (gable ? 70 : 80)
+  const maxH = gable
+    ? Math.max(model.leftEaveHeight, model.ridgeHeight, model.rightEaveHeight)
+    : model.wallHeight
+  const scale = Math.min((width - 140) / model.wallLength, (height - (gable ? 160 : 160)) / maxH)
+  const at = (x) =>
+    gable
+      ? getGableHeightAtX(
+          x,
+          model.wallLength,
+          model.leftPanelStopHeight,
+          model.ridgePanelStopHeight,
+          model.ridgePosition,
+          model.rightPanelStopHeight,
+        )
+      : model.panelStopHeight
+  for (const p of model.panels) {
+    const x = 70 + p.start * scale,
+      right = 70 + p.end * scale
+    const pts = [
+      [x, bottom],
+      [right, bottom],
+      [right, bottom - at(p.end) * scale],
+    ]
+    if (gable && p.start < model.ridgePosition && p.end > model.ridgePosition)
+      pts.push([70 + model.ridgePosition * scale, bottom - model.ridgePanelStopHeight * scale])
+    pts.push([x, bottom - at(p.start) * scale])
+    parts.push(
+      `<polygon points="${pts.map((pair) => pair.map(f).join(',')).join(' ')}" class="svg-hit" data-panel="${p.panel}" tabindex="0" role="button" aria-label="Panel ${p.panel} details"/>`,
+    )
+  }
+  model.openings.forEach((o, i) => {
+    const x = 70 + o.start * scale,
+      y = bottom - (o.bottom + o.height) * scale,
+      w = o.width * scale,
+      h = o.height * scale
+    parts.push(
+      `<rect x="${f(x)}" y="${f(y)}" width="${f(w)}" height="${f(h)}" class="svg-hit opening-hit" data-opening-index="${i}" tabindex="0" role="button" aria-label="Edit opening ${i + 1}"/>`,
+    )
+    parts.push(text(x + w / 2, y + h / 2 + 4, String(i + 1).padStart(2, '0'), 'object-label'))
   })
 }

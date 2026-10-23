@@ -1,75 +1,38 @@
+/* PARSE FEET / INCHES — NaN means invalid; zero remains a real measurement. */
 export function parseMeasurement(input) {
-  if (input === null || input === undefined) return 0
-
-  const raw = String(input).trim()
-  if (!raw) return 0
-
-  const text = raw
-    .replace(/[′’]/g, "'")
-    .replace(/[″”]/g, '"')
-    .replace(/\s+/g, " ")
-    .trim()
-
-  // Plain decimal inches
-  if (/^-?\d+(\.\d+)?$/.test(text)) {
-    return Number(text) || 0
+  if (typeof input === 'number') return Number.isFinite(input) ? input : NaN
+  if (input == null) return NaN
+  let text = String(input).trim().replace(/[′’]/g, "'").replace(/[″”]/g, '"').replace(/\s+/g, ' ')
+  if (!text) return NaN
+  // Read old CR27 field strings such as 3' (36") without accepting junk.
+  const old = text.match(/^(.*?)\s*\(([^()]*)\)$/)
+  if (old) {
+    const a = parseMeasurement(old[1]),
+      b = parseMeasurement(old[2])
+    return Number.isFinite(a) && Math.abs(a - b) < 0.001 ? a : NaN
   }
-
-  // Feet-inches-fraction
-  // Accept:
-  // 10-6-1/2
-  // 10'6"1/2
-  // 10' 6" 1/2
-  // 10' 6 1/2"
-  let match = text.match(/^(-?\d+)\s*(?:'|-)\s*(\d+)?\s*(?:"|-)?\s*(\d+\/\d+)?\s*"?$/)
-  if (match) {
-    const feet = Number(match[1]) || 0
-    const inches = Number(match[2]) || 0
-    const fraction = parseFraction(match[3])
-    return feet * 12 + inches + fraction
+  const sign = text.startsWith('-') ? -1 : 1
+  if (sign < 0) text = text.slice(1)
+  if (/^\d+(?:\.\d+)?"?$/.test(text)) return sign * Number(text.replace('"', ''))
+  const feet = text.match(/^(\d+(?:\.\d+)?)'\s*(.*)$/)
+  if (feet) {
+    const rest = feet[2] ? inches(feet[2]) : 0
+    return sign * (Number(feet[1]) * 12 + rest)
   }
-
-  // Inches + fraction
-  // Accept:
-  // 6 1/4
-  // 6-1/4
-  // 6"1/4
-  // 6" 1/4
-  match = text.match(/^(-?\d+)\s*(?:"|-|\s)\s*(\d+\/\d+)\s*"?$/)
-  if (match) {
-    const inches = Number(match[1]) || 0
-    const fraction = parseFraction(match[2])
-    return inches + fraction
-  }
-
-  // Fraction only
-  if (/^-?\d+\/\d+$/.test(text)) {
-    return parseFraction(text)
-  }
-
-  // Feet only
-  match = text.match(/^(-?\d+)\s*'$/)
-  if (match) {
-    return (Number(match[1]) || 0) * 12
-  }
-
-  // Inches only
-  match = text.match(/^(-?\d+)\s*"$/)
-  if (match) {
-    return Number(match[1]) || 0
-  }
-
-  return 0
+  // Jobsite notation: 10-6 or 10-6-1/2.
+  const dashed = text.match(/^(\d+)-(\d+)(?:-(\d+\/\d+))?$/)
+  if (dashed) return sign * (Number(dashed[1]) * 12 + Number(dashed[2]) + fraction(dashed[3]))
+  return sign * inches(text)
 }
-
-function parseFraction(value) {
-  if (!value) return 0
-  const parts = value.split("/")
-  if (parts.length !== 2) return 0
-
-  const num = Number(parts[0]) || 0
-  const den = Number(parts[1]) || 1
-
-  if (den === 0) return 0
-  return num / den
+function fraction(v) {
+  if (!v) return 0
+  const [n, d] = v.split('/').map(Number)
+  return d > 0 ? n / d : NaN
+}
+function inches(t) {
+  if (/^\d+(?:\.\d+)?"?$/.test(t)) return Number(t.replace('"', ''))
+  const mixed = t.match(/^(\d+)\s*(?:"\s*|\s+|-)(\d+\/\d+)"?$/)
+  if (mixed) return Number(mixed[1]) + fraction(mixed[2])
+  const f = t.match(/^(\d+\/\d+)"?$/)
+  return f ? fraction(f[1]) : NaN
 }
