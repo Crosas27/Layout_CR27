@@ -30,13 +30,13 @@ export function renderProjects(workspace) {
     projects
       .map(
         (p) =>
-          `<button class="object-card" data-project="${esc(p.id)}"><span class="card-content"><p class="eyebrow">${p.archived ? 'ARCHIVED' : 'PROJECT'}</p><h3>${esc(p.details.jobName || 'Untitled project')}</h3><p class="muted">${esc(p.details.location || 'Location not set')}</p><span class="card-bottom"><span>${p.walls.length} walls</span><span>${p.walls.reduce((n, w) => n + w.openings.length, 0)} openings</span><span>${new Date(p.updatedAt).toLocaleDateString()}</span></span></span><span class="card-arrow">›</span></button>`,
+          `<button class="object-card" data-project="${esc(p.id)}"><span class="card-content">${p.archived ? '<p class="eyebrow">ARCHIVED</p>' : ''}<h3>${esc(p.details.jobName || 'Untitled job')}</h3><p class="muted">${esc(p.details.location || 'Location not set')}</p><span class="card-bottom"><span>${p.walls.length} walls</span><span>${p.walls.reduce((n, w) => n + w.openings.length, 0)} openings</span><span>${new Date(p.updatedAt).toLocaleDateString()}</span></span></span><span class="card-arrow">›</span></button>`,
       )
-      .join('') || '<div class="empty-state">No matching projects.</div>'
+      .join('') || '<div class="empty-state">No matching jobs.</div>'
 }
 /* BUILDING / WALL CARDS */
 export function renderProject(project) {
-  $('projectTitle').textContent = project.details.jobName || 'Untitled project'
+  $('projectTitle').textContent = project.details.jobName || 'Untitled job'
   $('projectLocation').textContent = project.details.location || 'Location not set'
   $('profileBadge').textContent =
     `${project.profile.name} · ${project.profile.panelCoverage} coverage · ${project.profile.ribSpacing} rib centers`
@@ -63,7 +63,7 @@ export function renderProject(project) {
 }
 /* WALL WORKSPACE — never leave stale fabrication output after invalid edits. */
 export function renderWorkspace(project, wall, history) {
-  $('backProjectBtn').textContent = `‹ ${project.details.jobName || 'Project'}`
+  $('backProjectBtn').textContent = `‹ ${project.details.jobName || 'Job'}`
   $('wallTitle').textContent = wall.name
   $('wallTypeBadge').textContent =
     wall.wallType === 'singleSlope'

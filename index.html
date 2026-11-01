@@ -18,7 +18,7 @@
   </head>
   <body>
     <header class="app-header">
-      <button id="homeBtn" class="brand" aria-label="CR27 projects">
+      <button id="homeBtn" class="brand" aria-label="CR27 jobs">
         <span class="brand-mark">CR<span>27</span></span
         ><span class="brand-caption">PANEL WORKSPACE</span>
       </button>
@@ -43,32 +43,27 @@
       <section id="projectsView">
         <div class="page-heading">
           <div>
-            <p class="eyebrow">YOUR JOBS / YOUR LAYOUTS</p>
-            <h1>Projects</h1>
-            <p class="muted">Pick a building. Get to work.</p>
+            <h1>Jobs</h1>
           </div>
           <div class="project-entry-actions">
             <button id="quickLayoutBtn">Quick layout</button>
-            <button id="newProjectBtn" class="primary">＋ New project</button>
+            <button id="newProjectBtn" class="primary">＋ New job</button>
           </div>
         </div>
         <div class="search-row">
-          <label class="sr-only" for="projectSearch">Search projects</label
-          ><input
-            id="projectSearch"
-            type="search"
-            placeholder="Find a project or location…"
-          /><label class="check-label"><input id="showArchived" type="checkbox" /> Archived</label
+          <label class="sr-only" for="projectSearch">Search jobs</label
+          ><input id="projectSearch" type="search" placeholder="Find a job or location…" /><label
+            class="check-label"
+            ><input id="showArchived" type="checkbox" /> Archived</label
           ><button id="importProjectBtn">Import JSON</button>
         </div>
         <div id="projectCards" class="card-grid"></div>
-        <p class="footnote">Projects save on this device. Export JSON for a portable backup.</p>
+        <p class="footnote">Saved on this device. Export JSON to back up.</p>
       </section>
       <section id="quickView" class="hidden" aria-labelledby="quickTitle">
-        <button id="backQuickBtn" class="back-btn">‹ All projects</button>
+        <button id="backQuickBtn" class="back-btn">‹ Jobs</button>
         <div class="page-heading">
           <div>
-            <p class="eyebrow">NO JOB SETUP</p>
             <h1 id="quickTitle" tabindex="-1">Quick layout</h1>
           </div>
         </div>
@@ -134,14 +129,13 @@
         </p>
       </section>
       <section id="projectView" class="hidden">
-        <button id="backProjectsBtn" class="back-btn">‹ All projects</button>
+        <button id="backProjectsBtn" class="back-btn">‹ Jobs</button>
         <div class="page-heading">
           <div>
-            <p class="eyebrow">PROJECT</p>
             <h1 id="projectTitle"></h1>
             <p id="projectLocation" class="muted"></p>
           </div>
-          <button id="projectSettingsBtn">Project settings</button>
+          <button id="projectSettingsBtn">Settings</button>
         </div>
         <div class="project-strip">
           <span id="profileBadge"></span><span id="projectTotals"></span>
@@ -153,10 +147,10 @@
         <div id="wallCards" class="card-grid"></div>
         <div id="projectNotes" class="notes-display"></div>
         <div class="action-bar">
-          <button id="exportProjectBtn">Export project</button
-          ><button id="duplicateProjectBtn">Duplicate project</button
+          <button id="exportProjectBtn">Export JSON</button
+          ><button id="duplicateProjectBtn">Duplicate</button
           ><button id="archiveProjectBtn">Archive</button
-          ><button id="shareProjectBtn">Share project link</button>
+          ><button id="shareProjectBtn">Share link</button>
         </div>
       </section>
       <section id="wallView" class="hidden">

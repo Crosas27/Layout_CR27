@@ -1,6 +1,6 @@
 import { createWall } from '../walls/wallModel.js'
 /* NEW PROJECT DEFAULTS */
-export function createProject(name = 'Untitled project') {
+export function createProject(name = 'Untitled job') {
   const wall = createWall('Front wall')
   return {
     schemaVersion: 2,
