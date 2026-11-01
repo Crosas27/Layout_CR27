@@ -2,6 +2,25 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { calculateQuickLayout } from '../js/layout/quickLayout.js'
 
+test('balanced ends use the widest matching rips without adding sheets', () => {
+  const result = calculateQuickLayout("50'", '36', 'bad manual offset', true)
+  assert.equal(result.totalPanels, 17)
+  assert.equal(result.startOffset, 6)
+  assert.equal(result.panels[0].width, 30)
+  assert.equal(result.panels.at(-1).width, 30)
+  for (const length of [18, 36, 72, 73, 120.125, 600]) {
+    const layout = calculateQuickLayout(length, 36, 12, true)
+    assert.equal(layout.totalPanels, Math.ceil(length / 36))
+    assert.equal(layout.panels[0].width, layout.panels.at(-1).width)
+    assert.equal(
+      layout.panels.reduce((sum, p) => sum + p.width, 0),
+      length,
+    )
+  }
+  assert.equal(calculateQuickLayout(72, 36, 12, true).startOffset, 0)
+  assert.equal(calculateQuickLayout(18, 36, 12, true).startOffset, 0)
+})
+
 test('quick 50-foot wall uses 16 full panels and one 24-inch rip', () => {
   const result = calculateQuickLayout("50'", '36"')
   assert.equal(result.totalPanels, 17)

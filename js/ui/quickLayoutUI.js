@@ -7,6 +7,7 @@ import { formatToField as feet, formatInches as inches } from '../utils/formatte
 export function setupQuickLayout() {
   let model = null
   let selected = 1
+  let manualOffset = '0"'
   $('quickFields').innerHTML =
     field('quickLength', 'Wall length', '', { measure: true, placeholder: "e.g. 50'" }) +
     field('quickCoverage', 'Panel coverage', '36"', { measure: true })
@@ -22,6 +23,8 @@ export function setupQuickLayout() {
       button.setAttribute('aria-pressed', String(Number(button.dataset.quickPanel) === selected))
   }
   const render = () => {
+    $('quickOffset').disabled = $('quickBalance').checked
+    if ($('quickBalance').checked) $('quickOffset').value = ''
     model = null
     $('quickPanelStrip').replaceChildren()
     show($('quickResults'), false)
@@ -42,6 +45,7 @@ export function setupQuickLayout() {
         $('quickLength').value,
         $('quickCoverage').value,
         $('quickOffset').value,
+        $('quickBalance').checked,
       )
     } catch (err) {
       $('quickMessage').textContent = err.message
@@ -50,7 +54,10 @@ export function setupQuickLayout() {
     }
     $('quickLength').nextElementSibling.textContent = inches(model.wallLength)
     $('quickCoverage').nextElementSibling.textContent = inches(model.coverage)
-    $('quickOffset').nextElementSibling.textContent = inches(model.startOffset)
+    if ($('quickBalance').checked) $('quickOffset').value = `${model.startOffset}"`
+    $('quickOffset').nextElementSibling.textContent = $('quickBalance').checked
+      ? `Auto offset: ${inches(model.startOffset)}`
+      : inches(model.startOffset)
     show($('quickMessage'), false)
     show($('quickResults'), true)
     show($('quickSummary'), true)
@@ -75,7 +82,13 @@ export function setupQuickLayout() {
     if ($('quickInputs').contains(document.activeElement))
       document.activeElement.scrollIntoView?.({ block: 'nearest' })
   }
-  $('quickInputs').addEventListener('input', render)
+  $('quickInputs').addEventListener('input', (e) => {
+    if (e.target === $('quickBalance')) {
+      if ($('quickBalance').checked) manualOffset = $('quickOffset').value
+      else $('quickOffset').value = manualOffset
+    }
+    render()
+  })
   $('quickInputs').addEventListener('submit', (e) => e.preventDefault())
   $('quickPanelStrip').addEventListener('click', (e) => {
     const button = e.target.closest('[data-quick-panel]')
