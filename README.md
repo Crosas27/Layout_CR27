@@ -18,6 +18,7 @@ See [CODE_MAP.md](CODE_MAP.md) to find the code for a specific feature.
 - Text export and print layout. Use the browser's Print/Save PDF action for a PDF.
 - Tap a panel in the drawing or cut sheet for an opening-cut diagram. Measurements reference the finished panel edge; diagrams show only that panel's cut portion and are marked not to scale.
 - Compact spacing with light-gray/blue and charcoal/blue themes; primary touch targets and body text sizes remain unchanged.
+- Compact mobile workspace: smaller headers/cards, four summary figures in one row, Add opening always available, and a Wall actions disclosure for undo/redo/duplicate/delete. The drawing defaults to Fit; Detail restores larger labels and horizontal scrolling. Inputs retain their 16px text and 48px height. This density update passes automated checks; its new layout still needs actual iPhone visual review.
 - Offline shell, local icons, Home Screen manifest and explicit version updates. Online access is needed for the first successful cache installation.
 
 ## Run locally

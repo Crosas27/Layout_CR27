@@ -167,17 +167,26 @@
           <button id="editWallBtn">Edit wall</button>
         </div>
         <div class="wall-toolbar">
-          <div class="history-buttons">
-            <button id="undoBtn" aria-label="Undo last change">↶ Undo</button
-            ><button id="redoBtn" aria-label="Redo last change">↷ Redo</button>
-          </div>
-          <button id="duplicateWallBtn">Duplicate</button
-          ><button id="deleteWallBtn" class="danger">Delete wall</button>
+          <button id="addOpeningBtn" class="primary">＋ Add opening</button>
+          <details class="wall-more">
+            <summary>Wall actions</summary>
+            <div class="wall-more-actions">
+              <div class="history-buttons">
+                <button id="undoBtn" aria-label="Undo last change">↶ Undo</button
+                ><button id="redoBtn" aria-label="Redo last change">↷ Redo</button>
+              </div>
+              <button id="duplicateWallBtn">Duplicate</button
+              ><button id="deleteWallBtn" class="danger">Delete wall</button>
+            </div>
+          </details>
         </div>
         <div class="drawing-card">
           <div class="drawing-heading">
-            <span class="eyebrow">WALL LAYOUT</span
-            ><span class="muted">Tap a panel or opening</span>
+            <span class="eyebrow">WALL LAYOUT</span>
+            <div class="drawing-controls" role="group" aria-label="Drawing scale">
+              <button id="fitDrawingBtn" aria-pressed="true">Fit</button>
+              <button id="detailDrawingBtn" aria-pressed="false">Detail</button>
+            </div>
           </div>
           <div id="drawingEmpty" class="empty-state">Set wall dimensions to see your layout.</div>
           <div class="drawing-scroll">
@@ -189,7 +198,7 @@
             ></svg>
           </div>
           <p class="drawing-hint">
-            Measurements start at the outside corner. Swipe the drawing on small screens.
+            Tap a panel or opening. Use Detail for larger labels; swipe to move across the wall.
           </p>
         </div>
         <div id="wallWarnings" class="hidden"></div>
@@ -232,7 +241,6 @@
         >
           <div class="section-heading">
             <h2>Openings</h2>
-            <button id="addOpeningBtn" class="primary">＋ Add opening</button>
           </div>
           <div id="openingsList" class="opening-grid"></div>
         </section>

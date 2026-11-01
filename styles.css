@@ -513,8 +513,63 @@ textarea {
 #wallSvg:not(:empty) {
   display: block;
   width: 100%;
-  min-width: 760px;
+  min-width: 0;
   height: auto;
+}
+#wallSvg.detail-scale:not(:empty) {
+  min-width: 760px;
+}
+.drawing-controls {
+  display: flex;
+  gap: 4px;
+}
+.drawing-controls button {
+  min-height: 44px;
+  padding: 6px 14px;
+}
+.drawing-controls [aria-pressed='true'] {
+  background: var(--blue-soft);
+  border-color: var(--blue);
+}
+.wall-more {
+  position: relative;
+  margin: 0 0 0 auto;
+  padding: 0;
+  border: 0;
+}
+.wall-more summary {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 8px 12px;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
+}
+.wall-more summary::after {
+  content: ' ▾';
+  margin-left: 8px;
+}
+.wall-more-actions {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  width: 240px;
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  z-index: 5;
+}
+.wall-more-actions .history-buttons {
+  margin: 0;
+}
+.wall-more-actions .history-buttons button {
+  flex: 1;
 }
 .drawing-hint {
   padding: 0 16px 10px;
@@ -1066,11 +1121,11 @@ svg text {
 /* MOBILE LAYOUT */
 @media (max-width: 700px) {
   .app {
-    padding: 16px 14px 36px;
+    padding: 10px 12px 24px;
   }
   .app-header {
     padding: 10px 16px;
-    height: 64px;
+    height: 56px;
     gap: 12px;
   }
   .brand-caption {
@@ -1103,22 +1158,22 @@ svg text {
     grid-template-columns: 1fr;
   }
   .object-card {
-    min-height: 112px;
-    padding: 14px;
+    min-height: 84px;
+    padding: 10px 12px;
   }
   .section-heading {
     align-items: start;
     flex-wrap: wrap;
   }
   .stats {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px;
   }
   .stat {
-    padding: 10px 12px;
+    padding: 8px 6px;
   }
   .stat strong {
-    font-size: 24px;
+    font-size: 22px;
   }
   .wall-toolbar button {
     padding: 8px 12px;
@@ -1128,7 +1183,8 @@ svg text {
     width: 100%;
   }
   .drawing-heading {
-    padding: 14px 16px 0;
+    padding: 4px 10px 0;
+    align-items: center;
   }
   .cut-row {
     gap: 8px;
@@ -1147,7 +1203,80 @@ svg text {
     padding: 20px;
   }
   .field-grid {
-    gap: 12px;
+    gap: 8px;
+  }
+  .page-heading {
+    margin: 4px 0 10px;
+    gap: 10px;
+  }
+  .page-heading h1 {
+    font-size: 26px;
+  }
+  .page-heading .muted {
+    margin-top: 3px;
+    font-size: 13px;
+  }
+  .eyebrow {
+    margin-bottom: 4px;
+  }
+  .wall-heading .eyebrow {
+    font-size: 10px;
+  }
+  .back-btn {
+    min-height: 40px;
+    font-size: 14px;
+  }
+  .wall-toolbar {
+    margin-bottom: 8px;
+  }
+  .tabs {
+    margin: 8px 0;
+  }
+  .layout-details {
+    margin-top: 8px;
+    gap: 4px 12px;
+    font-size: 13px;
+  }
+  .card-grid,
+  .opening-grid {
+    gap: 8px;
+  }
+  .object-card .muted {
+    margin: 2px 0 4px;
+  }
+  .card-bottom {
+    gap: 8px;
+  }
+  .section-heading {
+    margin: 10px 0 8px;
+  }
+  .search-row {
+    margin-bottom: 14px;
+  }
+  .project-strip {
+    margin-bottom: 10px;
+    gap: 4px;
+    padding: 6px 0;
+  }
+  .drawing-hint {
+    padding: 0 10px 6px;
+    font-size: 11px;
+  }
+  .quick-inputs,
+  .quick-drawing {
+    padding: 12px;
+  }
+  .quick-summary {
+    margin: 8px 0;
+  }
+  .quick-edges {
+    margin: 8px 0;
+  }
+  .quick-count strong {
+    font-size: 34px;
+  }
+  .quick-panel {
+    height: 72px;
   }
   .app-footer {
     padding: 0 16px 20px;

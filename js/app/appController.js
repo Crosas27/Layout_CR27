@@ -309,6 +309,16 @@ export async function initApp() {
     toast('Wall deleted. Open a wall and Undo to restore it.')
   })
   $('addOpeningBtn').onclick = () => openOpeningEditor(null)
+  const drawingScale = (detail) => {
+    $('wallSvg').classList.toggle('detail-scale', detail)
+    $('fitDrawingBtn').setAttribute('aria-pressed', String(!detail))
+    $('detailDrawingBtn').setAttribute('aria-pressed', String(detail))
+  }
+  $('fitDrawingBtn').onclick = () => drawingScale(false)
+  $('detailDrawingBtn').onclick = () => drawingScale(true)
+  document.querySelector('.wall-more-actions').addEventListener('click', (e) => {
+    if (e.target.closest('button')) document.querySelector('.wall-more').open = false
+  })
   $('undoBtn').onclick = () => {
     const previous = history.undo(project())
     if (!previous) return
